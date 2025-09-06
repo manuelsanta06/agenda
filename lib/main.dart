@@ -5,8 +5,10 @@ import 'pages/people.dart';
 import 'pages/calendar.dart';
 import 'pages/trips.dart';
 
+bool darkMode=true;
+
 void main(){
-  runApp(const MyApp(),);
+    runApp(const MyApp(),);
 }
 
 class MyApp extends StatefulWidget {
@@ -17,7 +19,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp>{
-    int _selectedIndex = 0;
+    int _selectedIndex = 2;
     
     final List<Widget> _pages = const [
         peoplePage(),
@@ -39,7 +41,26 @@ class _MyAppState extends State<MyApp>{
     Widget build(BuildContext context,){
         return MaterialApp(
             debugShowCheckedModeBanner: false,
-            theme: ThemeData(fontFamily: 'FiraCode Nerd Font'),
+            theme: ThemeData.light().copyWith(
+                textTheme: ThemeData.light().textTheme.apply(
+                    fontFamily: 'FiraCode Nerd Font',
+                ),
+                inputDecorationTheme: InputDecorationTheme(
+                    filled: true,
+                    fillColor: Colors.white,
+                ),
+            ),
+            darkTheme: ThemeData.dark().copyWith(
+                textTheme: ThemeData.dark().textTheme.apply(
+                    fontFamily: 'FiraCode Nerd Font',
+                ),
+                inputDecorationTheme: InputDecorationTheme(
+                    filled: true,
+                    fillColor: Colors.black,
+                ),
+            ),
+            themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
+
             home:Scaffold(
                 body: _pages[_selectedIndex],
 
@@ -49,27 +70,27 @@ class _MyAppState extends State<MyApp>{
                     onTap: _onItemTapped,
                     items: const [
                         BottomNavigationBarItem(
-                            backgroundColor: Colors.red,
+                            backgroundColor: Colors.purple,
                             icon: Icon(Icons.airline_seat_recline_extra),
                             label: 'Choferes',
                         ),
                         BottomNavigationBarItem(
-                            backgroundColor: Colors.red,
+                            backgroundColor: Colors.cyan,
                             icon: Icon(Icons.calendar_month),
                             label: 'Calendario',
                         ),
                         BottomNavigationBarItem(
-                            backgroundColor: Colors.black,
+                            backgroundColor: Colors.blueGrey,
                             icon: Icon(Icons.home),
                             label: 'Inicio',
                         ),
                         BottomNavigationBarItem(
-                            backgroundColor: Colors.red,
-                            icon: Icon(Icons.pets),
-                            label: 'algo mas',
+                            backgroundColor: Colors.green,
+                            icon: Icon(Icons.add_road),
+                            label: 'recorridos',
                         ),
                         BottomNavigationBarItem(
-                            backgroundColor: Colors.red,
+                            backgroundColor: Color.fromARGB(255, 252, 102, 1),
                             icon: Icon(Icons.directions_bus),
                             label: 'Colectivos',
                         ),
