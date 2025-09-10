@@ -35,8 +35,6 @@ class _MyAppState extends State<MyApp>{
         });
     }
 
-
-    // This widget is the root of your application.
     @override
     Widget build(BuildContext context,){
         return MaterialApp(
@@ -48,6 +46,12 @@ class _MyAppState extends State<MyApp>{
                 inputDecorationTheme: InputDecorationTheme(
                     filled: true,
                     fillColor: Colors.white,
+                    hintStyle: TextStyle(
+                        color: Colors.grey,
+                    ),
+                    border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                    ),
                 ),
             ),
             darkTheme: ThemeData.dark().copyWith(
@@ -57,6 +61,12 @@ class _MyAppState extends State<MyApp>{
                 inputDecorationTheme: InputDecorationTheme(
                     filled: true,
                     fillColor: Colors.black,
+                    hintStyle: TextStyle(
+                        color: Colors.grey,
+                    ),
+                    border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                    ),
                 ),
             ),
             themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
