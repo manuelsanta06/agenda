@@ -89,29 +89,44 @@ class colectivo{
         );
     }
 
+    void _showEditMenu(){
+    }
+
     Widget toWidget(BuildContext context, VoidCallback onChanged, VoidCallback onRemove){
         return Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: Colors.white12,
             ),
-            padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-            child: InkWell( 
-                onTap: (){inputFuelDialog(context,onChanged);},
-                onSecondaryTap: ()=>confirmDeleteDialog(context,onRemove),
-                onLongPress: ()=>confirmDeleteDialog(context,onRemove),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                        Text("Nombre: ${name.isEmpty?plate:name}",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                        Text("Patente: $plate"),
-                        if(number!=null)Text("Interno: $number"),
-                        if(fuel.date!=null)
-                            Text("Gasoil:  ${isToday(fuel.date!)?"Hoy":isYesterday(fuel.date!)?"Ayer"
-                                :"Hace ${fuel.date!.difference(DateTime.now()).inDays} dias"} -> ${fuel.amount!}"),
-                    ],
-                ),
+            padding: EdgeInsets.only(top: 5,bottom:5,left: 10,right:0),
+            child: Stack(
+                children: [
+                    InkWell( 
+                        onTap: (){inputFuelDialog(context,onChanged);},
+                        onSecondaryTap: ()=>confirmDeleteDialog(context,onRemove),
+                        onLongPress: ()=>confirmDeleteDialog(context,onRemove),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Text("Nombre: ${name.isEmpty?plate:name}",
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                Text("Patente: $plate"),
+                                if(number!=null)Text("Interno: $number"),
+                                if(fuel.date!=null)
+                                    Text("Gasoil:  ${isToday(fuel.date!)?"Hoy":isYesterday(fuel.date!)?"Ayer"
+                                        :"Hace ${fuel.date!.difference(DateTime.now()).inDays} dias"} -> ${fuel.amount!}"),
+                            ],
+                        ),
+                    ),
+                    Positioned(
+                        top: -5,
+                        right: 0,
+                        child: IconButton(
+                            icon: Icon(Icons.edit, color: Color.fromARGB(255, 252, 102, 1)),
+                            onPressed: () {_showEditMenu();},
+                        ),
+                    ),
+                ],
             ),
         );
     }
@@ -135,12 +150,12 @@ class colectivosPage extends StatefulWidget {
 class _colectivosPageState extends State<colectivosPage>{
     String searchQuery = "";
 
-    void _showAddColectivoSheet() {
+    Future<colectivo?> _showAddColectivoSheet() async{
         final nameC = TextEditingController();
         final plateC = TextEditingController();
         final internC = TextEditingController();
 
-        showModalBottomSheet<void>(
+        return await showModalBottomSheet<colectivo>(
             context: context,
             isScrollControlled: true,
             builder: (BuildContext context) {
@@ -150,59 +165,52 @@ class _colectivosPageState extends State<colectivosPage>{
                         left: 15,right: 15,
                         top: 15,bottom: MediaQuery.of(context).viewInsets.bottom,
                     ),
-                    child: _buildAddColectivoSheet(nameC, plateC, internC),
+                    child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children:<Widget>[
+                            Text("Nombre"),
+                            const SizedBox(height: 8),
+                            TextField(decoration: InputDecoration(hintText: "A"),
+                                controller: nameC,),
+
+                            const SizedBox(height: 16),
+                            Text("Patente"),
+                            const SizedBox(height: 8),
+                            TextField(decoration: InputDecoration(hintText: "AAA-000"),
+                                controller: plateC,),
+
+                            const SizedBox(height: 16),
+                            Text("Interno"),
+                            const SizedBox(height: 8),
+                            TextField(decoration: InputDecoration(hintText: "NN"),
+                                controller: internC,),
+                            const SizedBox(height: 50),
+
+                            Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton(
+                                    child: Text("Guardar"),
+                                    onPressed:(){
+                                        if(plateC.text.isEmpty){
+                                            //ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                            //    content:Text("No puede no haber patente")));
+                                            return;
+                                        }
+                                        final nuevo = internC.text.isEmpty
+                                            ? colectivo(name: nameC.text, plate: plateC.text)
+                                            : colectivo(name: nameC.text,
+                                                        plate: plateC.text,
+                                                        number: int.tryParse(internC.text));
+                                        Navigator.pop(context, nuevo);
+                                        setState((){});
+                                    },
+                                )
+                            ),
+                            const SizedBox(height: 20),
+                        ]
+                    ),
                 );
             },
-        );
-    }
-
-    Widget _buildAddColectivoSheet(TextEditingController nameC,
-        TextEditingController plateC,
-        TextEditingController internC,){
-        return Column(
-            mainAxisSize: MainAxisSize.min,
-            children:<Widget>[
-                Text("Nombre"),
-                const SizedBox(height: 8),
-                TextField(decoration: InputDecoration(hintText: "A"),
-                    controller: nameC,),
-
-                const SizedBox(height: 16),
-                Text("Patente"),
-                const SizedBox(height: 8),
-                TextField(decoration: InputDecoration(hintText: "AAA-000"),
-                    controller: plateC,),
-
-                const SizedBox(height: 16),
-                Text("Interno"),
-                const SizedBox(height: 8),
-                TextField(decoration: InputDecoration(hintText: "NN"),
-                    controller: internC,),
-                const SizedBox(height: 50),
-
-                Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                        child: Text("Guardar"),
-                        onPressed:(){
-                            if(plateC.text==""){
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content:Text("No puede no haber patente")));
-                                return;
-                            }if(internC.text==""){
-                                colectivos.add(colectivo(name:nameC.text,plate:plateC.text));
-                            }else{
-                                colectivos.add(colectivo(name: nameC.text,
-                                    plate:plateC.text,
-                                    number: int.parse(internC.text)));
-                            }
-                            Navigator.pop(context);
-                            setState((){});
-                        },
-                    )
-                ),
-                const SizedBox(height: 30),
-            ]
         );
     }
 
