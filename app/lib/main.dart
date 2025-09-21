@@ -8,7 +8,7 @@ import 'pages/trips.dart';
 bool darkMode=true;
 
 void main(){
-    runApp(const MyApp(),);
+  runApp(const MyApp(),);
 }
 
 class MyApp extends StatefulWidget {
@@ -19,94 +19,94 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp>{
-    int _selectedIndex = 2;
-    
-    final List<Widget> _pages = const [
-        peoplePage(),
-        calendarPage(),
-        homePage(),
-        tripsPage(),
-        colectivosPage(),
-    ];
+  int _selectedIndex = 2;
 
-    void _onItemTapped(int index) {
-        setState(() {
-            _selectedIndex = index;
-        });
-    }
+  final List<Widget> _pages = const [
+    peoplePage(),
+    calendarPage(),
+    homePage(),
+    tripsPage(),
+    colectivosPage(),
+  ];
 
-    @override
-    Widget build(BuildContext context,){
-        return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: ThemeData.light().copyWith(
-                textTheme: ThemeData.light().textTheme.apply(
-                    fontFamily: 'FiraCode Nerd Font',
-                ),
-                inputDecorationTheme: InputDecorationTheme(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintStyle: TextStyle(
-                        color: Colors.grey,
-                    ),
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                    ),
-                ),
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context,){
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light().copyWith(
+        textTheme: ThemeData.light().textTheme.apply(
+          fontFamily: 'FiraCode Nerd Font',
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          hintStyle: TextStyle(
+            color: Colors.grey,
+          ),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+      darkTheme: ThemeData.dark().copyWith(
+        textTheme: ThemeData.dark().textTheme.apply(
+          fontFamily: 'FiraCode Nerd Font',
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.black,
+          hintStyle: TextStyle(
+            color: Colors.grey,
+          ),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+      themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
+
+      home:Scaffold(
+        body: _pages[_selectedIndex],
+
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.shifting,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: const [
+            BottomNavigationBarItem(
+              backgroundColor: peoplePage.mainColor,
+              icon: Icon(Icons.airline_seat_recline_extra),
+              label: 'Choferes',
             ),
-            darkTheme: ThemeData.dark().copyWith(
-                textTheme: ThemeData.dark().textTheme.apply(
-                    fontFamily: 'FiraCode Nerd Font',
-                ),
-                inputDecorationTheme: InputDecorationTheme(
-                    filled: true,
-                    fillColor: Colors.black,
-                    hintStyle: TextStyle(
-                        color: Colors.grey,
-                    ),
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide.none,
-                    ),
-                ),
+            BottomNavigationBarItem(
+              backgroundColor: calendarPage.mainColor,
+              icon: Icon(Icons.calendar_month),
+              label: 'Calendario',
             ),
-            themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
-
-            home:Scaffold(
-                body: _pages[_selectedIndex],
-
-                bottomNavigationBar: BottomNavigationBar(
-                    type: BottomNavigationBarType.shifting,
-                    currentIndex: _selectedIndex,
-                    onTap: _onItemTapped,
-                    items: const [
-                        BottomNavigationBarItem(
-                            backgroundColor: Colors.purple,
-                            icon: Icon(Icons.airline_seat_recline_extra),
-                            label: 'Choferes',
-                        ),
-                        BottomNavigationBarItem(
-                            backgroundColor: Colors.cyan,
-                            icon: Icon(Icons.calendar_month),
-                            label: 'Calendario',
-                        ),
-                        BottomNavigationBarItem(
-                            backgroundColor: Colors.blueGrey,
-                            icon: Icon(Icons.home),
-                            label: 'Inicio',
-                        ),
-                        BottomNavigationBarItem(
-                            backgroundColor: Colors.green,
-                            icon: Icon(Icons.add_road),
-                            label: 'recorridos',
-                        ),
-                        BottomNavigationBarItem(
-                            backgroundColor: Color.fromARGB(255, 252, 102, 1),
-                            icon: Icon(Icons.directions_bus),
-                            label: 'Colectivos',
-                        ),
-                    ],
-                ),
-            )
-        );
-    }
+            BottomNavigationBarItem(
+              backgroundColor: homePage.mainColor,
+              icon: Icon(Icons.home),
+              label: 'Inicio',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: tripsPage.mainColor,
+              icon: Icon(Icons.add_road),
+              label: 'recorridos',
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: colectivosPage.mainColor,
+              icon: Icon(Icons.directions_bus),
+              label: 'Colectivos',
+            ),
+          ],
+        ),
+      )
+    );
+  }
 }
