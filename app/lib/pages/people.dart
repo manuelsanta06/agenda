@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../widgets/searchBar.dart';
 
 class chofer{
@@ -6,19 +7,10 @@ class chofer{
   String name;
   String dni;
   String mobileNumber;
+  Container? def;
   chofer({required this.name,this.dni="",this.mobileNumber="",this.picture}){
     if(picture==null){
-    }
-  }
-
-  Widget avatarWidget() {
-    if (picture != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(width: 72, height: 72, child: picture),
-      );
-    } else {
-      return Container(
+      def=Container(
         width: 72,
         height: 72,
         decoration: BoxDecoration(
@@ -42,12 +34,22 @@ class chofer{
     }
   }
 
+  Widget avatarWidget() {
+    if (picture != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(width: 72, height: 72, child: picture),
+      );
+    }else
+        return def!;
+  }
+
   Widget toWidget(BuildContext context, VoidCallback onChanged, VoidCallback onRemove){
     return GestureDetector(
       onTap: null,
       onLongPress: null,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 5),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white12,
@@ -66,12 +68,6 @@ class chofer{
                     name,
                     style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w600,),
                   ),
-                  //const SizedBox(height: 4),
-                  //Text(
-                  //  dni,
-                  //  style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                  //),
-                  //const SizedBox(height: 8),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -114,6 +110,105 @@ class chofer{
   }
 }
 
+Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",String mobileNumberD=""}){
+  final nameC = TextEditingController(text: nameD);
+  final dniC = TextEditingController(text: dniD);
+  final mobileNumberC = TextEditingController(text: mobileNumberD);
+
+  return showModalBottomSheet<chofer>(
+    context: context,
+    isScrollControlled: true,
+    builder: (BuildContext context){
+      return AnimatedPadding(
+        duration: const Duration(milliseconds: 150),
+        padding: EdgeInsets.only(
+          left: 15,right: 15,
+          top: 15,bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Nombre completo"),
+            TextField(
+              textCapitalization: TextCapitalization.words,
+              controller: nameC,
+            ),
+            
+            const SizedBox(height: 8),
+            const Text("DNI"),
+            TextField(
+              keyboardType: TextInputType.number,
+              controller:dniC,
+            ),
+            
+            const SizedBox(height: 8),
+            const Text("Telefono"),
+            TextField(
+              keyboardType: TextInputType.phone,
+              controller:mobileNumberC,
+            ),
+            
+            const SizedBox(height: 8),
+            const Text("Imagen"),
+            GestureDetector(
+              onTap: (){},
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFF94A3B8), style: BorderStyle.solid, width: 2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  "Clic para subir una foto",
+                  style: TextStyle(color: Color(0xFF94A3B8)),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child:OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF94A3B8),
+                  side: const BorderSide(color: Color(0xFF334155)),
+                  padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: (){},
+                child: const Text(
+                  "Importar desde Contactos",
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child:ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: peoplePage.mainColor,
+                  padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: (){},
+                child: const Text(
+                  "Guardar",
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      );
+    }
+  );
+}
+
 List<chofer> choferes=[                                                 
     chofer(name:"victor",dni:"12345678",mobileNumber:"1234567890"),
     chofer(name:"Gustavo",dni:"12345678",mobileNumber:"1234567890"),
@@ -132,8 +227,6 @@ class peoplePage extends StatefulWidget {
 
 class _peoplePageState extends State<peoplePage>{
   String searchQuery = "";
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -169,8 +262,8 @@ class _peoplePageState extends State<peoplePage>{
       ),),
       floatingActionButton: FloatingActionButton(
         onPressed:() async {
-          //final nuevo = await _showAddColectivoSheet(context);
-          //if (nuevo != null)setState(() {choferes.add(nuevo);});
+          final nuevo = await getChofer(context);
+          if (nuevo != null)setState(() {choferes.add(nuevo);});
         },
         backgroundColor: peoplePage.mainColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),

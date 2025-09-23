@@ -130,7 +130,7 @@ class colectivo{
           ],
         );
       },
-      );
+    );
   }
 
   Future<void> inputFuelDialog(BuildContext context, VoidCallback onChanged){
