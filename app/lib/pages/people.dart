@@ -1,14 +1,18 @@
+import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../widgets/searchBar.dart';
+import '../widgets/imageImput.dart';
+
 
 class chofer{
   Image? picture;
   String name;
+  String surename;
   String dni;
   String mobileNumber;
   Container? def;
-  chofer({required this.name,this.dni="",this.mobileNumber="",this.picture}){
+
+  chofer({this.name="",this.surename="",required this.dni,this.mobileNumber="",this.picture}){
     if(picture==null){
       def=Container(
         width: 72,
@@ -23,7 +27,7 @@ class chofer{
         ),
         alignment: Alignment.center,
         child: Text(
-          name.isNotEmpty ? name[0].toUpperCase() : "?",
+          (name.isNotEmpty?name[0]:"")+(surename.isNotEmpty?surename[0].toLowerCase():""),
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -65,7 +69,7 @@ class chofer{
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    name,
+                    name.split(" ").first+" "+surename.split(" ").first,
                     style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w600,),
                   ),
                   Column(
@@ -110,8 +114,9 @@ class chofer{
   }
 }
 
-Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",String mobileNumberD=""}){
+Future<chofer?> getChofer(BuildContext context,{String nameD="",String surNameD="",String dniD="",String mobileNumberD="",Image? pictureD}){
   final nameC = TextEditingController(text: nameD);
+  final surNameC = TextEditingController(text: surNameD);
   final dniC = TextEditingController(text: dniD);
   final mobileNumberC = TextEditingController(text: mobileNumberD);
 
@@ -119,7 +124,7 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",S
     context: context,
     isScrollControlled: true,
     builder: (BuildContext context){
-      return AnimatedPadding(
+      return StatefulBuilder(builder: (BuildContext context, StateSetter setState){return Container(child:AnimatedPadding(
         duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.only(
           left: 15,right: 15,
@@ -129,14 +134,26 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",S
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text("Nombre completo"),
-            TextField(
-              textCapitalization: TextCapitalization.words,
-              controller: nameC,
+            Row(
+              children: [
+                Expanded(child:TextField(
+                  decoration: InputDecoration(hintText: "Nombres/s"),
+                  textCapitalization: TextCapitalization.words,
+                  controller: nameC,
+                ),),
+                const SizedBox(width: 8),
+                Expanded(child:TextField(
+                  decoration: InputDecoration(hintText: "Apellido/s"),
+                  textCapitalization: TextCapitalization.words,
+                  controller: surNameC,
+                ),),
+              ],
             ),
             
             const SizedBox(height: 8),
             const Text("DNI"),
             TextField(
+              decoration: InputDecoration(hintText: "12345678"),
               keyboardType: TextInputType.number,
               controller:dniC,
             ),
@@ -144,6 +161,7 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",S
             const SizedBox(height: 8),
             const Text("Telefono"),
             TextField(
+              decoration: InputDecoration(hintText: "1234567890"),
               keyboardType: TextInputType.phone,
               controller:mobileNumberC,
             ),
@@ -151,12 +169,18 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",S
             const SizedBox(height: 8),
             const Text("Imagen"),
             GestureDetector(
-              onTap: (){},
+              onTap: ()async{
+                pictureD=await pickImage(context,[CropAspectRatioPreset.square]);
+                setState((){});
+              },
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFF94A3B8), style: BorderStyle.solid, width: 2),
+                  border: Border.all(
+                    color: pictureD==null?Color(0xFF94A3B8):Colors.greenAccent,
+                    style: BorderStyle.solid, width: 2
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 alignment: Alignment.center,
@@ -167,7 +191,7 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",S
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 15),
             SizedBox(
               width: double.infinity,
               child:OutlinedButton(
@@ -185,7 +209,7 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",S
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             SizedBox(
               width: double.infinity,
               child:ElevatedButton(
@@ -194,7 +218,17 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",S
                   padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: (){},
+                onPressed: (){
+                  if(dniC.text.isNotEmpty){
+                    Navigator.of(context).pop(chofer(
+                        name: nameC.text,
+                        surename: surNameC.text,
+                        dni: dniC.text,
+                        mobileNumber: mobileNumberC.text,
+                        picture: pictureD,
+                    ));
+                  }
+                },
                 child: const Text(
                   "Guardar",
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
@@ -204,14 +238,14 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String dniD="",S
             const SizedBox(height: 20),
           ],
         ),
-      );
+      ));});
     }
   );
 }
 
 List<chofer> choferes=[                                                 
     chofer(name:"victor",dni:"12345678",mobileNumber:"1234567890"),
-    chofer(name:"Gustavo",dni:"12345678",mobileNumber:"1234567890"),
+    chofer(name:"Gustavo",dni:"12345678",mobileNumber:"1234567890",picture: Image(image:NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'))),
     chofer(name:"Esteban",dni:"12345678",mobileNumber:"1234567890"),
     chofer(name:"Luis",dni:"12345678",mobileNumber:"1234567890"),
     chofer(name:"Lucas",dni:"12345678",mobileNumber:"1234567890"),
@@ -231,11 +265,12 @@ class _peoplePageState extends State<peoplePage>{
   @override
   Widget build(BuildContext context) {
     //filtering the busses
-    final filtered;
+    var filtered=[];
     if(searchQuery!=""){
       filtered = choferes.where((c) {
         return c.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
             c.dni.toLowerCase().contains(searchQuery.toLowerCase()) ||
+            c.surename.toLowerCase().contains(searchQuery.toLowerCase()) ||
             c.mobileNumber.toString().contains(searchQuery);
       }).toList();
     }
