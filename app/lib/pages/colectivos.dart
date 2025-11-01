@@ -14,12 +14,12 @@ bool isYesterday(DateTime date) {
     date.year == yesterday.year;
 }
 
-Future<colectivo?> _showAddColectivoSheet(BuildContext context,{String? nameD="",String? plateD="",String? internD=""}) async{
+Future<Colectivo?> _showAddColectivoSheet(BuildContext context,{String? nameD="",String? plateD="",String? internD=""}) async{
   final nameC = TextEditingController(text: nameD);
   final plateC = TextEditingController(text: plateD);
   final internC = TextEditingController(text: internD);
 
-  return await showModalBottomSheet<colectivo>(
+  return await showModalBottomSheet<Colectivo>(
     context: context,
     isScrollControlled: true,
     builder: (BuildContext context) {
@@ -61,8 +61,8 @@ Future<colectivo?> _showAddColectivoSheet(BuildContext context,{String? nameD=""
                     return;
                   }
                   final nuevo = internC.text.isEmpty
-                      ? colectivo(name: nameC.text, plate: plateC.text)
-                      : colectivo(name: nameC.text,
+                      ? Colectivo(name: nameC.text, plate: plateC.text)
+                      : Colectivo(name: nameC.text,
                         plate: plateC.text,
                         number: int.tryParse(internC.text));
                   Navigator.pop(context, nuevo);
@@ -86,20 +86,20 @@ class fuelInfo{
 }
 
 //there HAS to be a plate, 
-class colectivo{
+class Colectivo{
   String plate;
   String name;
   int? number;
   fuelInfo fuel;
 
-  colectivo({this.name="",required this.plate,this.number})
+  Colectivo({this.name="",required this.plate,this.number})
       :fuel=fuelInfo(){
         plate=plate.toUpperCase();
       }
-  colectivo.copy(colectivo otro)
+  Colectivo.copy(Colectivo otro)
       :name=otro.name,plate=otro.plate,number=otro.number,fuel=fuelInfo.copy(otro.fuel);
 
-  void copyFrom(colectivo? otro){
+  void copyFrom(Colectivo? otro){
     if(otro==null)return;
     name=otro.name;
     plate=otro.plate;
@@ -111,7 +111,7 @@ class colectivo{
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Eliminar colectivo?"),
+          title: const Text("Eliminar Colectivo?"),
           content: Text("¿Seguro que queres eliminar '${name==""?plate:name}'?"),
           actions: [
             TextButton(
@@ -212,12 +212,12 @@ class colectivo{
   }
 }
 
-List<colectivo> colectivos=[                                                 
-    colectivo(name:"primero" ,plate:"primeroP" ,number: 1),
-    colectivo(name:"segundo" ,plate:"segundoP" ,number: 2),
-    colectivo(name:"tercero" ,plate:"terceroP" ,number: 3),
-    colectivo(name:"cuarto" ,plate:"cuartoP" ,number: 4),
-    colectivo(name:"" ,plate:"LBA 074" ,number: 5),
+List<Colectivo> colectivos=[                                                 
+    Colectivo(name:"primero" ,plate:"primeroP" ,number: 1),
+    Colectivo(name:"segundo" ,plate:"segundoP" ,number: 2),
+    Colectivo(name:"tercero" ,plate:"terceroP" ,number: 3),
+    Colectivo(name:"cuarto" ,plate:"cuartoP" ,number: 4),
+    Colectivo(name:"" ,plate:"LBA 074" ,number: 5),
 ];
 
 class colectivosPage extends StatefulWidget {
@@ -230,8 +230,6 @@ class colectivosPage extends StatefulWidget {
 
 class _colectivosPageState extends State<colectivosPage>{
   String searchQuery = "";
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -271,9 +269,8 @@ class _colectivosPageState extends State<colectivosPage>{
           if (nuevo != null)setState(() {colectivos.add(nuevo);});
         },
         backgroundColor: colectivosPage.mainColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         child:Icon(Icons.add),
       ),
-      );
+    );
   }
 }

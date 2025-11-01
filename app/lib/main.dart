@@ -96,8 +96,8 @@ class _MyAppState extends State<MyApp>{
             ),
             BottomNavigationBarItem(
               backgroundColor: tripsPage.mainColor,
-              icon: Icon(Icons.add_road),
-              label: 'recorridos',
+              icon: Icon(Icons.question_mark),
+              label: '???',
             ),
             BottomNavigationBarItem(
               backgroundColor: colectivosPage.mainColor,

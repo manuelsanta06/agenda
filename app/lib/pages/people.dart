@@ -4,7 +4,7 @@ import '../widgets/searchBar.dart';
 import '../widgets/imageImput.dart';
 
 
-class chofer{
+class Chofer{
   Image? picture;
   String name;
   String surename;
@@ -12,7 +12,7 @@ class chofer{
   String mobileNumber;
   Container? def;
 
-  chofer({this.name="",this.surename="",required this.dni,this.mobileNumber="",this.picture}){
+  Chofer({this.name="",this.surename="",required this.dni,this.mobileNumber="",this.picture}){
     if(picture==null){
       def=Container(
         width: 72,
@@ -114,13 +114,13 @@ class chofer{
   }
 }
 
-Future<chofer?> getChofer(BuildContext context,{String nameD="",String surNameD="",String dniD="",String mobileNumberD="",Image? pictureD}){
+Future<Chofer?> getChofer(BuildContext context,{String nameD="",String surNameD="",String dniD="",String mobileNumberD="",Image? pictureD}){
   final nameC = TextEditingController(text: nameD);
   final surNameC = TextEditingController(text: surNameD);
   final dniC = TextEditingController(text: dniD);
   final mobileNumberC = TextEditingController(text: mobileNumberD);
 
-  return showModalBottomSheet<chofer>(
+  return showModalBottomSheet<Chofer>(
     context: context,
     isScrollControlled: true,
     builder: (BuildContext context){
@@ -157,7 +157,6 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String surNameD=
               keyboardType: TextInputType.number,
               controller:dniC,
             ),
-            
             const SizedBox(height: 8),
             const Text("Telefono"),
             TextField(
@@ -178,7 +177,7 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String surNameD=
                 padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: pictureD==null?Color(0xFF94A3B8):Colors.greenAccent,
+                    color: pictureD==null?Color(0xFF94A3B8):Colors.green,
                     style: BorderStyle.solid, width: 2
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -220,7 +219,7 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String surNameD=
                 ),
                 onPressed: (){
                   if(dniC.text.isNotEmpty){
-                    Navigator.of(context).pop(chofer(
+                    Navigator.of(context).pop(Chofer(
                         name: nameC.text,
                         surename: surNameC.text,
                         dni: dniC.text,
@@ -243,12 +242,12 @@ Future<chofer?> getChofer(BuildContext context,{String nameD="",String surNameD=
   );
 }
 
-List<chofer> choferes=[                                                 
-    chofer(name:"victor",dni:"12345678",mobileNumber:"1234567890"),
-    chofer(name:"Gustavo",dni:"12345678",mobileNumber:"1234567890",picture: Image(image:NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'))),
-    chofer(name:"Esteban",dni:"12345678",mobileNumber:"1234567890"),
-    chofer(name:"Luis",dni:"12345678",mobileNumber:"1234567890"),
-    chofer(name:"Lucas",dni:"12345678",mobileNumber:"1234567890"),
+List<Chofer> choferes=[                                                 
+    Chofer(name:"victor",dni:"12345678",mobileNumber:"1234567890"),
+    Chofer(name:"Gustavo",dni:"12345678",mobileNumber:"1234567890",picture: Image(image:NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'))),
+    Chofer(name:"Esteban",dni:"12345678",mobileNumber:"1234567890"),
+    Chofer(name:"Luis",dni:"12345678",mobileNumber:"1234567890"),
+    Chofer(name:"Lucas",dni:"12345678",mobileNumber:"1234567890"),
 ];
 
 class peoplePage extends StatefulWidget {
@@ -301,7 +300,6 @@ class _peoplePageState extends State<peoplePage>{
           if (nuevo != null)setState(() {choferes.add(nuevo);});
         },
         backgroundColor: peoplePage.mainColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         child:Icon(Icons.add),
       ),
     );
