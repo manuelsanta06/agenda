@@ -1,3 +1,4 @@
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/material.dart';
 import 'pages/home.dart';
 import 'pages/colectivos.dart';
@@ -8,7 +9,7 @@ import 'pages/trips.dart';
 bool darkMode=true;
 
 void main(){
-  runApp(const MyApp(),);
+  initializeDateFormatting().then((_) => runApp(MyApp()));
 }
 
 class MyApp extends StatefulWidget {

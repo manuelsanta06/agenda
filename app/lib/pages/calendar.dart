@@ -1,44 +1,58 @@
 import 'package:flutter/material.dart';
 import '../widgets/searchBar.dart';
-import '../widgets/utils.dart';
+import '../widgets/buttons.dart';
 import 'colectivos.dart';
 import 'people.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 enum WeekDays{
   NONE,
-  LUNES,
-  MARTES,
-  MIERCOLES,
-  JUEVES,
-  VIERNES,
-  SABADO,
-  DOMINGO
+  MONDAY,
+  TUESDAY,
+  WEDNESDAY,
+  THURSDAY,
+  FRIDAY,
+  SATURDAY,
+  SUNDAY,
+}
+
+enum EventTypes{
+  NONE,
+  EVENT,
+  JOURNEY
 }
 
 class Stop{
   String name;
   DateTime? end;
 
-  Stop({required this.name,});
+  Stop({required this.name,this.end});
 }
 
 class Event{
-  bool repeat=false;
-  String? name;
+  String name="";
+  
   DateTime? start;
+  DateTime? end;
+
+  bool repeat=false;
+
   List<Stop> stops=[];
   List<WeekDays> days=[];
   List<Chofer> people=[];
   List<Colectivo> buses=[];
 
-  Event(){}
-}
+  EventTypes  type=EventTypes.NONE;
 
-class Trip extends Event{
-  DateTime? end;
+
+  Event(){}
+
+  @override
+  String toString() => name;
 }
 
 final List<Event> events = [];
+
 
 
 class calendarPage extends StatefulWidget {
@@ -48,68 +62,22 @@ class calendarPage extends StatefulWidget {
   @override
   State<calendarPage> createState() => _calendarPageState();
 }
-class _calendarPageState extends State<calendarPage> with TickerProviderStateMixin{
+
+
+class _calendarPageState extends State<calendarPage>{
   String searchQuery = "";
-  bool _isMenuOpen = false;
 
-  // main animation manager 
-  late AnimationController _animationController;
-
-  // specific animations
-  late Animation<double> _scrimFadeAnimation;
-  late Animation<double> _buttonsFadeAnimation;
-  late Animation<Color?> _fabColorAnimation;
-  late Animation<Color?> _fabIconColorAnimation;
-  late Animation<double> _fabRotationAnimation;
+  DateTime _focusedDay = DateTime.now(), _selectedDay=DateTime.now();
+  CalendarFormat _calendarFormat=CalendarFormat.week;
 
   @override
   void initState() {
     super.initState();
-    // general animation (ej. 200ms)
-    _animationController = AnimationController(
-      vsync:this,
-      duration:const Duration(milliseconds:200),
-    );
-    // (scrim)
-    _scrimFadeAnimation = Tween<double>(begin:0.0, end:1.0).animate(
-      CurvedAnimation(parent:_animationController, curve:Curves.easeIn),
-    );
-    // small-buttons appearing animation
-    _buttonsFadeAnimation = Tween<double>(begin:0.0, end:1.0).animate(
-      CurvedAnimation(parent:_animationController, curve:Curves.easeIn),
-    );
-    // color animation for the main FAB
-    _fabColorAnimation = ColorTween(
-      begin:calendarPage.mainColor,
-      end:Colors.white,
-    ).animate(_animationController);
-    // color animation for the main FAB's icon
-    _fabIconColorAnimation = ColorTween(
-      begin:Colors.white,
-      end:calendarPage.mainColor,
-    ).animate(_animationController);
-    // icon rotation
-    _fabRotationAnimation = Tween<double>(begin:0.0, end:0.125).animate(
-      CurvedAnimation(parent:_animationController, curve:Curves.linear),
-    );
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
     super.dispose();
-  }
-
-  // Funcion para abrir/cerrar el menu
-  void _toggleMenu() {
-    setState(() {
-      _isMenuOpen = !_isMenuOpen;
-      if (_isMenuOpen) {
-        _animationController.forward();
-      } else {
-        _animationController.reverse();
-      }
-    });
   }
 
   void _showCreateTripSheet(bool trip) async {
@@ -133,60 +101,6 @@ class _calendarPageState extends State<calendarPage> with TickerProviderStateMix
     }
   }
   
-  /// builds the small buttons
-  Widget _buildButtonColumn() {
-    return FadeTransition(
-      opacity:_buttonsFadeAnimation,
-      child:SlideTransition(
-        position:Tween<Offset>(
-          begin:const Offset(0, 0.5),
-          end:Offset.zero,
-        ).animate(
-        CurvedAnimation(parent:_animationController, curve:Curves.easeOut)),
-        child:Column(
-          mainAxisAlignment:MainAxisAlignment.end,
-          crossAxisAlignment:CrossAxisAlignment.end,
-          children:[
-            buildMiniFab(
-              icon:Icons.directions_bus,
-              label:"Viaje",
-              onPressed:() {
-                _toggleMenu();
-                _showCreateTripSheet(true);
-              },
-            ),
-            const SizedBox(height:8),
-            buildMiniFab(
-              icon:Icons.task_alt,
-              label:"Recordatorio",
-              onPressed:() {
-                _toggleMenu();
-                _showCreateTripSheet(false);
-              },
-            ),
-            const SizedBox(height:16), 
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMainFab() {
-    return AnimatedBuilder(
-      animation:_animationController,
-      builder:(context, child) {
-        return FloatingActionButton(
-          onPressed:_toggleMenu,
-          backgroundColor:_fabColorAnimation.value,
-          child:RotationTransition(
-            turns:_fabRotationAnimation,
-            child:Icon(Icons.add,color:_fabIconColorAnimation.value),
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,29 +110,83 @@ class _calendarPageState extends State<calendarPage> with TickerProviderStateMix
           // main page
           SafeArea(child:Column(children:[
             mySearchBar(onChanged:(value){setState((){searchQuery = value;});},),
+            TableCalendar(
+              focusedDay: _focusedDay,
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              locale: 'es_ES',
+              daysOfWeekHeight: 20,
+              availableCalendarFormats:{CalendarFormat.month:'Month',CalendarFormat.week:'Week'},
+              
+              //styling
+              calendarFormat: _calendarFormat,
+              headerStyle: const HeaderStyle(
+                formatButtonVisible: false, 
+                titleCentered: true,
+              ),
+              calendarStyle: CalendarStyle(
+                selectedDecoration: BoxDecoration(
+                  color: calendarPage.mainColor, 
+                  shape: BoxShape.circle,
+                ),
+                todayDecoration: BoxDecoration(
+                  color: calendarPage.mainColor.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+              ),
+
+              //functionality
+              onFormatChanged:(format){
+                setState((){_calendarFormat=format;});
+              },
+              selectedDayPredicate:(day){
+                return isSameDay(_selectedDay,day);
+              },
+
+              onDaySelected: (selectedDay, focusedDay) {
+                setState((){
+                  _selectedDay=selectedDay;
+                  _focusedDay=focusedDay;
+                });
+                // filtrar lista de viajes aca?
+                // _cargarViajesDelDia(selectedDay);
+              },
+
+              onPageChanged:(focusedDay){_focusedDay=focusedDay;},
+            ),
+
+            const SizedBox(height: 8.0),
+
+            // 2. La lista de eventos (usando Expanded para llenar el resto de pantalla)
+            //Expanded(
+            //  child: ListView.builder(
+            //    itemCount: _selectedEvents.length,
+            //    itemBuilder: (context, index) {
+            //      final event = _selectedEvents[index];
+            //      return _buildEventCard(event); // Aquí diseñas la tarjeta del HTML
+            //    },
+            //  ),
+            //),
+
           ],),),
 
-          // black background (scrim)
-          if (_isMenuOpen)FadeTransition(
-            opacity:_scrimFadeAnimation,
-            child:GestureDetector(
-              onTap:_toggleMenu,
-              child:Container(
-                color:Colors.black.withOpacity(0.5),
-              ),
-            ),
-          ),
-
           // Floatting buttons
-          Positioned(
+          Positioned.fill(
             bottom:16.0,
             right:16.0,
-            child:Column(
-              mainAxisAlignment:MainAxisAlignment.end,
-              crossAxisAlignment:CrossAxisAlignment.end,
-              children:[
-              if (_isMenuOpen) _buildButtonColumn(),
-              _buildMainFab(),
+            child:ExpandableFab(
+              mainColor: calendarPage.mainColor,
+              children: [
+                buildMiniFab(
+                  icon: Icons.directions_bus,
+                  label: "Viaje",
+                  onPressed: (){_showCreateTripSheet(true);},
+                ),
+                buildMiniFab(
+                  icon: Icons.task_alt,
+                  label: "Recordatorio",
+                  onPressed:(){_showCreateTripSheet(false);},
+                ),
               ],
             ),
           ),
@@ -242,6 +210,8 @@ class CreateTripSheet extends StatefulWidget {
 class _CreateTripSheetState extends State<CreateTripSheet> {
   final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  Set<WeekDays> weekDays=<WeekDays>{WeekDays.MONDAY};
+  bool repeat=false;
 
   final List<TextEditingController> _stopControllers = [
     TextEditingController(), // Parada inicial
@@ -262,7 +232,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
   // TODO: hacer que el trip sea global
   void _onSave() {
     if (_formKey.currentState?.validate() ?? false) {
-      final newTrip = Trip()
+      final newTrip = Event()
           ..name = _nameController.text
           ..start = DateTime.now() // (Deberías añadir un DatePicker)
           ..stops = _stopControllers
@@ -333,6 +303,44 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
               Row(),
 
               // TODO: fecha y hora (pensar como)
+              Row(
+                children: [
+                  Expanded(child: Text(
+                    "Repetir?",
+                    style:TextStyle(fontSize:16, fontWeight:repeat?FontWeight.bold:FontWeight.normal),
+                  )),
+                  Switch(
+                    value: repeat,
+                    activeThumbColor: Colors.white,
+                    activeTrackColor:calendarPage.mainColor,
+                    onChanged:(bool value){
+                      setState(() {
+                        repeat=value;
+                      });
+                    }
+                  )
+                ],
+              ),
+              if(repeat)
+              SegmentedButton<WeekDays>(
+                segments: const <ButtonSegment<WeekDays>>[
+                  ButtonSegment<WeekDays>(value: WeekDays.MONDAY,label: Text("LU")),
+                  ButtonSegment<WeekDays>(value: WeekDays.TUESDAY,label: Text("MA")),
+                  ButtonSegment<WeekDays>(value: WeekDays.WEDNESDAY,label: Text("MI")),
+                  ButtonSegment<WeekDays>(value: WeekDays.THURSDAY,label: Text("JU")),
+                  ButtonSegment<WeekDays>(value: WeekDays.FRIDAY,label: Text("VI")),
+                  ButtonSegment<WeekDays>(value: WeekDays.SATURDAY,label: Text("SA")),
+                  ButtonSegment<WeekDays>(value: WeekDays.SUNDAY,label: Text("DO")),
+                ],
+                selected: weekDays,
+                onSelectionChanged: (Set<WeekDays> newSelection) {
+                  setState(() {
+                    weekDays = newSelection;
+                  });
+                },
+                multiSelectionEnabled: true,
+                showSelectedIcon: false,
+              ),
 
               // STOPS
               Text(
