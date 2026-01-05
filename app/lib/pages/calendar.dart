@@ -4,6 +4,7 @@ import '../widgets/buttons.dart';
 import 'colectivos.dart';
 import 'people.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:uuid/uuid.dart';
 
 enum WeekDays{
   NONE,
@@ -40,7 +41,7 @@ class Event{
   List<Stop> stops=[];
   List<WeekDays> days=[];
   List<Chofer> people=[];
-  List<Colectivo> buses=[];
+  //List<Colectivo> buses=[];
 
   EventTypes  type=EventTypes.NONE;
 

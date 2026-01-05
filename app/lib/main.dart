@@ -1,5 +1,9 @@
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'database/app_database.dart';
+
 import 'pages/home.dart';
 import 'pages/colectivos.dart';
 import 'pages/people.dart';
@@ -9,7 +13,14 @@ import 'pages/trips.dart';
 bool darkMode=true;
 
 void main(){
-  initializeDateFormatting().then((_) => runApp(MyApp()));
+  final database = AppDatabase();
+  initializeDateFormatting().then((_) => runApp(
+    Provider<AppDatabase>.value(
+      value: database,
+      child: const MyApp(),
+      //dispose: (context, db) => db.close(), 
+    ),
+  ));
 }
 
 class MyApp extends StatefulWidget {
