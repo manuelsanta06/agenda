@@ -22,10 +22,9 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
   late final GeneratedColumn<String> dni = GeneratedColumn<String>(
     'dni',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
   @override
@@ -42,6 +41,15 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
   @override
   late final GeneratedColumn<String> surname = GeneratedColumn<String>(
     'surname',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _aliasMeta = const VerificationMeta('alias');
+  @override
+  late final GeneratedColumn<String> alias = GeneratedColumn<String>(
+    'alias',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -90,6 +98,7 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
     dni,
     name,
     surname,
+    alias,
     mobileNumber,
     picturePath,
     is_active,
@@ -116,8 +125,6 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
         _dniMeta,
         dni.isAcceptableOrUnknown(data['dni']!, _dniMeta),
       );
-    } else if (isInserting) {
-      context.missing(_dniMeta);
     }
     if (data.containsKey('name')) {
       context.handle(
@@ -129,6 +136,12 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
       context.handle(
         _surnameMeta,
         surname.isAcceptableOrUnknown(data['surname']!, _surnameMeta),
+      );
+    }
+    if (data.containsKey('alias')) {
+      context.handle(
+        _aliasMeta,
+        alias.isAcceptableOrUnknown(data['alias']!, _aliasMeta),
       );
     }
     if (data.containsKey('mobile_number')) {
@@ -171,7 +184,7 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
       dni: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}dni'],
-      )!,
+      ),
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -179,6 +192,10 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
       surname: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}surname'],
+      ),
+      alias: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}alias'],
       ),
       mobileNumber: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -203,17 +220,19 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
 
 class Chofere extends DataClass implements Insertable<Chofere> {
   final String id;
-  final String dni;
+  final String? dni;
   final String? name;
   final String? surname;
+  final String? alias;
   final String? mobileNumber;
   final String? picturePath;
   final bool is_active;
   const Chofere({
     required this.id,
-    required this.dni,
+    this.dni,
     this.name,
     this.surname,
+    this.alias,
     this.mobileNumber,
     this.picturePath,
     required this.is_active,
@@ -222,12 +241,17 @@ class Chofere extends DataClass implements Insertable<Chofere> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    map['dni'] = Variable<String>(dni);
+    if (!nullToAbsent || dni != null) {
+      map['dni'] = Variable<String>(dni);
+    }
     if (!nullToAbsent || name != null) {
       map['name'] = Variable<String>(name);
     }
     if (!nullToAbsent || surname != null) {
       map['surname'] = Variable<String>(surname);
+    }
+    if (!nullToAbsent || alias != null) {
+      map['alias'] = Variable<String>(alias);
     }
     if (!nullToAbsent || mobileNumber != null) {
       map['mobile_number'] = Variable<String>(mobileNumber);
@@ -242,11 +266,14 @@ class Chofere extends DataClass implements Insertable<Chofere> {
   ChoferesCompanion toCompanion(bool nullToAbsent) {
     return ChoferesCompanion(
       id: Value(id),
-      dni: Value(dni),
+      dni: dni == null && nullToAbsent ? const Value.absent() : Value(dni),
       name: name == null && nullToAbsent ? const Value.absent() : Value(name),
       surname: surname == null && nullToAbsent
           ? const Value.absent()
           : Value(surname),
+      alias: alias == null && nullToAbsent
+          ? const Value.absent()
+          : Value(alias),
       mobileNumber: mobileNumber == null && nullToAbsent
           ? const Value.absent()
           : Value(mobileNumber),
@@ -264,9 +291,10 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Chofere(
       id: serializer.fromJson<String>(json['id']),
-      dni: serializer.fromJson<String>(json['dni']),
+      dni: serializer.fromJson<String?>(json['dni']),
       name: serializer.fromJson<String?>(json['name']),
       surname: serializer.fromJson<String?>(json['surname']),
+      alias: serializer.fromJson<String?>(json['alias']),
       mobileNumber: serializer.fromJson<String?>(json['mobileNumber']),
       picturePath: serializer.fromJson<String?>(json['picturePath']),
       is_active: serializer.fromJson<bool>(json['is_active']),
@@ -277,9 +305,10 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'dni': serializer.toJson<String>(dni),
+      'dni': serializer.toJson<String?>(dni),
       'name': serializer.toJson<String?>(name),
       'surname': serializer.toJson<String?>(surname),
+      'alias': serializer.toJson<String?>(alias),
       'mobileNumber': serializer.toJson<String?>(mobileNumber),
       'picturePath': serializer.toJson<String?>(picturePath),
       'is_active': serializer.toJson<bool>(is_active),
@@ -288,17 +317,19 @@ class Chofere extends DataClass implements Insertable<Chofere> {
 
   Chofere copyWith({
     String? id,
-    String? dni,
+    Value<String?> dni = const Value.absent(),
     Value<String?> name = const Value.absent(),
     Value<String?> surname = const Value.absent(),
+    Value<String?> alias = const Value.absent(),
     Value<String?> mobileNumber = const Value.absent(),
     Value<String?> picturePath = const Value.absent(),
     bool? is_active,
   }) => Chofere(
     id: id ?? this.id,
-    dni: dni ?? this.dni,
+    dni: dni.present ? dni.value : this.dni,
     name: name.present ? name.value : this.name,
     surname: surname.present ? surname.value : this.surname,
+    alias: alias.present ? alias.value : this.alias,
     mobileNumber: mobileNumber.present ? mobileNumber.value : this.mobileNumber,
     picturePath: picturePath.present ? picturePath.value : this.picturePath,
     is_active: is_active ?? this.is_active,
@@ -309,6 +340,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
       dni: data.dni.present ? data.dni.value : this.dni,
       name: data.name.present ? data.name.value : this.name,
       surname: data.surname.present ? data.surname.value : this.surname,
+      alias: data.alias.present ? data.alias.value : this.alias,
       mobileNumber: data.mobileNumber.present
           ? data.mobileNumber.value
           : this.mobileNumber,
@@ -326,6 +358,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
           ..write('dni: $dni, ')
           ..write('name: $name, ')
           ..write('surname: $surname, ')
+          ..write('alias: $alias, ')
           ..write('mobileNumber: $mobileNumber, ')
           ..write('picturePath: $picturePath, ')
           ..write('is_active: $is_active')
@@ -334,8 +367,16 @@ class Chofere extends DataClass implements Insertable<Chofere> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, dni, name, surname, mobileNumber, picturePath, is_active);
+  int get hashCode => Object.hash(
+    id,
+    dni,
+    name,
+    surname,
+    alias,
+    mobileNumber,
+    picturePath,
+    is_active,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -344,6 +385,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
           other.dni == this.dni &&
           other.name == this.name &&
           other.surname == this.surname &&
+          other.alias == this.alias &&
           other.mobileNumber == this.mobileNumber &&
           other.picturePath == this.picturePath &&
           other.is_active == this.is_active);
@@ -351,9 +393,10 @@ class Chofere extends DataClass implements Insertable<Chofere> {
 
 class ChoferesCompanion extends UpdateCompanion<Chofere> {
   final Value<String> id;
-  final Value<String> dni;
+  final Value<String?> dni;
   final Value<String?> name;
   final Value<String?> surname;
+  final Value<String?> alias;
   final Value<String?> mobileNumber;
   final Value<String?> picturePath;
   final Value<bool> is_active;
@@ -363,6 +406,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     this.dni = const Value.absent(),
     this.name = const Value.absent(),
     this.surname = const Value.absent(),
+    this.alias = const Value.absent(),
     this.mobileNumber = const Value.absent(),
     this.picturePath = const Value.absent(),
     this.is_active = const Value.absent(),
@@ -370,20 +414,21 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
   });
   ChoferesCompanion.insert({
     required String id,
-    required String dni,
+    this.dni = const Value.absent(),
     this.name = const Value.absent(),
     this.surname = const Value.absent(),
+    this.alias = const Value.absent(),
     this.mobileNumber = const Value.absent(),
     this.picturePath = const Value.absent(),
     this.is_active = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       dni = Value(dni);
+  }) : id = Value(id);
   static Insertable<Chofere> custom({
     Expression<String>? id,
     Expression<String>? dni,
     Expression<String>? name,
     Expression<String>? surname,
+    Expression<String>? alias,
     Expression<String>? mobileNumber,
     Expression<String>? picturePath,
     Expression<bool>? is_active,
@@ -394,6 +439,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
       if (dni != null) 'dni': dni,
       if (name != null) 'name': name,
       if (surname != null) 'surname': surname,
+      if (alias != null) 'alias': alias,
       if (mobileNumber != null) 'mobile_number': mobileNumber,
       if (picturePath != null) 'picture_path': picturePath,
       if (is_active != null) 'is_active': is_active,
@@ -403,9 +449,10 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
 
   ChoferesCompanion copyWith({
     Value<String>? id,
-    Value<String>? dni,
+    Value<String?>? dni,
     Value<String?>? name,
     Value<String?>? surname,
+    Value<String?>? alias,
     Value<String?>? mobileNumber,
     Value<String?>? picturePath,
     Value<bool>? is_active,
@@ -416,6 +463,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
       dni: dni ?? this.dni,
       name: name ?? this.name,
       surname: surname ?? this.surname,
+      alias: alias ?? this.alias,
       mobileNumber: mobileNumber ?? this.mobileNumber,
       picturePath: picturePath ?? this.picturePath,
       is_active: is_active ?? this.is_active,
@@ -437,6 +485,9 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     }
     if (surname.present) {
       map['surname'] = Variable<String>(surname.value);
+    }
+    if (alias.present) {
+      map['alias'] = Variable<String>(alias.value);
     }
     if (mobileNumber.present) {
       map['mobile_number'] = Variable<String>(mobileNumber.value);
@@ -460,6 +511,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
           ..write('dni: $dni, ')
           ..write('name: $name, ')
           ..write('surname: $surname, ')
+          ..write('alias: $alias, ')
           ..write('mobileNumber: $mobileNumber, ')
           ..write('picturePath: $picturePath, ')
           ..write('is_active: $is_active, ')
@@ -2163,9 +2215,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 typedef $$ChoferesTableCreateCompanionBuilder =
     ChoferesCompanion Function({
       required String id,
-      required String dni,
+      Value<String?> dni,
       Value<String?> name,
       Value<String?> surname,
+      Value<String?> alias,
       Value<String?> mobileNumber,
       Value<String?> picturePath,
       Value<bool> is_active,
@@ -2174,9 +2227,10 @@ typedef $$ChoferesTableCreateCompanionBuilder =
 typedef $$ChoferesTableUpdateCompanionBuilder =
     ChoferesCompanion Function({
       Value<String> id,
-      Value<String> dni,
+      Value<String?> dni,
       Value<String?> name,
       Value<String?> surname,
+      Value<String?> alias,
       Value<String?> mobileNumber,
       Value<String?> picturePath,
       Value<bool> is_active,
@@ -2232,6 +2286,11 @@ class $$ChoferesTableFilterComposer
 
   ColumnFilters<String> get surname => $composableBuilder(
     column: $table.surname,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get alias => $composableBuilder(
+    column: $table.alias,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2305,6 +2364,11 @@ class $$ChoferesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get alias => $composableBuilder(
+    column: $table.alias,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get mobileNumber => $composableBuilder(
     column: $table.mobileNumber,
     builder: (column) => ColumnOrderings(column),
@@ -2341,6 +2405,9 @@ class $$ChoferesTableAnnotationComposer
 
   GeneratedColumn<String> get surname =>
       $composableBuilder(column: $table.surname, builder: (column) => column);
+
+  GeneratedColumn<String> get alias =>
+      $composableBuilder(column: $table.alias, builder: (column) => column);
 
   GeneratedColumn<String> get mobileNumber => $composableBuilder(
     column: $table.mobileNumber,
@@ -2410,9 +2477,10 @@ class $$ChoferesTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String> dni = const Value.absent(),
+                Value<String?> dni = const Value.absent(),
                 Value<String?> name = const Value.absent(),
                 Value<String?> surname = const Value.absent(),
+                Value<String?> alias = const Value.absent(),
                 Value<String?> mobileNumber = const Value.absent(),
                 Value<String?> picturePath = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
@@ -2422,6 +2490,7 @@ class $$ChoferesTableTableManager
                 dni: dni,
                 name: name,
                 surname: surname,
+                alias: alias,
                 mobileNumber: mobileNumber,
                 picturePath: picturePath,
                 is_active: is_active,
@@ -2430,9 +2499,10 @@ class $$ChoferesTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                required String dni,
+                Value<String?> dni = const Value.absent(),
                 Value<String?> name = const Value.absent(),
                 Value<String?> surname = const Value.absent(),
+                Value<String?> alias = const Value.absent(),
                 Value<String?> mobileNumber = const Value.absent(),
                 Value<String?> picturePath = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
@@ -2442,6 +2512,7 @@ class $$ChoferesTableTableManager
                 dni: dni,
                 name: name,
                 surname: surname,
+                alias: alias,
                 mobileNumber: mobileNumber,
                 picturePath: picturePath,
                 is_active: is_active,

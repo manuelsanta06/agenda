@@ -1,254 +1,13 @@
 import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../utilities/people.dart';
 import '../widgets/searchBar.dart';
 import '../widgets/imageImput.dart';
+import '../database/app_database.dart';
 
+typedef Chofer=Chofere;
 
-class Chofer{
-  Image? picture;
-  String name;
-  String surename;
-  String dni;
-  String mobileNumber;
-  Container? def;
-
-  Chofer({this.name="",this.surename="",required this.dni,this.mobileNumber="",this.picture}){
-    if(picture==null){
-      def=Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          gradient: const LinearGradient(
-            colors: [peoplePage.mainColor,Colors.pink],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          (name.isNotEmpty?name[0]:"")+(surename.isNotEmpty?surename[0].toLowerCase():""),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-        ),
-      );
-    }
-  }
-
-  Widget avatarWidget() {
-    if (picture != null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(width: 72, height: 72, child: picture),
-      );
-    }else
-        return def!;
-  }
-
-  Widget toWidget(BuildContext context, VoidCallback onChanged, VoidCallback onRemove){
-    return GestureDetector(
-      onTap: null,
-      onLongPress: null,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 5),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white12,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            avatarWidget(),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name.split(" ").first+" "+surename.split(" ").first,
-                    style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w600,),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _metaLine("DNI: $dni"),
-                      _metaLine("Tel: $mobileNumber"),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _metaLine(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: Row(
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            margin: const EdgeInsets.only(right: 8),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: peoplePage.mainColor,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-Future<Chofer?> getChofer(BuildContext context,{String nameD="",String surNameD="",String dniD="",String mobileNumberD="",Image? pictureD}){
-  final nameC = TextEditingController(text: nameD);
-  final surNameC = TextEditingController(text: surNameD);
-  final dniC = TextEditingController(text: dniD);
-  final mobileNumberC = TextEditingController(text: mobileNumberD);
-
-  return showModalBottomSheet<Chofer>(
-    context: context,
-    isScrollControlled: true,
-    builder: (BuildContext context){
-      return StatefulBuilder(builder: (BuildContext context, StateSetter setState){return Container(child:AnimatedPadding(
-        duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.only(
-          left: 15,right: 15,
-          top: 15,bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text("Nombre completo"),
-            Row(
-              children: [
-                Expanded(child:TextField(
-                  decoration: InputDecoration(hintText: "Nombres/s"),
-                  textCapitalization: TextCapitalization.words,
-                  controller: nameC,
-                ),),
-                const SizedBox(width: 8),
-                Expanded(child:TextField(
-                  decoration: InputDecoration(hintText: "Apellido/s"),
-                  textCapitalization: TextCapitalization.words,
-                  controller: surNameC,
-                ),),
-              ],
-            ),
-            
-            const SizedBox(height: 8),
-            const Text("DNI"),
-            TextField(
-              decoration: InputDecoration(hintText: "12345678"),
-              keyboardType: TextInputType.number,
-              controller:dniC,
-            ),
-            const SizedBox(height: 8),
-            const Text("Telefono"),
-            TextField(
-              decoration: InputDecoration(hintText: "1234567890"),
-              keyboardType: TextInputType.phone,
-              controller:mobileNumberC,
-            ),
-            
-            const SizedBox(height: 8),
-            const Text("Imagen"),
-            GestureDetector(
-              onTap: ()async{
-                pictureD=await pickImage(context,[CropAspectRatioPreset.square]);
-                setState((){});
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: pictureD==null?Color(0xFF94A3B8):Colors.green,
-                    style: BorderStyle.solid, width: 2
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  "Clic para subir una foto",
-                  style: TextStyle(color: Color(0xFF94A3B8)),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-            SizedBox(
-              width: double.infinity,
-              child:OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF94A3B8),
-                  side: const BorderSide(color: Color(0xFF334155)),
-                  padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: (){},
-                child: const Text(
-                  "Importar desde Contactos",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 5),
-            SizedBox(
-              width: double.infinity,
-              child:ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: peoplePage.mainColor,
-                  padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: (){
-                  if(dniC.text.isNotEmpty){
-                    Navigator.of(context).pop(Chofer(
-                        name: nameC.text,
-                        surename: surNameC.text,
-                        dni: dniC.text,
-                        mobileNumber: mobileNumberC.text,
-                        picture: pictureD,
-                    ));
-                  }
-                },
-                child: const Text(
-                  "Guardar",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ));});
-    }
-  );
-}
-
-List<Chofer> choferes=[                                                 
-    Chofer(name:"victor",dni:"12345678",mobileNumber:"1234567890"),
-    Chofer(name:"Gustavo",dni:"12345678",mobileNumber:"1234567890",picture: Image(image:NetworkImage('https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'))),
-    Chofer(name:"Esteban",dni:"12345678",mobileNumber:"1234567890"),
-    Chofer(name:"Luis",dni:"12345678",mobileNumber:"1234567890"),
-    Chofer(name:"Lucas",dni:"12345678",mobileNumber:"1234567890"),
-];
 
 class peoplePage extends StatefulWidget {
   const peoplePage({super.key});
@@ -260,44 +19,80 @@ class peoplePage extends StatefulWidget {
 
 class _peoplePageState extends State<peoplePage>{
   String searchQuery = "";
+  bool showInactives=false;
 
   @override
   Widget build(BuildContext context) {
-    //filtering the busses
-    var filtered=[];
-    if(searchQuery!=""){
-      filtered = choferes.where((c) {
-        return c.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            c.dni.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            c.surename.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            c.mobileNumber.toString().contains(searchQuery);
-      }).toList();
-    }
-    else{filtered=choferes;}
+    final db = Provider.of<AppDatabase>(context);
 
     return Scaffold(
       body:SafeArea(child: Column(
-          children: [
-            mySearchBar(onChanged: (value){setState((){searchQuery = value;});},),
-            Expanded(
-              child: ListView.builder(
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: filtered[index].toWidget(context,
-                      (){setState((){});},
-                      (){setState((){choferes.remove(filtered[index]);});},),
+        children: [
+          mySearchBar(onChanged: (value){setState((){searchQuery = value;});},),
+
+          Container(
+            margin:const EdgeInsets.symmetric(horizontal: 10),
+            child:Row(children: [
+              Expanded(child: Text(
+                "Mostrar inactivos",
+                style:TextStyle(fontSize:16, fontWeight:showInactives?FontWeight.bold:FontWeight.normal),
+              )),
+              Switch(
+                value: showInactives,
+                activeThumbColor: Colors.white,
+                activeTrackColor:peoplePage.mainColor,
+                onChanged:(bool value){
+                  setState((){showInactives=value;});
+                }
+              )
+            ])
+          ),
+
+          Expanded(
+            child: StreamBuilder<List<Chofere>>(
+              stream: db.select(db.choferes).watch(), 
+              builder:(context, snapshot){
+                if(snapshot.hasError){
+                  return Center(
+                    child: Text("Error: ${snapshot.error}\nperdon, pasale captura a manu", 
+                      style: TextStyle(color: Colors.red))
                   );
-                },
-              ),
+                }
+                if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
+
+                final listaChoferes = snapshot.data!.where((tbl) => tbl.is_active||showInactives).toList();
+
+                // Aplicar filtro de búsqueda
+                final filtered = searchQuery.isEmpty
+                  ? listaChoferes
+                  : listaChoferes.where((c){
+                    return (c.name?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
+                      (c.dni?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
+                      (c.surname?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
+                      (c.mobileNumber?.toString().contains(searchQuery)??false);
+                  }).toList();
+                if(filtered.isEmpty)return const Center(child:Text("???"));
+
+                return ListView.builder(
+                  itemCount: filtered.length,
+                  itemBuilder:(context, index){
+                    return choferToCard(context,filtered[index],peoplePage.mainColor);
+                  },
+                );
+              },
             ),
-          ],
+          ),
+        ],
       ),),
       floatingActionButton: FloatingActionButton(
         onPressed:() async {
-          final nuevo = await getChofer(context);
-          if (nuevo != null)setState(() {choferes.add(nuevo);});
+          final nuevo = await getChofer(context, peoplePage.mainColor, null);
+          if(nuevo == null)return;
+          await db.into(db.choferes).insert(nuevo);
+      
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('chofer guardado')),
+          );
         },
         backgroundColor: peoplePage.mainColor,
         child:Icon(Icons.add),

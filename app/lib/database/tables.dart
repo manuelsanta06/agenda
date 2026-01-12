@@ -4,10 +4,11 @@ import 'package:drift/drift.dart';
 class Choferes extends Table {
   TextColumn get id => text()(); 
   
-  TextColumn get dni => text().unique()();
+  TextColumn get dni => text().nullable()();
   
   TextColumn get name => text().nullable()();
   TextColumn get surname => text().nullable()();
+  TextColumn get alias => text().nullable()();
   TextColumn get mobileNumber => text().nullable()();
   TextColumn get picturePath => text().nullable()();
 
@@ -40,7 +41,7 @@ class Eventos extends Table {
   TextColumn get id => text()();
   TextColumn get name => text().nullable()();
   
-  DateTimeColumn get start => dateTime().nullable()();
+  DateTimeColumn get start => dateTime()();
   DateTimeColumn get end => dateTime().nullable()();
   BoolColumn get repeat => boolean().withDefault(const Constant(false))();
 

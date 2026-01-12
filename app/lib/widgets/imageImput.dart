@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'dart:io';
 
-Future<File?> cropImage(XFile imageFile,List<CropAspectRatioPresetData> cropTypes) async {
+
+Future<String?> saveImageLocally(XFile? imageFile) async {
+  if (imageFile == null) return null;
+
+  try{
+    final String newPath = p.join((await getApplicationDocumentsDirectory()).path, p.basename(imageFile.path));
+    await File(imageFile.path).copy(newPath);
+    
+    return newPath;
+  }catch (e) {
+    print("Error guardando imagen: $e");
+    return null;
+  }
+}
+
+Future<XFile?> cropImage(XFile imageFile,List<CropAspectRatioPresetData> cropTypes) async {
   final croppedFile = await ImageCropper().cropImage(
     sourcePath: imageFile.path,
     uiSettings: [
@@ -21,13 +38,13 @@ Future<File?> cropImage(XFile imageFile,List<CropAspectRatioPresetData> cropType
       ),
     ],
   );
-  return croppedFile != null ? File(croppedFile.path) : null;
+  return croppedFile != null ? XFile(croppedFile.path) : null;
 }
 
-Future<Image?> pickImage(BuildContext context,List<CropAspectRatioPresetData> cropTypes) async {
+Future<XFile?> pickImage(BuildContext context,List<CropAspectRatioPresetData> cropTypes) async {
   final picker = ImagePicker();
 
-  return showModalBottomSheet<Image?>(
+  return showModalBottomSheet<XFile?>(
     context: context,
     builder: (BuildContext context) {
       return SafeArea(
@@ -58,12 +75,10 @@ Future<Image?> pickImage(BuildContext context,List<CropAspectRatioPresetData> cr
   );
 }
 
-Future<Image?> _pickFromSource(ImagePicker picker,ImageSource source,List<CropAspectRatioPresetData> cropTypes)async{
+Future<XFile?> _pickFromSource(ImagePicker picker,ImageSource source,List<CropAspectRatioPresetData> cropTypes)async{
   final XFile? image = await picker.pickImage(source: source);
   if(image==null)return null;
-  File? puta=await cropImage(image,cropTypes);
+  XFile? puta=await cropImage(image,cropTypes);
   if(puta==null)return null;
-    return Image.file(
-        File(puta.path)
-    );
+    return puta;
 }

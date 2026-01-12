@@ -19,9 +19,9 @@ bool isYesterday(DateTime date){
 
 Future<ColectivosCompanion?> showAddColectivoSheet(BuildContext context,{Colectivo? bus})async{
 
-  final nameC = TextEditingController(text: bus==null?"":bus.name);
-  final plateC = TextEditingController(text: bus==null?"":bus.plate);
-  final internC = TextEditingController(text: bus==null?"":bus.number.toString());
+  final nameC = TextEditingController(text: bus?.name??"");
+  final plateC = TextEditingController(text: bus?.plate??"");
+  final internC = TextEditingController(text: bus?.number?.toString() ?? "");
 
   return await showModalBottomSheet<ColectivosCompanion?>(
     context: context,
@@ -66,8 +66,8 @@ Future<ColectivosCompanion?> showAddColectivoSheet(BuildContext context,{Colecti
                     plate: drift.Value(plateC.text),
                     number: drift.Value(int.tryParse(internC.text)),
                     
-                    fuelAmount: const drift.Value("0"), 
-                    fuelDate:  drift.Value(DateTime.now()),
+                    fuelAmount: bus == null ? const drift.Value("0") : const drift.Value.absent(),
+                    fuelDate: bus == null ? drift.Value(DateTime.now()) : const drift.Value.absent(),
                   );
                   Navigator.pop(context, nuevo);
                 },
@@ -118,78 +118,78 @@ Future<void> inputFuelDialog(BuildContext context, Colectivo bus){
 
 
 Widget colectivoToCard(BuildContext context, Colectivo bus, Color mainColor){
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: Colors.white12,
-      ),
-      margin:const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-      padding:const EdgeInsets.only(top: 5,bottom:5,left: 10,right:0),
-      child: Stack(
-        fit: StackFit.passthrough,
-        children: [
-          InkWell(
-            onTap:(){inputFuelDialog(context, bus);},
-            onLongPress:()=>showDialog<void>(
-              context: context,
-              builder:(BuildContext context){
-                return AlertDialog(
-                  title: const Text("Eliminar Colectivo?"),
-                  content: Text("¿Seguro que queres eliminar '${bus.name==""?bus.plate:bus.name}'?"),
-                  actions: [
-                    TextButton(
-                      child: const Text("Cancelar"),
-                      onPressed:()=> Navigator.pop(context),
-                    ),
-                    TextButton(
-                      child: const Text("Eliminar", style: TextStyle(color: Colors.red)),
-                      onPressed:()async{
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content:Text("'${bus.name==""?bus.plate:bus.name}' Eliminado")));
-                        final db=Provider.of<AppDatabase>(context, listen: false);
-                        await (db.update(db.colectivos)
-                          ..where((tbl)=>tbl.id.equals(bus.id)))
-                          .write(ColectivosCompanion(
-                            is_active: drift.Value(false)
-                          ));
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-            
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Nombre: ${(bus.name ?? "").isEmpty?bus.plate:bus.name}",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Text("Patente: ${bus.plate}"),
-                if(bus.number!=null)Text("Interno: ${bus.number}"),
-                if(bus.fuelDate!=null)
-                Text("Gasoil:  ${isToday(bus.fuelDate!)?"Hoy"
-                  :isYesterday(bus.fuelDate!)?"Ayer"
-                  :"Hace ${bus.fuelDate!.difference(DateTime.now()).inDays} dias"} -> ${bus.fuelAmount!}"),
-              ],
-            ),
+  return Container(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(10),
+      color: bus.is_active?Colors.white12:Colors.red.withOpacity(0.1),
+    ),
+    margin:const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+    padding:const EdgeInsets.only(top: 5,bottom:5,left: 10,right:0),
+    child: Stack(
+      fit: StackFit.passthrough,
+      children: [
+        InkWell(
+          onTap:!bus.is_active?null:(){inputFuelDialog(context, bus);},
+          onLongPress:()=>showDialog<void>(
+            context: context,
+            builder:(BuildContext context){
+              return AlertDialog(
+                title: const Text("Eliminar Colectivo?"),
+                content: Text("¿Seguro que queres eliminar '${bus.name==""?bus.plate:bus.name}'?"),
+                actions: [
+                  TextButton(
+                    child: const Text("Cancelar"),
+                    onPressed:()=> Navigator.pop(context),
+                  ),
+                  TextButton(
+                    child: const Text("Eliminar", style: TextStyle(color: Colors.red)),
+                    onPressed:()async{
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content:Text("'${bus.name==""?bus.plate:bus.name}' Eliminado")));
+                      final db=Provider.of<AppDatabase>(context, listen: false);
+                      await (db.update(db.colectivos)
+                        ..where((tbl)=>tbl.id.equals(bus.id)))
+                        .write(ColectivosCompanion(
+                          is_active: drift.Value(false)
+                        ));
+                    },
+                  ),
+                ],
+              );
+            },
           ),
-          Positioned(
-            top: -5,
-            right: 0,
-            child: IconButton(
-              icon: Icon(Icons.edit, color: mainColor),
-              onPressed:()async{
-                final nuevo=await showAddColectivoSheet(context, bus: bus);
-                if(nuevo==null)return;
-                final db=Provider.of<AppDatabase>(context, listen: false);
-                await (db.update(db.colectivos)
-                  ..where((tbl) => tbl.id.equals(bus.id)))
-                  .write(nuevo);
-              },
-            ),
+          
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Nombre: ${(bus.name ?? "").isEmpty?bus.plate:bus.name}",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text("Patente: ${bus.plate}"),
+              if(bus.number!=null)Text("Interno: ${bus.number}"),
+              if(bus.fuelDate!=null&&bus.is_active)
+              Text("Gasoil:  ${isToday(bus.fuelDate!)?"Hoy"
+                :isYesterday(bus.fuelDate!)?"Ayer"
+                :"Hace ${bus.fuelDate!.difference(DateTime.now()).inDays} dias"} -> ${bus.fuelAmount!}"),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+        Positioned(
+          top: -5,
+          right: 0,
+          child: IconButton(
+            icon: Icon(Icons.edit, color: mainColor),
+            onPressed:()async{
+              final nuevo=await showAddColectivoSheet(context, bus: bus);
+              if(nuevo==null)return;
+              final db=Provider.of<AppDatabase>(context, listen: false);
+              await (db.update(db.colectivos)
+                ..where((tbl) => tbl.id.equals(bus.id)))
+                .write(nuevo);
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}

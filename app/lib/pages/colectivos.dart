@@ -1,20 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
-import 'package:drift/drift.dart' as drift; 
 import '../widgets/searchBar.dart';
 import '../utilities/colectivos.dart';
 import '../database/app_database.dart';
 
 
-
-/*
-  void _editMenu(BuildContext context)async {
-    final nuevo = await showAddColectivoSheet(context,
-      nameD:name,plateD:plate,internD:number.toString());
-    copyFrom(nuevo);
-  }
-*/
 class colectivosPage extends StatefulWidget {
   const colectivosPage({super.key});
   static const Color mainColor=Color.fromARGB(255, 252, 102, 1);
@@ -25,6 +15,7 @@ class colectivosPage extends StatefulWidget {
 
 class _colectivosPageState extends State<colectivosPage>{
   String searchQuery = "";
+  bool showInactives=false;
 
   @override
   Widget build(BuildContext context){
@@ -35,11 +26,30 @@ class _colectivosPageState extends State<colectivosPage>{
       body:SafeArea(child: Column(
           children: [
             mySearchBar(onChanged:(value){setState((){searchQuery = value;});},),
+
+            Container(
+              margin:const EdgeInsets.symmetric(horizontal: 10),
+              child:Row(children: [
+                Expanded(child: Text(
+                  "Mostrar inactivos",
+                  style:TextStyle(fontSize:16, fontWeight:showInactives?FontWeight.bold:FontWeight.normal),
+                )),
+                Switch(
+                  value: showInactives,
+                  activeThumbColor: Colors.white,
+                  activeTrackColor:colectivosPage.mainColor,
+                  onChanged:(bool value){
+                    setState((){showInactives=value;});
+                  }
+                )
+              ])
+            ),
+
             Expanded(
               child: StreamBuilder<List<Colectivo>>(
                 stream: db.select(db.colectivos).watch(), 
                 builder:(context, snapshot){
-                  if (snapshot.hasError) {
+                  if(snapshot.hasError){
                     return Center(
                       child: Text("Error: ${snapshot.error}\nperdon, pasale captura a manu", 
                       style: TextStyle(color: Colors.red))
@@ -47,11 +57,11 @@ class _colectivosPageState extends State<colectivosPage>{
                   }
                   if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
-                  final listaColectivos = snapshot.data!.where((tbl) => tbl.is_active).toList();
+                  final listaColectivos = snapshot.data!.where((tbl) => tbl.is_active||showInactives).toList();
 
                   // Aplicar filtro de búsqueda
                   final filtered = searchQuery.isEmpty
-                    ? listaColectivos 
+                    ? listaColectivos
                     : listaColectivos.where((c){
                       return(c.name?.toLowerCase().contains(searchQuery.toLowerCase())?? false) ||
                         c.plate.toLowerCase().contains(searchQuery.toLowerCase())||
