@@ -5,16 +5,17 @@ import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'tables.dart'; 
+export 'tables.dart'; 
 
 part 'app_database.g.dart';
 
 @DriftDatabase(tables: [
   Choferes, 
   Colectivos, 
-  Eventos, 
-  Paradas, 
-  EventoChoferes, 
-  EventoColectivos
+  Events, 
+  Stops, 
+  EventChoferes, 
+  EventColectivos
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());

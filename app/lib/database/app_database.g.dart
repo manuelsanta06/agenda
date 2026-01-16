@@ -92,6 +92,21 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -102,6 +117,7 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
     mobileNumber,
     picturePath,
     is_active,
+    isSynced,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -168,6 +184,12 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
         is_active.isAcceptableOrUnknown(data['is_active']!, _is_activeMeta),
       );
     }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
     return context;
   }
 
@@ -209,6 +231,10 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
     );
   }
 
@@ -227,6 +253,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
   final String? mobileNumber;
   final String? picturePath;
   final bool is_active;
+  final bool isSynced;
   const Chofere({
     required this.id,
     this.dni,
@@ -236,6 +263,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     this.mobileNumber,
     this.picturePath,
     required this.is_active,
+    required this.isSynced,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -260,6 +288,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
       map['picture_path'] = Variable<String>(picturePath);
     }
     map['is_active'] = Variable<bool>(is_active);
+    map['is_synced'] = Variable<bool>(isSynced);
     return map;
   }
 
@@ -281,6 +310,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
           ? const Value.absent()
           : Value(picturePath),
       is_active: Value(is_active),
+      isSynced: Value(isSynced),
     );
   }
 
@@ -298,6 +328,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
       mobileNumber: serializer.fromJson<String?>(json['mobileNumber']),
       picturePath: serializer.fromJson<String?>(json['picturePath']),
       is_active: serializer.fromJson<bool>(json['is_active']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
   }
   @override
@@ -312,6 +343,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
       'mobileNumber': serializer.toJson<String?>(mobileNumber),
       'picturePath': serializer.toJson<String?>(picturePath),
       'is_active': serializer.toJson<bool>(is_active),
+      'isSynced': serializer.toJson<bool>(isSynced),
     };
   }
 
@@ -324,6 +356,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     Value<String?> mobileNumber = const Value.absent(),
     Value<String?> picturePath = const Value.absent(),
     bool? is_active,
+    bool? isSynced,
   }) => Chofere(
     id: id ?? this.id,
     dni: dni.present ? dni.value : this.dni,
@@ -333,6 +366,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     mobileNumber: mobileNumber.present ? mobileNumber.value : this.mobileNumber,
     picturePath: picturePath.present ? picturePath.value : this.picturePath,
     is_active: is_active ?? this.is_active,
+    isSynced: isSynced ?? this.isSynced,
   );
   Chofere copyWithCompanion(ChoferesCompanion data) {
     return Chofere(
@@ -348,6 +382,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
           ? data.picturePath.value
           : this.picturePath,
       is_active: data.is_active.present ? data.is_active.value : this.is_active,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
   }
 
@@ -361,7 +396,8 @@ class Chofere extends DataClass implements Insertable<Chofere> {
           ..write('alias: $alias, ')
           ..write('mobileNumber: $mobileNumber, ')
           ..write('picturePath: $picturePath, ')
-          ..write('is_active: $is_active')
+          ..write('is_active: $is_active, ')
+          ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
   }
@@ -376,6 +412,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     mobileNumber,
     picturePath,
     is_active,
+    isSynced,
   );
   @override
   bool operator ==(Object other) =>
@@ -388,7 +425,8 @@ class Chofere extends DataClass implements Insertable<Chofere> {
           other.alias == this.alias &&
           other.mobileNumber == this.mobileNumber &&
           other.picturePath == this.picturePath &&
-          other.is_active == this.is_active);
+          other.is_active == this.is_active &&
+          other.isSynced == this.isSynced);
 }
 
 class ChoferesCompanion extends UpdateCompanion<Chofere> {
@@ -400,6 +438,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
   final Value<String?> mobileNumber;
   final Value<String?> picturePath;
   final Value<bool> is_active;
+  final Value<bool> isSynced;
   final Value<int> rowid;
   const ChoferesCompanion({
     this.id = const Value.absent(),
@@ -410,6 +449,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     this.mobileNumber = const Value.absent(),
     this.picturePath = const Value.absent(),
     this.is_active = const Value.absent(),
+    this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ChoferesCompanion.insert({
@@ -421,6 +461,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     this.mobileNumber = const Value.absent(),
     this.picturePath = const Value.absent(),
     this.is_active = const Value.absent(),
+    this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id);
   static Insertable<Chofere> custom({
@@ -432,6 +473,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     Expression<String>? mobileNumber,
     Expression<String>? picturePath,
     Expression<bool>? is_active,
+    Expression<bool>? isSynced,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -443,6 +485,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
       if (mobileNumber != null) 'mobile_number': mobileNumber,
       if (picturePath != null) 'picture_path': picturePath,
       if (is_active != null) 'is_active': is_active,
+      if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -456,6 +499,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     Value<String?>? mobileNumber,
     Value<String?>? picturePath,
     Value<bool>? is_active,
+    Value<bool>? isSynced,
     Value<int>? rowid,
   }) {
     return ChoferesCompanion(
@@ -467,6 +511,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
       mobileNumber: mobileNumber ?? this.mobileNumber,
       picturePath: picturePath ?? this.picturePath,
       is_active: is_active ?? this.is_active,
+      isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -498,6 +543,9 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     if (is_active.present) {
       map['is_active'] = Variable<bool>(is_active.value);
     }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -515,6 +563,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
           ..write('mobileNumber: $mobileNumber, ')
           ..write('picturePath: $picturePath, ')
           ..write('is_active: $is_active, ')
+          ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -601,6 +650,21 @@ class $ColectivosTable extends Colectivos
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -610,6 +674,7 @@ class $ColectivosTable extends Colectivos
     fuelAmount,
     fuelDate,
     is_active,
+    isSynced,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -666,6 +731,12 @@ class $ColectivosTable extends Colectivos
         is_active.isAcceptableOrUnknown(data['is_active']!, _is_activeMeta),
       );
     }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
     return context;
   }
 
@@ -703,6 +774,10 @@ class $ColectivosTable extends Colectivos
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
     );
   }
 
@@ -720,6 +795,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
   final String? fuelAmount;
   final DateTime? fuelDate;
   final bool is_active;
+  final bool isSynced;
   const Colectivo({
     required this.id,
     required this.plate,
@@ -728,6 +804,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     this.fuelAmount,
     this.fuelDate,
     required this.is_active,
+    required this.isSynced,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -747,6 +824,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       map['fuel_date'] = Variable<DateTime>(fuelDate);
     }
     map['is_active'] = Variable<bool>(is_active);
+    map['is_synced'] = Variable<bool>(isSynced);
     return map;
   }
 
@@ -765,6 +843,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           ? const Value.absent()
           : Value(fuelDate),
       is_active: Value(is_active),
+      isSynced: Value(isSynced),
     );
   }
 
@@ -781,6 +860,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       fuelAmount: serializer.fromJson<String?>(json['fuelAmount']),
       fuelDate: serializer.fromJson<DateTime?>(json['fuelDate']),
       is_active: serializer.fromJson<bool>(json['is_active']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
   }
   @override
@@ -794,6 +874,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       'fuelAmount': serializer.toJson<String?>(fuelAmount),
       'fuelDate': serializer.toJson<DateTime?>(fuelDate),
       'is_active': serializer.toJson<bool>(is_active),
+      'isSynced': serializer.toJson<bool>(isSynced),
     };
   }
 
@@ -805,6 +886,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     Value<String?> fuelAmount = const Value.absent(),
     Value<DateTime?> fuelDate = const Value.absent(),
     bool? is_active,
+    bool? isSynced,
   }) => Colectivo(
     id: id ?? this.id,
     plate: plate ?? this.plate,
@@ -813,6 +895,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     fuelAmount: fuelAmount.present ? fuelAmount.value : this.fuelAmount,
     fuelDate: fuelDate.present ? fuelDate.value : this.fuelDate,
     is_active: is_active ?? this.is_active,
+    isSynced: isSynced ?? this.isSynced,
   );
   Colectivo copyWithCompanion(ColectivosCompanion data) {
     return Colectivo(
@@ -825,6 +908,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           : this.fuelAmount,
       fuelDate: data.fuelDate.present ? data.fuelDate.value : this.fuelDate,
       is_active: data.is_active.present ? data.is_active.value : this.is_active,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
   }
 
@@ -837,14 +921,23 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           ..write('number: $number, ')
           ..write('fuelAmount: $fuelAmount, ')
           ..write('fuelDate: $fuelDate, ')
-          ..write('is_active: $is_active')
+          ..write('is_active: $is_active, ')
+          ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, plate, name, number, fuelAmount, fuelDate, is_active);
+  int get hashCode => Object.hash(
+    id,
+    plate,
+    name,
+    number,
+    fuelAmount,
+    fuelDate,
+    is_active,
+    isSynced,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -855,7 +948,8 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           other.number == this.number &&
           other.fuelAmount == this.fuelAmount &&
           other.fuelDate == this.fuelDate &&
-          other.is_active == this.is_active);
+          other.is_active == this.is_active &&
+          other.isSynced == this.isSynced);
 }
 
 class ColectivosCompanion extends UpdateCompanion<Colectivo> {
@@ -866,6 +960,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
   final Value<String?> fuelAmount;
   final Value<DateTime?> fuelDate;
   final Value<bool> is_active;
+  final Value<bool> isSynced;
   final Value<int> rowid;
   const ColectivosCompanion({
     this.id = const Value.absent(),
@@ -875,6 +970,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     this.fuelAmount = const Value.absent(),
     this.fuelDate = const Value.absent(),
     this.is_active = const Value.absent(),
+    this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ColectivosCompanion.insert({
@@ -885,6 +981,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     this.fuelAmount = const Value.absent(),
     this.fuelDate = const Value.absent(),
     this.is_active = const Value.absent(),
+    this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        plate = Value(plate);
@@ -896,6 +993,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     Expression<String>? fuelAmount,
     Expression<DateTime>? fuelDate,
     Expression<bool>? is_active,
+    Expression<bool>? isSynced,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -906,6 +1004,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
       if (fuelAmount != null) 'fuel_amount': fuelAmount,
       if (fuelDate != null) 'fuel_date': fuelDate,
       if (is_active != null) 'is_active': is_active,
+      if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -918,6 +1017,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     Value<String?>? fuelAmount,
     Value<DateTime?>? fuelDate,
     Value<bool>? is_active,
+    Value<bool>? isSynced,
     Value<int>? rowid,
   }) {
     return ColectivosCompanion(
@@ -928,6 +1028,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
       fuelAmount: fuelAmount ?? this.fuelAmount,
       fuelDate: fuelDate ?? this.fuelDate,
       is_active: is_active ?? this.is_active,
+      isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -956,6 +1057,9 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     if (is_active.present) {
       map['is_active'] = Variable<bool>(is_active.value);
     }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -972,17 +1076,18 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
           ..write('fuelAmount: $fuelAmount, ')
           ..write('fuelDate: $fuelDate, ')
           ..write('is_active: $is_active, ')
+          ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
 }
 
-class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
+class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EventosTable(this.attachedDatabase, [this._alias]);
+  $EventsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -997,27 +1102,9 @@ class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _startMeta = const VerificationMeta('start');
-  @override
-  late final GeneratedColumn<DateTime> start = GeneratedColumn<DateTime>(
-    'start',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _endMeta = const VerificationMeta('end');
-  @override
-  late final GeneratedColumn<DateTime> end = GeneratedColumn<DateTime>(
-    'end',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _repeatMeta = const VerificationMeta('repeat');
   @override
@@ -1032,14 +1119,35 @@ class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
     ),
     defaultValue: const Constant(false),
   );
-  static const VerificationMeta _daysMeta = const VerificationMeta('days');
   @override
-  late final GeneratedColumn<String> days = GeneratedColumn<String>(
-    'days',
+  late final GeneratedColumnWithTypeConverter<List<WeekDays>?, String> days =
+      GeneratedColumn<String>(
+        'days',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<List<WeekDays>?>($EventsTable.$converterdaysn);
+  @override
+  late final GeneratedColumnWithTypeConverter<EventStates, int> state =
+      GeneratedColumn<int>(
+        'state',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<EventStates>($EventsTable.$converterstate);
+  static const VerificationMeta _isTripMeta = const VerificationMeta('isTrip');
+  @override
+  late final GeneratedColumn<bool> isTrip = GeneratedColumn<bool>(
+    'is_trip',
     aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_trip" IN (0, 1))',
+    ),
   );
   static const VerificationMeta _isSyncedMeta = const VerificationMeta(
     'isSynced',
@@ -1060,20 +1168,20 @@ class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
   List<GeneratedColumn> get $columns => [
     id,
     name,
-    start,
-    end,
     repeat,
     days,
+    state,
+    isTrip,
     isSynced,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'eventos';
+  static const String $name = 'events';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Evento> instance, {
+    Insertable<Event> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1088,18 +1196,8 @@ class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
         _nameMeta,
         name.isAcceptableOrUnknown(data['name']!, _nameMeta),
       );
-    }
-    if (data.containsKey('start')) {
-      context.handle(
-        _startMeta,
-        start.isAcceptableOrUnknown(data['start']!, _startMeta),
-      );
-    }
-    if (data.containsKey('end')) {
-      context.handle(
-        _endMeta,
-        end.isAcceptableOrUnknown(data['end']!, _endMeta),
-      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
     }
     if (data.containsKey('repeat')) {
       context.handle(
@@ -1107,11 +1205,13 @@ class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
         repeat.isAcceptableOrUnknown(data['repeat']!, _repeatMeta),
       );
     }
-    if (data.containsKey('days')) {
+    if (data.containsKey('is_trip')) {
       context.handle(
-        _daysMeta,
-        days.isAcceptableOrUnknown(data['days']!, _daysMeta),
+        _isTripMeta,
+        isTrip.isAcceptableOrUnknown(data['is_trip']!, _isTripMeta),
       );
+    } else if (isInserting) {
+      context.missing(_isTripMeta);
     }
     if (data.containsKey('is_synced')) {
       context.handle(
@@ -1125,9 +1225,9 @@ class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Evento map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Event map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Evento(
+    return Event(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -1135,23 +1235,27 @@ class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
-      ),
-      start: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}start'],
-      ),
-      end: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}end'],
-      ),
+      )!,
       repeat: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}repeat'],
       )!,
-      days: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}days'],
+      days: $EventsTable.$converterdaysn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}days'],
+        ),
       ),
+      state: $EventsTable.$converterstate.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}state'],
+        )!,
+      ),
+      isTrip: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_trip'],
+      )!,
       isSynced: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_synced'],
@@ -1160,75 +1264,78 @@ class $EventosTable extends Eventos with TableInfo<$EventosTable, Evento> {
   }
 
   @override
-  $EventosTable createAlias(String alias) {
-    return $EventosTable(attachedDatabase, alias);
+  $EventsTable createAlias(String alias) {
+    return $EventsTable(attachedDatabase, alias);
   }
+
+  static TypeConverter<List<WeekDays>, String> $converterdays =
+      const WeekDaysConverter();
+  static TypeConverter<List<WeekDays>?, String?> $converterdaysn =
+      NullAwareTypeConverter.wrap($converterdays);
+  static JsonTypeConverter2<EventStates, int, int> $converterstate =
+      const EnumIndexConverter<EventStates>(EventStates.values);
 }
 
-class Evento extends DataClass implements Insertable<Evento> {
+class Event extends DataClass implements Insertable<Event> {
   final String id;
-  final String? name;
-  final DateTime? start;
-  final DateTime? end;
+  final String name;
   final bool repeat;
-  final String? days;
+  final List<WeekDays>? days;
+  final EventStates state;
+  final bool isTrip;
   final bool isSynced;
-  const Evento({
+  const Event({
     required this.id,
-    this.name,
-    this.start,
-    this.end,
+    required this.name,
     required this.repeat,
     this.days,
+    required this.state,
+    required this.isTrip,
     required this.isSynced,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
-    if (!nullToAbsent || start != null) {
-      map['start'] = Variable<DateTime>(start);
-    }
-    if (!nullToAbsent || end != null) {
-      map['end'] = Variable<DateTime>(end);
-    }
+    map['name'] = Variable<String>(name);
     map['repeat'] = Variable<bool>(repeat);
     if (!nullToAbsent || days != null) {
-      map['days'] = Variable<String>(days);
+      map['days'] = Variable<String>($EventsTable.$converterdaysn.toSql(days));
     }
+    {
+      map['state'] = Variable<int>($EventsTable.$converterstate.toSql(state));
+    }
+    map['is_trip'] = Variable<bool>(isTrip);
     map['is_synced'] = Variable<bool>(isSynced);
     return map;
   }
 
-  EventosCompanion toCompanion(bool nullToAbsent) {
-    return EventosCompanion(
+  EventsCompanion toCompanion(bool nullToAbsent) {
+    return EventsCompanion(
       id: Value(id),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
-      start: start == null && nullToAbsent
-          ? const Value.absent()
-          : Value(start),
-      end: end == null && nullToAbsent ? const Value.absent() : Value(end),
+      name: Value(name),
       repeat: Value(repeat),
       days: days == null && nullToAbsent ? const Value.absent() : Value(days),
+      state: Value(state),
+      isTrip: Value(isTrip),
       isSynced: Value(isSynced),
     );
   }
 
-  factory Evento.fromJson(
+  factory Event.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Evento(
+    return Event(
       id: serializer.fromJson<String>(json['id']),
-      name: serializer.fromJson<String?>(json['name']),
-      start: serializer.fromJson<DateTime?>(json['start']),
-      end: serializer.fromJson<DateTime?>(json['end']),
+      name: serializer.fromJson<String>(json['name']),
       repeat: serializer.fromJson<bool>(json['repeat']),
-      days: serializer.fromJson<String?>(json['days']),
+      days: serializer.fromJson<List<WeekDays>?>(json['days']),
+      state: $EventsTable.$converterstate.fromJson(
+        serializer.fromJson<int>(json['state']),
+      ),
+      isTrip: serializer.fromJson<bool>(json['isTrip']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
   }
@@ -1237,141 +1344,147 @@ class Evento extends DataClass implements Insertable<Evento> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'name': serializer.toJson<String?>(name),
-      'start': serializer.toJson<DateTime?>(start),
-      'end': serializer.toJson<DateTime?>(end),
+      'name': serializer.toJson<String>(name),
       'repeat': serializer.toJson<bool>(repeat),
-      'days': serializer.toJson<String?>(days),
+      'days': serializer.toJson<List<WeekDays>?>(days),
+      'state': serializer.toJson<int>(
+        $EventsTable.$converterstate.toJson(state),
+      ),
+      'isTrip': serializer.toJson<bool>(isTrip),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
   }
 
-  Evento copyWith({
+  Event copyWith({
     String? id,
-    Value<String?> name = const Value.absent(),
-    Value<DateTime?> start = const Value.absent(),
-    Value<DateTime?> end = const Value.absent(),
+    String? name,
     bool? repeat,
-    Value<String?> days = const Value.absent(),
+    Value<List<WeekDays>?> days = const Value.absent(),
+    EventStates? state,
+    bool? isTrip,
     bool? isSynced,
-  }) => Evento(
+  }) => Event(
     id: id ?? this.id,
-    name: name.present ? name.value : this.name,
-    start: start.present ? start.value : this.start,
-    end: end.present ? end.value : this.end,
+    name: name ?? this.name,
     repeat: repeat ?? this.repeat,
     days: days.present ? days.value : this.days,
+    state: state ?? this.state,
+    isTrip: isTrip ?? this.isTrip,
     isSynced: isSynced ?? this.isSynced,
   );
-  Evento copyWithCompanion(EventosCompanion data) {
-    return Evento(
+  Event copyWithCompanion(EventsCompanion data) {
+    return Event(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
-      start: data.start.present ? data.start.value : this.start,
-      end: data.end.present ? data.end.value : this.end,
       repeat: data.repeat.present ? data.repeat.value : this.repeat,
       days: data.days.present ? data.days.value : this.days,
+      state: data.state.present ? data.state.value : this.state,
+      isTrip: data.isTrip.present ? data.isTrip.value : this.isTrip,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Evento(')
+    return (StringBuffer('Event(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('start: $start, ')
-          ..write('end: $end, ')
           ..write('repeat: $repeat, ')
           ..write('days: $days, ')
+          ..write('state: $state, ')
+          ..write('isTrip: $isTrip, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, start, end, repeat, days, isSynced);
+  int get hashCode =>
+      Object.hash(id, name, repeat, days, state, isTrip, isSynced);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Evento &&
+      (other is Event &&
           other.id == this.id &&
           other.name == this.name &&
-          other.start == this.start &&
-          other.end == this.end &&
           other.repeat == this.repeat &&
           other.days == this.days &&
+          other.state == this.state &&
+          other.isTrip == this.isTrip &&
           other.isSynced == this.isSynced);
 }
 
-class EventosCompanion extends UpdateCompanion<Evento> {
+class EventsCompanion extends UpdateCompanion<Event> {
   final Value<String> id;
-  final Value<String?> name;
-  final Value<DateTime?> start;
-  final Value<DateTime?> end;
+  final Value<String> name;
   final Value<bool> repeat;
-  final Value<String?> days;
+  final Value<List<WeekDays>?> days;
+  final Value<EventStates> state;
+  final Value<bool> isTrip;
   final Value<bool> isSynced;
   final Value<int> rowid;
-  const EventosCompanion({
+  const EventsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
-    this.start = const Value.absent(),
-    this.end = const Value.absent(),
     this.repeat = const Value.absent(),
     this.days = const Value.absent(),
+    this.state = const Value.absent(),
+    this.isTrip = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  EventosCompanion.insert({
+  EventsCompanion.insert({
     required String id,
-    this.name = const Value.absent(),
-    this.start = const Value.absent(),
-    this.end = const Value.absent(),
+    required String name,
     this.repeat = const Value.absent(),
     this.days = const Value.absent(),
+    required EventStates state,
+    required bool isTrip,
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : id = Value(id);
-  static Insertable<Evento> custom({
+  }) : id = Value(id),
+       name = Value(name),
+       state = Value(state),
+       isTrip = Value(isTrip);
+  static Insertable<Event> custom({
     Expression<String>? id,
     Expression<String>? name,
-    Expression<DateTime>? start,
-    Expression<DateTime>? end,
     Expression<bool>? repeat,
     Expression<String>? days,
+    Expression<int>? state,
+    Expression<bool>? isTrip,
     Expression<bool>? isSynced,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
-      if (start != null) 'start': start,
-      if (end != null) 'end': end,
       if (repeat != null) 'repeat': repeat,
       if (days != null) 'days': days,
+      if (state != null) 'state': state,
+      if (isTrip != null) 'is_trip': isTrip,
       if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  EventosCompanion copyWith({
+  EventsCompanion copyWith({
     Value<String>? id,
-    Value<String?>? name,
-    Value<DateTime?>? start,
-    Value<DateTime?>? end,
+    Value<String>? name,
     Value<bool>? repeat,
-    Value<String?>? days,
+    Value<List<WeekDays>?>? days,
+    Value<EventStates>? state,
+    Value<bool>? isTrip,
     Value<bool>? isSynced,
     Value<int>? rowid,
   }) {
-    return EventosCompanion(
+    return EventsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
-      start: start ?? this.start,
-      end: end ?? this.end,
       repeat: repeat ?? this.repeat,
       days: days ?? this.days,
+      state: state ?? this.state,
+      isTrip: isTrip ?? this.isTrip,
       isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
     );
@@ -1386,17 +1499,21 @@ class EventosCompanion extends UpdateCompanion<Evento> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (start.present) {
-      map['start'] = Variable<DateTime>(start.value);
-    }
-    if (end.present) {
-      map['end'] = Variable<DateTime>(end.value);
-    }
     if (repeat.present) {
       map['repeat'] = Variable<bool>(repeat.value);
     }
     if (days.present) {
-      map['days'] = Variable<String>(days.value);
+      map['days'] = Variable<String>(
+        $EventsTable.$converterdaysn.toSql(days.value),
+      );
+    }
+    if (state.present) {
+      map['state'] = Variable<int>(
+        $EventsTable.$converterstate.toSql(state.value),
+      );
+    }
+    if (isTrip.present) {
+      map['is_trip'] = Variable<bool>(isTrip.value);
     }
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
@@ -1409,13 +1526,13 @@ class EventosCompanion extends UpdateCompanion<Evento> {
 
   @override
   String toString() {
-    return (StringBuffer('EventosCompanion(')
+    return (StringBuffer('EventsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('start: $start, ')
-          ..write('end: $end, ')
           ..write('repeat: $repeat, ')
           ..write('days: $days, ')
+          ..write('state: $state, ')
+          ..write('isTrip: $isTrip, ')
           ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -1423,11 +1540,11 @@ class EventosCompanion extends UpdateCompanion<Evento> {
   }
 }
 
-class $ParadasTable extends Paradas with TableInfo<$ParadasTable, Parada> {
+class $StopsTable extends Stops with TableInfo<$StopsTable, Stop> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $ParadasTable(this.attachedDatabase, [this._alias]);
+  $StopsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -1446,6 +1563,15 @@ class $ParadasTable extends Paradas with TableInfo<$ParadasTable, Parada> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _startMeta = const VerificationMeta('start');
+  @override
+  late final GeneratedColumn<DateTime> start = GeneratedColumn<DateTime>(
+    'start',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _eventIdMeta = const VerificationMeta(
     'eventId',
   );
@@ -1457,7 +1583,7 @@ class $ParadasTable extends Paradas with TableInfo<$ParadasTable, Parada> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES eventos (id)',
+      'REFERENCES events (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _orderIndexMeta = const VerificationMeta(
@@ -1472,15 +1598,15 @@ class $ParadasTable extends Paradas with TableInfo<$ParadasTable, Parada> {
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, name, eventId, orderIndex];
+  List<GeneratedColumn> get $columns => [id, name, start, eventId, orderIndex];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'paradas';
+  static const String $name = 'stops';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Parada> instance, {
+    Insertable<Stop> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1497,6 +1623,12 @@ class $ParadasTable extends Paradas with TableInfo<$ParadasTable, Parada> {
       );
     } else if (isInserting) {
       context.missing(_nameMeta);
+    }
+    if (data.containsKey('start')) {
+      context.handle(
+        _startMeta,
+        start.isAcceptableOrUnknown(data['start']!, _startMeta),
+      );
     }
     if (data.containsKey('event_id')) {
       context.handle(
@@ -1520,9 +1652,9 @@ class $ParadasTable extends Paradas with TableInfo<$ParadasTable, Parada> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Parada map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Stop map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Parada(
+    return Stop(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -1531,6 +1663,10 @@ class $ParadasTable extends Paradas with TableInfo<$ParadasTable, Parada> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      start: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start'],
+      ),
       eventId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}event_id'],
@@ -1543,19 +1679,21 @@ class $ParadasTable extends Paradas with TableInfo<$ParadasTable, Parada> {
   }
 
   @override
-  $ParadasTable createAlias(String alias) {
-    return $ParadasTable(attachedDatabase, alias);
+  $StopsTable createAlias(String alias) {
+    return $StopsTable(attachedDatabase, alias);
   }
 }
 
-class Parada extends DataClass implements Insertable<Parada> {
+class Stop extends DataClass implements Insertable<Stop> {
   final String id;
   final String name;
+  final DateTime? start;
   final String eventId;
   final int orderIndex;
-  const Parada({
+  const Stop({
     required this.id,
     required this.name,
+    this.start,
     required this.eventId,
     required this.orderIndex,
   });
@@ -1564,28 +1702,35 @@ class Parada extends DataClass implements Insertable<Parada> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || start != null) {
+      map['start'] = Variable<DateTime>(start);
+    }
     map['event_id'] = Variable<String>(eventId);
     map['order_index'] = Variable<int>(orderIndex);
     return map;
   }
 
-  ParadasCompanion toCompanion(bool nullToAbsent) {
-    return ParadasCompanion(
+  StopsCompanion toCompanion(bool nullToAbsent) {
+    return StopsCompanion(
       id: Value(id),
       name: Value(name),
+      start: start == null && nullToAbsent
+          ? const Value.absent()
+          : Value(start),
       eventId: Value(eventId),
       orderIndex: Value(orderIndex),
     );
   }
 
-  factory Parada.fromJson(
+  factory Stop.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Parada(
+    return Stop(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      start: serializer.fromJson<DateTime?>(json['start']),
       eventId: serializer.fromJson<String>(json['eventId']),
       orderIndex: serializer.fromJson<int>(json['orderIndex']),
     );
@@ -1596,26 +1741,30 @@ class Parada extends DataClass implements Insertable<Parada> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
+      'start': serializer.toJson<DateTime?>(start),
       'eventId': serializer.toJson<String>(eventId),
       'orderIndex': serializer.toJson<int>(orderIndex),
     };
   }
 
-  Parada copyWith({
+  Stop copyWith({
     String? id,
     String? name,
+    Value<DateTime?> start = const Value.absent(),
     String? eventId,
     int? orderIndex,
-  }) => Parada(
+  }) => Stop(
     id: id ?? this.id,
     name: name ?? this.name,
+    start: start.present ? start.value : this.start,
     eventId: eventId ?? this.eventId,
     orderIndex: orderIndex ?? this.orderIndex,
   );
-  Parada copyWithCompanion(ParadasCompanion data) {
-    return Parada(
+  Stop copyWithCompanion(StopsCompanion data) {
+    return Stop(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
+      start: data.start.present ? data.start.value : this.start,
       eventId: data.eventId.present ? data.eventId.value : this.eventId,
       orderIndex: data.orderIndex.present
           ? data.orderIndex.value
@@ -1625,9 +1774,10 @@ class Parada extends DataClass implements Insertable<Parada> {
 
   @override
   String toString() {
-    return (StringBuffer('Parada(')
+    return (StringBuffer('Stop(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('start: $start, ')
           ..write('eventId: $eventId, ')
           ..write('orderIndex: $orderIndex')
           ..write(')'))
@@ -1635,33 +1785,37 @@ class Parada extends DataClass implements Insertable<Parada> {
   }
 
   @override
-  int get hashCode => Object.hash(id, name, eventId, orderIndex);
+  int get hashCode => Object.hash(id, name, start, eventId, orderIndex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Parada &&
+      (other is Stop &&
           other.id == this.id &&
           other.name == this.name &&
+          other.start == this.start &&
           other.eventId == this.eventId &&
           other.orderIndex == this.orderIndex);
 }
 
-class ParadasCompanion extends UpdateCompanion<Parada> {
+class StopsCompanion extends UpdateCompanion<Stop> {
   final Value<String> id;
   final Value<String> name;
+  final Value<DateTime?> start;
   final Value<String> eventId;
   final Value<int> orderIndex;
   final Value<int> rowid;
-  const ParadasCompanion({
+  const StopsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.start = const Value.absent(),
     this.eventId = const Value.absent(),
     this.orderIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  ParadasCompanion.insert({
+  StopsCompanion.insert({
     required String id,
     required String name,
+    this.start = const Value.absent(),
     required String eventId,
     required int orderIndex,
     this.rowid = const Value.absent(),
@@ -1669,9 +1823,10 @@ class ParadasCompanion extends UpdateCompanion<Parada> {
        name = Value(name),
        eventId = Value(eventId),
        orderIndex = Value(orderIndex);
-  static Insertable<Parada> custom({
+  static Insertable<Stop> custom({
     Expression<String>? id,
     Expression<String>? name,
+    Expression<DateTime>? start,
     Expression<String>? eventId,
     Expression<int>? orderIndex,
     Expression<int>? rowid,
@@ -1679,22 +1834,25 @@ class ParadasCompanion extends UpdateCompanion<Parada> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (start != null) 'start': start,
       if (eventId != null) 'event_id': eventId,
       if (orderIndex != null) 'order_index': orderIndex,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  ParadasCompanion copyWith({
+  StopsCompanion copyWith({
     Value<String>? id,
     Value<String>? name,
+    Value<DateTime?>? start,
     Value<String>? eventId,
     Value<int>? orderIndex,
     Value<int>? rowid,
   }) {
-    return ParadasCompanion(
+    return StopsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      start: start ?? this.start,
       eventId: eventId ?? this.eventId,
       orderIndex: orderIndex ?? this.orderIndex,
       rowid: rowid ?? this.rowid,
@@ -1710,6 +1868,9 @@ class ParadasCompanion extends UpdateCompanion<Parada> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (start.present) {
+      map['start'] = Variable<DateTime>(start.value);
+    }
     if (eventId.present) {
       map['event_id'] = Variable<String>(eventId.value);
     }
@@ -1724,9 +1885,10 @@ class ParadasCompanion extends UpdateCompanion<Parada> {
 
   @override
   String toString() {
-    return (StringBuffer('ParadasCompanion(')
+    return (StringBuffer('StopsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('start: $start, ')
           ..write('eventId: $eventId, ')
           ..write('orderIndex: $orderIndex, ')
           ..write('rowid: $rowid')
@@ -1735,12 +1897,12 @@ class ParadasCompanion extends UpdateCompanion<Parada> {
   }
 }
 
-class $EventoChoferesTable extends EventoChoferes
-    with TableInfo<$EventoChoferesTable, EventoChofere> {
+class $EventChoferesTable extends EventChoferes
+    with TableInfo<$EventChoferesTable, EventChofere> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EventoChoferesTable(this.attachedDatabase, [this._alias]);
+  $EventChoferesTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _eventIdMeta = const VerificationMeta(
     'eventId',
   );
@@ -1752,7 +1914,7 @@ class $EventoChoferesTable extends EventoChoferes
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES eventos (id)',
+      'REFERENCES events (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _choferIdMeta = const VerificationMeta(
@@ -1766,7 +1928,7 @@ class $EventoChoferesTable extends EventoChoferes
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES choferes (id)',
+      'REFERENCES choferes (id) ON DELETE CASCADE',
     ),
   );
   @override
@@ -1775,10 +1937,10 @@ class $EventoChoferesTable extends EventoChoferes
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'evento_choferes';
+  static const String $name = 'event_choferes';
   @override
   VerificationContext validateIntegrity(
-    Insertable<EventoChofere> instance, {
+    Insertable<EventChofere> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1805,9 +1967,9 @@ class $EventoChoferesTable extends EventoChoferes
   @override
   Set<GeneratedColumn> get $primaryKey => {eventId, choferId};
   @override
-  EventoChofere map(Map<String, dynamic> data, {String? tablePrefix}) {
+  EventChofere map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return EventoChofere(
+    return EventChofere(
       eventId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}event_id'],
@@ -1820,15 +1982,15 @@ class $EventoChoferesTable extends EventoChoferes
   }
 
   @override
-  $EventoChoferesTable createAlias(String alias) {
-    return $EventoChoferesTable(attachedDatabase, alias);
+  $EventChoferesTable createAlias(String alias) {
+    return $EventChoferesTable(attachedDatabase, alias);
   }
 }
 
-class EventoChofere extends DataClass implements Insertable<EventoChofere> {
+class EventChofere extends DataClass implements Insertable<EventChofere> {
   final String eventId;
   final String choferId;
-  const EventoChofere({required this.eventId, required this.choferId});
+  const EventChofere({required this.eventId, required this.choferId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1837,19 +1999,19 @@ class EventoChofere extends DataClass implements Insertable<EventoChofere> {
     return map;
   }
 
-  EventoChoferesCompanion toCompanion(bool nullToAbsent) {
-    return EventoChoferesCompanion(
+  EventChoferesCompanion toCompanion(bool nullToAbsent) {
+    return EventChoferesCompanion(
       eventId: Value(eventId),
       choferId: Value(choferId),
     );
   }
 
-  factory EventoChofere.fromJson(
+  factory EventChofere.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return EventoChofere(
+    return EventChofere(
       eventId: serializer.fromJson<String>(json['eventId']),
       choferId: serializer.fromJson<String>(json['choferId']),
     );
@@ -1863,12 +2025,12 @@ class EventoChofere extends DataClass implements Insertable<EventoChofere> {
     };
   }
 
-  EventoChofere copyWith({String? eventId, String? choferId}) => EventoChofere(
+  EventChofere copyWith({String? eventId, String? choferId}) => EventChofere(
     eventId: eventId ?? this.eventId,
     choferId: choferId ?? this.choferId,
   );
-  EventoChofere copyWithCompanion(EventoChoferesCompanion data) {
-    return EventoChofere(
+  EventChofere copyWithCompanion(EventChoferesCompanion data) {
+    return EventChofere(
       eventId: data.eventId.present ? data.eventId.value : this.eventId,
       choferId: data.choferId.present ? data.choferId.value : this.choferId,
     );
@@ -1876,7 +2038,7 @@ class EventoChofere extends DataClass implements Insertable<EventoChofere> {
 
   @override
   String toString() {
-    return (StringBuffer('EventoChofere(')
+    return (StringBuffer('EventChofere(')
           ..write('eventId: $eventId, ')
           ..write('choferId: $choferId')
           ..write(')'))
@@ -1888,27 +2050,27 @@ class EventoChofere extends DataClass implements Insertable<EventoChofere> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is EventoChofere &&
+      (other is EventChofere &&
           other.eventId == this.eventId &&
           other.choferId == this.choferId);
 }
 
-class EventoChoferesCompanion extends UpdateCompanion<EventoChofere> {
+class EventChoferesCompanion extends UpdateCompanion<EventChofere> {
   final Value<String> eventId;
   final Value<String> choferId;
   final Value<int> rowid;
-  const EventoChoferesCompanion({
+  const EventChoferesCompanion({
     this.eventId = const Value.absent(),
     this.choferId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  EventoChoferesCompanion.insert({
+  EventChoferesCompanion.insert({
     required String eventId,
     required String choferId,
     this.rowid = const Value.absent(),
   }) : eventId = Value(eventId),
        choferId = Value(choferId);
-  static Insertable<EventoChofere> custom({
+  static Insertable<EventChofere> custom({
     Expression<String>? eventId,
     Expression<String>? choferId,
     Expression<int>? rowid,
@@ -1920,12 +2082,12 @@ class EventoChoferesCompanion extends UpdateCompanion<EventoChofere> {
     });
   }
 
-  EventoChoferesCompanion copyWith({
+  EventChoferesCompanion copyWith({
     Value<String>? eventId,
     Value<String>? choferId,
     Value<int>? rowid,
   }) {
-    return EventoChoferesCompanion(
+    return EventChoferesCompanion(
       eventId: eventId ?? this.eventId,
       choferId: choferId ?? this.choferId,
       rowid: rowid ?? this.rowid,
@@ -1949,7 +2111,7 @@ class EventoChoferesCompanion extends UpdateCompanion<EventoChofere> {
 
   @override
   String toString() {
-    return (StringBuffer('EventoChoferesCompanion(')
+    return (StringBuffer('EventChoferesCompanion(')
           ..write('eventId: $eventId, ')
           ..write('choferId: $choferId, ')
           ..write('rowid: $rowid')
@@ -1958,12 +2120,12 @@ class EventoChoferesCompanion extends UpdateCompanion<EventoChofere> {
   }
 }
 
-class $EventoColectivosTable extends EventoColectivos
-    with TableInfo<$EventoColectivosTable, EventoColectivo> {
+class $EventColectivosTable extends EventColectivos
+    with TableInfo<$EventColectivosTable, EventColectivo> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EventoColectivosTable(this.attachedDatabase, [this._alias]);
+  $EventColectivosTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _eventIdMeta = const VerificationMeta(
     'eventId',
   );
@@ -1975,7 +2137,7 @@ class $EventoColectivosTable extends EventoColectivos
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES eventos (id)',
+      'REFERENCES events (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _colectivoIdMeta = const VerificationMeta(
@@ -1989,7 +2151,7 @@ class $EventoColectivosTable extends EventoColectivos
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES colectivos (id)',
+      'REFERENCES colectivos (id) ON DELETE CASCADE',
     ),
   );
   @override
@@ -1998,10 +2160,10 @@ class $EventoColectivosTable extends EventoColectivos
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'evento_colectivos';
+  static const String $name = 'event_colectivos';
   @override
   VerificationContext validateIntegrity(
-    Insertable<EventoColectivo> instance, {
+    Insertable<EventColectivo> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -2031,9 +2193,9 @@ class $EventoColectivosTable extends EventoColectivos
   @override
   Set<GeneratedColumn> get $primaryKey => {eventId, colectivoId};
   @override
-  EventoColectivo map(Map<String, dynamic> data, {String? tablePrefix}) {
+  EventColectivo map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return EventoColectivo(
+    return EventColectivo(
       eventId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}event_id'],
@@ -2046,15 +2208,15 @@ class $EventoColectivosTable extends EventoColectivos
   }
 
   @override
-  $EventoColectivosTable createAlias(String alias) {
-    return $EventoColectivosTable(attachedDatabase, alias);
+  $EventColectivosTable createAlias(String alias) {
+    return $EventColectivosTable(attachedDatabase, alias);
   }
 }
 
-class EventoColectivo extends DataClass implements Insertable<EventoColectivo> {
+class EventColectivo extends DataClass implements Insertable<EventColectivo> {
   final String eventId;
   final String colectivoId;
-  const EventoColectivo({required this.eventId, required this.colectivoId});
+  const EventColectivo({required this.eventId, required this.colectivoId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2063,19 +2225,19 @@ class EventoColectivo extends DataClass implements Insertable<EventoColectivo> {
     return map;
   }
 
-  EventoColectivosCompanion toCompanion(bool nullToAbsent) {
-    return EventoColectivosCompanion(
+  EventColectivosCompanion toCompanion(bool nullToAbsent) {
+    return EventColectivosCompanion(
       eventId: Value(eventId),
       colectivoId: Value(colectivoId),
     );
   }
 
-  factory EventoColectivo.fromJson(
+  factory EventColectivo.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return EventoColectivo(
+    return EventColectivo(
       eventId: serializer.fromJson<String>(json['eventId']),
       colectivoId: serializer.fromJson<String>(json['colectivoId']),
     );
@@ -2089,13 +2251,13 @@ class EventoColectivo extends DataClass implements Insertable<EventoColectivo> {
     };
   }
 
-  EventoColectivo copyWith({String? eventId, String? colectivoId}) =>
-      EventoColectivo(
+  EventColectivo copyWith({String? eventId, String? colectivoId}) =>
+      EventColectivo(
         eventId: eventId ?? this.eventId,
         colectivoId: colectivoId ?? this.colectivoId,
       );
-  EventoColectivo copyWithCompanion(EventoColectivosCompanion data) {
-    return EventoColectivo(
+  EventColectivo copyWithCompanion(EventColectivosCompanion data) {
+    return EventColectivo(
       eventId: data.eventId.present ? data.eventId.value : this.eventId,
       colectivoId: data.colectivoId.present
           ? data.colectivoId.value
@@ -2105,7 +2267,7 @@ class EventoColectivo extends DataClass implements Insertable<EventoColectivo> {
 
   @override
   String toString() {
-    return (StringBuffer('EventoColectivo(')
+    return (StringBuffer('EventColectivo(')
           ..write('eventId: $eventId, ')
           ..write('colectivoId: $colectivoId')
           ..write(')'))
@@ -2117,27 +2279,27 @@ class EventoColectivo extends DataClass implements Insertable<EventoColectivo> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is EventoColectivo &&
+      (other is EventColectivo &&
           other.eventId == this.eventId &&
           other.colectivoId == this.colectivoId);
 }
 
-class EventoColectivosCompanion extends UpdateCompanion<EventoColectivo> {
+class EventColectivosCompanion extends UpdateCompanion<EventColectivo> {
   final Value<String> eventId;
   final Value<String> colectivoId;
   final Value<int> rowid;
-  const EventoColectivosCompanion({
+  const EventColectivosCompanion({
     this.eventId = const Value.absent(),
     this.colectivoId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  EventoColectivosCompanion.insert({
+  EventColectivosCompanion.insert({
     required String eventId,
     required String colectivoId,
     this.rowid = const Value.absent(),
   }) : eventId = Value(eventId),
        colectivoId = Value(colectivoId);
-  static Insertable<EventoColectivo> custom({
+  static Insertable<EventColectivo> custom({
     Expression<String>? eventId,
     Expression<String>? colectivoId,
     Expression<int>? rowid,
@@ -2149,12 +2311,12 @@ class EventoColectivosCompanion extends UpdateCompanion<EventoColectivo> {
     });
   }
 
-  EventoColectivosCompanion copyWith({
+  EventColectivosCompanion copyWith({
     Value<String>? eventId,
     Value<String>? colectivoId,
     Value<int>? rowid,
   }) {
-    return EventoColectivosCompanion(
+    return EventColectivosCompanion(
       eventId: eventId ?? this.eventId,
       colectivoId: colectivoId ?? this.colectivoId,
       rowid: rowid ?? this.rowid,
@@ -2178,7 +2340,7 @@ class EventoColectivosCompanion extends UpdateCompanion<EventoColectivo> {
 
   @override
   String toString() {
-    return (StringBuffer('EventoColectivosCompanion(')
+    return (StringBuffer('EventColectivosCompanion(')
           ..write('eventId: $eventId, ')
           ..write('colectivoId: $colectivoId, ')
           ..write('rowid: $rowid')
@@ -2192,10 +2354,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ChoferesTable choferes = $ChoferesTable(this);
   late final $ColectivosTable colectivos = $ColectivosTable(this);
-  late final $EventosTable eventos = $EventosTable(this);
-  late final $ParadasTable paradas = $ParadasTable(this);
-  late final $EventoChoferesTable eventoChoferes = $EventoChoferesTable(this);
-  late final $EventoColectivosTable eventoColectivos = $EventoColectivosTable(
+  late final $EventsTable events = $EventsTable(this);
+  late final $StopsTable stops = $StopsTable(this);
+  late final $EventChoferesTable eventChoferes = $EventChoferesTable(this);
+  late final $EventColectivosTable eventColectivos = $EventColectivosTable(
     this,
   );
   @override
@@ -2205,11 +2367,49 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     choferes,
     colectivos,
-    eventos,
-    paradas,
-    eventoChoferes,
-    eventoColectivos,
+    events,
+    stops,
+    eventChoferes,
+    eventColectivos,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'events',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('stops', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'events',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('event_choferes', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'choferes',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('event_choferes', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'events',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('event_colectivos', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'colectivos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('event_colectivos', kind: UpdateKind.delete)],
+    ),
+  ]);
 }
 
 typedef $$ChoferesTableCreateCompanionBuilder =
@@ -2222,6 +2422,7 @@ typedef $$ChoferesTableCreateCompanionBuilder =
       Value<String?> mobileNumber,
       Value<String?> picturePath,
       Value<bool> is_active,
+      Value<bool> isSynced,
       Value<int> rowid,
     });
 typedef $$ChoferesTableUpdateCompanionBuilder =
@@ -2234,6 +2435,7 @@ typedef $$ChoferesTableUpdateCompanionBuilder =
       Value<String?> mobileNumber,
       Value<String?> picturePath,
       Value<bool> is_active,
+      Value<bool> isSynced,
       Value<int> rowid,
     });
 
@@ -2241,19 +2443,19 @@ final class $$ChoferesTableReferences
     extends BaseReferences<_$AppDatabase, $ChoferesTable, Chofere> {
   $$ChoferesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$EventoChoferesTable, List<EventoChofere>>
-  _eventoChoferesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.eventoChoferes,
-    aliasName: $_aliasNameGenerator(db.choferes.id, db.eventoChoferes.choferId),
+  static MultiTypedResultKey<$EventChoferesTable, List<EventChofere>>
+  _eventChoferesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.eventChoferes,
+    aliasName: $_aliasNameGenerator(db.choferes.id, db.eventChoferes.choferId),
   );
 
-  $$EventoChoferesTableProcessedTableManager get eventoChoferesRefs {
-    final manager = $$EventoChoferesTableTableManager(
+  $$EventChoferesTableProcessedTableManager get eventChoferesRefs {
+    final manager = $$EventChoferesTableTableManager(
       $_db,
-      $_db.eventoChoferes,
+      $_db.eventChoferes,
     ).filter((f) => f.choferId.id.sqlEquals($_itemColumn<String>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_eventoChoferesRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(_eventChoferesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2309,22 +2511,27 @@ class $$ChoferesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> eventoChoferesRefs(
-    Expression<bool> Function($$EventoChoferesTableFilterComposer f) f,
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> eventChoferesRefs(
+    Expression<bool> Function($$EventChoferesTableFilterComposer f) f,
   ) {
-    final $$EventoChoferesTableFilterComposer composer = $composerBuilder(
+    final $$EventChoferesTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.eventoChoferes,
+      referencedTable: $db.eventChoferes,
       getReferencedColumn: (t) => t.choferId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventoChoferesTableFilterComposer(
+          }) => $$EventChoferesTableFilterComposer(
             $db: $db,
-            $table: $db.eventoChoferes,
+            $table: $db.eventChoferes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2383,6 +2590,11 @@ class $$ChoferesTableOrderingComposer
     column: $table.is_active,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ChoferesTableAnnotationComposer
@@ -2422,22 +2634,25 @@ class $$ChoferesTableAnnotationComposer
   GeneratedColumn<bool> get is_active =>
       $composableBuilder(column: $table.is_active, builder: (column) => column);
 
-  Expression<T> eventoChoferesRefs<T extends Object>(
-    Expression<T> Function($$EventoChoferesTableAnnotationComposer a) f,
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  Expression<T> eventChoferesRefs<T extends Object>(
+    Expression<T> Function($$EventChoferesTableAnnotationComposer a) f,
   ) {
-    final $$EventoChoferesTableAnnotationComposer composer = $composerBuilder(
+    final $$EventChoferesTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.eventoChoferes,
+      referencedTable: $db.eventChoferes,
       getReferencedColumn: (t) => t.choferId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventoChoferesTableAnnotationComposer(
+          }) => $$EventChoferesTableAnnotationComposer(
             $db: $db,
-            $table: $db.eventoChoferes,
+            $table: $db.eventChoferes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2461,7 +2676,7 @@ class $$ChoferesTableTableManager
           $$ChoferesTableUpdateCompanionBuilder,
           (Chofere, $$ChoferesTableReferences),
           Chofere,
-          PrefetchHooks Function({bool eventoChoferesRefs})
+          PrefetchHooks Function({bool eventChoferesRefs})
         > {
   $$ChoferesTableTableManager(_$AppDatabase db, $ChoferesTable table)
     : super(
@@ -2484,6 +2699,7 @@ class $$ChoferesTableTableManager
                 Value<String?> mobileNumber = const Value.absent(),
                 Value<String?> picturePath = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ChoferesCompanion(
                 id: id,
@@ -2494,6 +2710,7 @@ class $$ChoferesTableTableManager
                 mobileNumber: mobileNumber,
                 picturePath: picturePath,
                 is_active: is_active,
+                isSynced: isSynced,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2506,6 +2723,7 @@ class $$ChoferesTableTableManager
                 Value<String?> mobileNumber = const Value.absent(),
                 Value<String?> picturePath = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ChoferesCompanion.insert(
                 id: id,
@@ -2516,6 +2734,7 @@ class $$ChoferesTableTableManager
                 mobileNumber: mobileNumber,
                 picturePath: picturePath,
                 is_active: is_active,
+                isSynced: isSynced,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2526,29 +2745,29 @@ class $$ChoferesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({eventoChoferesRefs = false}) {
+          prefetchHooksCallback: ({eventChoferesRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
-                if (eventoChoferesRefs) db.eventoChoferes,
+                if (eventChoferesRefs) db.eventChoferes,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
-                  if (eventoChoferesRefs)
+                  if (eventChoferesRefs)
                     await $_getPrefetchedData<
                       Chofere,
                       $ChoferesTable,
-                      EventoChofere
+                      EventChofere
                     >(
                       currentTable: table,
                       referencedTable: $$ChoferesTableReferences
-                          ._eventoChoferesRefsTable(db),
+                          ._eventChoferesRefsTable(db),
                       managerFromTypedResult: (p0) => $$ChoferesTableReferences(
                         db,
                         table,
                         p0,
-                      ).eventoChoferesRefs,
+                      ).eventChoferesRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where((e) => e.choferId == item.id),
                       typedResults: items,
@@ -2573,7 +2792,7 @@ typedef $$ChoferesTableProcessedTableManager =
       $$ChoferesTableUpdateCompanionBuilder,
       (Chofere, $$ChoferesTableReferences),
       Chofere,
-      PrefetchHooks Function({bool eventoChoferesRefs})
+      PrefetchHooks Function({bool eventChoferesRefs})
     >;
 typedef $$ColectivosTableCreateCompanionBuilder =
     ColectivosCompanion Function({
@@ -2584,6 +2803,7 @@ typedef $$ColectivosTableCreateCompanionBuilder =
       Value<String?> fuelAmount,
       Value<DateTime?> fuelDate,
       Value<bool> is_active,
+      Value<bool> isSynced,
       Value<int> rowid,
     });
 typedef $$ColectivosTableUpdateCompanionBuilder =
@@ -2595,6 +2815,7 @@ typedef $$ColectivosTableUpdateCompanionBuilder =
       Value<String?> fuelAmount,
       Value<DateTime?> fuelDate,
       Value<bool> is_active,
+      Value<bool> isSynced,
       Value<int> rowid,
     });
 
@@ -2602,23 +2823,23 @@ final class $$ColectivosTableReferences
     extends BaseReferences<_$AppDatabase, $ColectivosTable, Colectivo> {
   $$ColectivosTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$EventoColectivosTable, List<EventoColectivo>>
-  _eventoColectivosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.eventoColectivos,
+  static MultiTypedResultKey<$EventColectivosTable, List<EventColectivo>>
+  _eventColectivosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.eventColectivos,
     aliasName: $_aliasNameGenerator(
       db.colectivos.id,
-      db.eventoColectivos.colectivoId,
+      db.eventColectivos.colectivoId,
     ),
   );
 
-  $$EventoColectivosTableProcessedTableManager get eventoColectivosRefs {
-    final manager = $$EventoColectivosTableTableManager(
+  $$EventColectivosTableProcessedTableManager get eventColectivosRefs {
+    final manager = $$EventColectivosTableTableManager(
       $_db,
-      $_db.eventoColectivos,
+      $_db.eventColectivos,
     ).filter((f) => f.colectivoId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _eventoColectivosRefsTable($_db),
+      _eventColectivosRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -2670,22 +2891,27 @@ class $$ColectivosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  Expression<bool> eventoColectivosRefs(
-    Expression<bool> Function($$EventoColectivosTableFilterComposer f) f,
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> eventColectivosRefs(
+    Expression<bool> Function($$EventColectivosTableFilterComposer f) f,
   ) {
-    final $$EventoColectivosTableFilterComposer composer = $composerBuilder(
+    final $$EventColectivosTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.eventoColectivos,
+      referencedTable: $db.eventColectivos,
       getReferencedColumn: (t) => t.colectivoId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventoColectivosTableFilterComposer(
+          }) => $$EventColectivosTableFilterComposer(
             $db: $db,
-            $table: $db.eventoColectivos,
+            $table: $db.eventColectivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2739,6 +2965,11 @@ class $$ColectivosTableOrderingComposer
     column: $table.is_active,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$ColectivosTableAnnotationComposer
@@ -2773,22 +3004,25 @@ class $$ColectivosTableAnnotationComposer
   GeneratedColumn<bool> get is_active =>
       $composableBuilder(column: $table.is_active, builder: (column) => column);
 
-  Expression<T> eventoColectivosRefs<T extends Object>(
-    Expression<T> Function($$EventoColectivosTableAnnotationComposer a) f,
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  Expression<T> eventColectivosRefs<T extends Object>(
+    Expression<T> Function($$EventColectivosTableAnnotationComposer a) f,
   ) {
-    final $$EventoColectivosTableAnnotationComposer composer = $composerBuilder(
+    final $$EventColectivosTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.id,
-      referencedTable: $db.eventoColectivos,
+      referencedTable: $db.eventColectivos,
       getReferencedColumn: (t) => t.colectivoId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventoColectivosTableAnnotationComposer(
+          }) => $$EventColectivosTableAnnotationComposer(
             $db: $db,
-            $table: $db.eventoColectivos,
+            $table: $db.eventColectivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2812,7 +3046,7 @@ class $$ColectivosTableTableManager
           $$ColectivosTableUpdateCompanionBuilder,
           (Colectivo, $$ColectivosTableReferences),
           Colectivo,
-          PrefetchHooks Function({bool eventoColectivosRefs})
+          PrefetchHooks Function({bool eventColectivosRefs})
         > {
   $$ColectivosTableTableManager(_$AppDatabase db, $ColectivosTable table)
     : super(
@@ -2834,6 +3068,7 @@ class $$ColectivosTableTableManager
                 Value<String?> fuelAmount = const Value.absent(),
                 Value<DateTime?> fuelDate = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ColectivosCompanion(
                 id: id,
@@ -2843,6 +3078,7 @@ class $$ColectivosTableTableManager
                 fuelAmount: fuelAmount,
                 fuelDate: fuelDate,
                 is_active: is_active,
+                isSynced: isSynced,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2854,6 +3090,7 @@ class $$ColectivosTableTableManager
                 Value<String?> fuelAmount = const Value.absent(),
                 Value<DateTime?> fuelDate = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => ColectivosCompanion.insert(
                 id: id,
@@ -2863,6 +3100,7 @@ class $$ColectivosTableTableManager
                 fuelAmount: fuelAmount,
                 fuelDate: fuelDate,
                 is_active: is_active,
+                isSynced: isSynced,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2873,30 +3111,30 @@ class $$ColectivosTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({eventoColectivosRefs = false}) {
+          prefetchHooksCallback: ({eventColectivosRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
-                if (eventoColectivosRefs) db.eventoColectivos,
+                if (eventColectivosRefs) db.eventColectivos,
               ],
               addJoins: null,
               getPrefetchedDataCallback: (items) async {
                 return [
-                  if (eventoColectivosRefs)
+                  if (eventColectivosRefs)
                     await $_getPrefetchedData<
                       Colectivo,
                       $ColectivosTable,
-                      EventoColectivo
+                      EventColectivo
                     >(
                       currentTable: table,
                       referencedTable: $$ColectivosTableReferences
-                          ._eventoColectivosRefsTable(db),
+                          ._eventColectivosRefsTable(db),
                       managerFromTypedResult: (p0) =>
                           $$ColectivosTableReferences(
                             db,
                             table,
                             p0,
-                          ).eventoColectivosRefs,
+                          ).eventColectivosRefs,
                       referencedItemsForCurrentItem: (item, referencedItems) =>
                           referencedItems.where(
                             (e) => e.colectivoId == item.id,
@@ -2923,86 +3161,86 @@ typedef $$ColectivosTableProcessedTableManager =
       $$ColectivosTableUpdateCompanionBuilder,
       (Colectivo, $$ColectivosTableReferences),
       Colectivo,
-      PrefetchHooks Function({bool eventoColectivosRefs})
+      PrefetchHooks Function({bool eventColectivosRefs})
     >;
-typedef $$EventosTableCreateCompanionBuilder =
-    EventosCompanion Function({
+typedef $$EventsTableCreateCompanionBuilder =
+    EventsCompanion Function({
       required String id,
-      Value<String?> name,
-      Value<DateTime?> start,
-      Value<DateTime?> end,
+      required String name,
       Value<bool> repeat,
-      Value<String?> days,
+      Value<List<WeekDays>?> days,
+      required EventStates state,
+      required bool isTrip,
       Value<bool> isSynced,
       Value<int> rowid,
     });
-typedef $$EventosTableUpdateCompanionBuilder =
-    EventosCompanion Function({
+typedef $$EventsTableUpdateCompanionBuilder =
+    EventsCompanion Function({
       Value<String> id,
-      Value<String?> name,
-      Value<DateTime?> start,
-      Value<DateTime?> end,
+      Value<String> name,
       Value<bool> repeat,
-      Value<String?> days,
+      Value<List<WeekDays>?> days,
+      Value<EventStates> state,
+      Value<bool> isTrip,
       Value<bool> isSynced,
       Value<int> rowid,
     });
 
-final class $$EventosTableReferences
-    extends BaseReferences<_$AppDatabase, $EventosTable, Evento> {
-  $$EventosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+final class $$EventsTableReferences
+    extends BaseReferences<_$AppDatabase, $EventsTable, Event> {
+  $$EventsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$ParadasTable, List<Parada>> _paradasRefsTable(
+  static MultiTypedResultKey<$StopsTable, List<Stop>> _stopsRefsTable(
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
-    db.paradas,
-    aliasName: $_aliasNameGenerator(db.eventos.id, db.paradas.eventId),
+    db.stops,
+    aliasName: $_aliasNameGenerator(db.events.id, db.stops.eventId),
   );
 
-  $$ParadasTableProcessedTableManager get paradasRefs {
-    final manager = $$ParadasTableTableManager(
+  $$StopsTableProcessedTableManager get stopsRefs {
+    final manager = $$StopsTableTableManager(
       $_db,
-      $_db.paradas,
+      $_db.stops,
     ).filter((f) => f.eventId.id.sqlEquals($_itemColumn<String>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_paradasRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(_stopsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
-  static MultiTypedResultKey<$EventoChoferesTable, List<EventoChofere>>
-  _eventoChoferesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.eventoChoferes,
-    aliasName: $_aliasNameGenerator(db.eventos.id, db.eventoChoferes.eventId),
+  static MultiTypedResultKey<$EventChoferesTable, List<EventChofere>>
+  _eventChoferesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.eventChoferes,
+    aliasName: $_aliasNameGenerator(db.events.id, db.eventChoferes.eventId),
   );
 
-  $$EventoChoferesTableProcessedTableManager get eventoChoferesRefs {
-    final manager = $$EventoChoferesTableTableManager(
+  $$EventChoferesTableProcessedTableManager get eventChoferesRefs {
+    final manager = $$EventChoferesTableTableManager(
       $_db,
-      $_db.eventoChoferes,
+      $_db.eventChoferes,
     ).filter((f) => f.eventId.id.sqlEquals($_itemColumn<String>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(_eventoChoferesRefsTable($_db));
+    final cache = $_typedResult.readTableOrNull(_eventChoferesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
 
-  static MultiTypedResultKey<$EventoColectivosTable, List<EventoColectivo>>
-  _eventoColectivosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.eventoColectivos,
-    aliasName: $_aliasNameGenerator(db.eventos.id, db.eventoColectivos.eventId),
+  static MultiTypedResultKey<$EventColectivosTable, List<EventColectivo>>
+  _eventColectivosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.eventColectivos,
+    aliasName: $_aliasNameGenerator(db.events.id, db.eventColectivos.eventId),
   );
 
-  $$EventoColectivosTableProcessedTableManager get eventoColectivosRefs {
-    final manager = $$EventoColectivosTableTableManager(
+  $$EventColectivosTableProcessedTableManager get eventColectivosRefs {
+    final manager = $$EventColectivosTableTableManager(
       $_db,
-      $_db.eventoColectivos,
+      $_db.eventColectivos,
     ).filter((f) => f.eventId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(
-      _eventoColectivosRefsTable($_db),
+      _eventColectivosRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -3010,9 +3248,496 @@ final class $$EventosTableReferences
   }
 }
 
-class $$EventosTableFilterComposer
-    extends Composer<_$AppDatabase, $EventosTable> {
-  $$EventosTableFilterComposer({
+class $$EventsTableFilterComposer
+    extends Composer<_$AppDatabase, $EventsTable> {
+  $$EventsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get repeat => $composableBuilder(
+    column: $table.repeat,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<List<WeekDays>?, List<WeekDays>, String>
+  get days => $composableBuilder(
+    column: $table.days,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<EventStates, EventStates, int> get state =>
+      $composableBuilder(
+        column: $table.state,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<bool> get isTrip => $composableBuilder(
+    column: $table.isTrip,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> stopsRefs(
+    Expression<bool> Function($$StopsTableFilterComposer f) f,
+  ) {
+    final $$StopsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.stops,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StopsTableFilterComposer(
+            $db: $db,
+            $table: $db.stops,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> eventChoferesRefs(
+    Expression<bool> Function($$EventChoferesTableFilterComposer f) f,
+  ) {
+    final $$EventChoferesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.eventChoferes,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventChoferesTableFilterComposer(
+            $db: $db,
+            $table: $db.eventChoferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> eventColectivosRefs(
+    Expression<bool> Function($$EventColectivosTableFilterComposer f) f,
+  ) {
+    final $$EventColectivosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.eventColectivos,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventColectivosTableFilterComposer(
+            $db: $db,
+            $table: $db.eventColectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$EventsTableOrderingComposer
+    extends Composer<_$AppDatabase, $EventsTable> {
+  $$EventsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get repeat => $composableBuilder(
+    column: $table.repeat,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get days => $composableBuilder(
+    column: $table.days,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get state => $composableBuilder(
+    column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isTrip => $composableBuilder(
+    column: $table.isTrip,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EventsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EventsTable> {
+  $$EventsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get repeat =>
+      $composableBuilder(column: $table.repeat, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<WeekDays>?, String> get days =>
+      $composableBuilder(column: $table.days, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<EventStates, int> get state =>
+      $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumn<bool> get isTrip =>
+      $composableBuilder(column: $table.isTrip, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  Expression<T> stopsRefs<T extends Object>(
+    Expression<T> Function($$StopsTableAnnotationComposer a) f,
+  ) {
+    final $$StopsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.stops,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$StopsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.stops,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> eventChoferesRefs<T extends Object>(
+    Expression<T> Function($$EventChoferesTableAnnotationComposer a) f,
+  ) {
+    final $$EventChoferesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.eventChoferes,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventChoferesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.eventChoferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> eventColectivosRefs<T extends Object>(
+    Expression<T> Function($$EventColectivosTableAnnotationComposer a) f,
+  ) {
+    final $$EventColectivosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.eventColectivos,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventColectivosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.eventColectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$EventsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EventsTable,
+          Event,
+          $$EventsTableFilterComposer,
+          $$EventsTableOrderingComposer,
+          $$EventsTableAnnotationComposer,
+          $$EventsTableCreateCompanionBuilder,
+          $$EventsTableUpdateCompanionBuilder,
+          (Event, $$EventsTableReferences),
+          Event,
+          PrefetchHooks Function({
+            bool stopsRefs,
+            bool eventChoferesRefs,
+            bool eventColectivosRefs,
+          })
+        > {
+  $$EventsTableTableManager(_$AppDatabase db, $EventsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EventsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EventsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EventsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<bool> repeat = const Value.absent(),
+                Value<List<WeekDays>?> days = const Value.absent(),
+                Value<EventStates> state = const Value.absent(),
+                Value<bool> isTrip = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventsCompanion(
+                id: id,
+                name: name,
+                repeat: repeat,
+                days: days,
+                state: state,
+                isTrip: isTrip,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<bool> repeat = const Value.absent(),
+                Value<List<WeekDays>?> days = const Value.absent(),
+                required EventStates state,
+                required bool isTrip,
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EventsCompanion.insert(
+                id: id,
+                name: name,
+                repeat: repeat,
+                days: days,
+                state: state,
+                isTrip: isTrip,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$EventsTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                stopsRefs = false,
+                eventChoferesRefs = false,
+                eventColectivosRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (stopsRefs) db.stops,
+                    if (eventChoferesRefs) db.eventChoferes,
+                    if (eventColectivosRefs) db.eventColectivos,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (stopsRefs)
+                        await $_getPrefetchedData<Event, $EventsTable, Stop>(
+                          currentTable: table,
+                          referencedTable: $$EventsTableReferences
+                              ._stopsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EventsTableReferences(db, table, p0).stopsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.eventId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (eventChoferesRefs)
+                        await $_getPrefetchedData<
+                          Event,
+                          $EventsTable,
+                          EventChofere
+                        >(
+                          currentTable: table,
+                          referencedTable: $$EventsTableReferences
+                              ._eventChoferesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EventsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).eventChoferesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.eventId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (eventColectivosRefs)
+                        await $_getPrefetchedData<
+                          Event,
+                          $EventsTable,
+                          EventColectivo
+                        >(
+                          currentTable: table,
+                          referencedTable: $$EventsTableReferences
+                              ._eventColectivosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$EventsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).eventColectivosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.eventId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$EventsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EventsTable,
+      Event,
+      $$EventsTableFilterComposer,
+      $$EventsTableOrderingComposer,
+      $$EventsTableAnnotationComposer,
+      $$EventsTableCreateCompanionBuilder,
+      $$EventsTableUpdateCompanionBuilder,
+      (Event, $$EventsTableReferences),
+      Event,
+      PrefetchHooks Function({
+        bool stopsRefs,
+        bool eventChoferesRefs,
+        bool eventColectivosRefs,
+      })
+    >;
+typedef $$StopsTableCreateCompanionBuilder =
+    StopsCompanion Function({
+      required String id,
+      required String name,
+      Value<DateTime?> start,
+      required String eventId,
+      required int orderIndex,
+      Value<int> rowid,
+    });
+typedef $$StopsTableUpdateCompanionBuilder =
+    StopsCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<DateTime?> start,
+      Value<String> eventId,
+      Value<int> orderIndex,
+      Value<int> rowid,
+    });
+
+final class $$StopsTableReferences
+    extends BaseReferences<_$AppDatabase, $StopsTable, Stop> {
+  $$StopsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $EventsTable _eventIdTable(_$AppDatabase db) => db.events.createAlias(
+    $_aliasNameGenerator(db.stops.eventId, db.events.id),
+  );
+
+  $$EventsTableProcessedTableManager get eventId {
+    final $_column = $_itemColumn<String>('event_id')!;
+
+    final manager = $$EventsTableTableManager(
+      $_db,
+      $_db.events,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$StopsTableFilterComposer extends Composer<_$AppDatabase, $StopsTable> {
+  $$StopsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3034,105 +3759,38 @@ class $$EventosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get end => $composableBuilder(
-    column: $table.end,
+  ColumnFilters<int> get orderIndex => $composableBuilder(
+    column: $table.orderIndex,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<bool> get repeat => $composableBuilder(
-    column: $table.repeat,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get days => $composableBuilder(
-    column: $table.days,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-    column: $table.isSynced,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  Expression<bool> paradasRefs(
-    Expression<bool> Function($$ParadasTableFilterComposer f) f,
-  ) {
-    final $$ParadasTableFilterComposer composer = $composerBuilder(
+  $$EventsTableFilterComposer get eventId {
+    final $$EventsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.paradas,
-      getReferencedColumn: (t) => t.eventId,
+      getCurrentColumn: (t) => t.eventId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$ParadasTableFilterComposer(
+          }) => $$EventsTableFilterComposer(
             $db: $db,
-            $table: $db.paradas,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
                 $removeJoinBuilderFromRootComposer,
           ),
     );
-    return f(composer);
-  }
-
-  Expression<bool> eventoChoferesRefs(
-    Expression<bool> Function($$EventoChoferesTableFilterComposer f) f,
-  ) {
-    final $$EventoChoferesTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.eventoChoferes,
-      getReferencedColumn: (t) => t.eventId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EventoChoferesTableFilterComposer(
-            $db: $db,
-            $table: $db.eventoChoferes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> eventoColectivosRefs(
-    Expression<bool> Function($$EventoColectivosTableFilterComposer f) f,
-  ) {
-    final $$EventoColectivosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.eventoColectivos,
-      getReferencedColumn: (t) => t.eventId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EventoColectivosTableFilterComposer(
-            $db: $db,
-            $table: $db.eventoColectivos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
+    return composer;
   }
 }
 
-class $$EventosTableOrderingComposer
-    extends Composer<_$AppDatabase, $EventosTable> {
-  $$EventosTableOrderingComposer({
+class $$StopsTableOrderingComposer
+    extends Composer<_$AppDatabase, $StopsTable> {
+  $$StopsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3154,30 +3812,38 @@ class $$EventosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get end => $composableBuilder(
-    column: $table.end,
+  ColumnOrderings<int> get orderIndex => $composableBuilder(
+    column: $table.orderIndex,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<bool> get repeat => $composableBuilder(
-    column: $table.repeat,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get days => $composableBuilder(
-    column: $table.days,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-    column: $table.isSynced,
-    builder: (column) => ColumnOrderings(column),
-  );
+  $$EventsTableOrderingComposer get eventId {
+    final $$EventsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.eventId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableOrderingComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
-class $$EventosTableAnnotationComposer
-    extends Composer<_$AppDatabase, $EventosTable> {
-  $$EventosTableAnnotationComposer({
+class $$StopsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $StopsTable> {
+  $$StopsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3193,446 +3859,25 @@ class $$EventosTableAnnotationComposer
   GeneratedColumn<DateTime> get start =>
       $composableBuilder(column: $table.start, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get end =>
-      $composableBuilder(column: $table.end, builder: (column) => column);
-
-  GeneratedColumn<bool> get repeat =>
-      $composableBuilder(column: $table.repeat, builder: (column) => column);
-
-  GeneratedColumn<String> get days =>
-      $composableBuilder(column: $table.days, builder: (column) => column);
-
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
-
-  Expression<T> paradasRefs<T extends Object>(
-    Expression<T> Function($$ParadasTableAnnotationComposer a) f,
-  ) {
-    final $$ParadasTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.paradas,
-      getReferencedColumn: (t) => t.eventId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$ParadasTableAnnotationComposer(
-            $db: $db,
-            $table: $db.paradas,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> eventoChoferesRefs<T extends Object>(
-    Expression<T> Function($$EventoChoferesTableAnnotationComposer a) f,
-  ) {
-    final $$EventoChoferesTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.eventoChoferes,
-      getReferencedColumn: (t) => t.eventId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EventoChoferesTableAnnotationComposer(
-            $db: $db,
-            $table: $db.eventoChoferes,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<T> eventoColectivosRefs<T extends Object>(
-    Expression<T> Function($$EventoColectivosTableAnnotationComposer a) f,
-  ) {
-    final $$EventoColectivosTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.eventoColectivos,
-      getReferencedColumn: (t) => t.eventId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EventoColectivosTableAnnotationComposer(
-            $db: $db,
-            $table: $db.eventoColectivos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-}
-
-class $$EventosTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $EventosTable,
-          Evento,
-          $$EventosTableFilterComposer,
-          $$EventosTableOrderingComposer,
-          $$EventosTableAnnotationComposer,
-          $$EventosTableCreateCompanionBuilder,
-          $$EventosTableUpdateCompanionBuilder,
-          (Evento, $$EventosTableReferences),
-          Evento,
-          PrefetchHooks Function({
-            bool paradasRefs,
-            bool eventoChoferesRefs,
-            bool eventoColectivosRefs,
-          })
-        > {
-  $$EventosTableTableManager(_$AppDatabase db, $EventosTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$EventosTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$EventosTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$EventosTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String?> name = const Value.absent(),
-                Value<DateTime?> start = const Value.absent(),
-                Value<DateTime?> end = const Value.absent(),
-                Value<bool> repeat = const Value.absent(),
-                Value<String?> days = const Value.absent(),
-                Value<bool> isSynced = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => EventosCompanion(
-                id: id,
-                name: name,
-                start: start,
-                end: end,
-                repeat: repeat,
-                days: days,
-                isSynced: isSynced,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                Value<String?> name = const Value.absent(),
-                Value<DateTime?> start = const Value.absent(),
-                Value<DateTime?> end = const Value.absent(),
-                Value<bool> repeat = const Value.absent(),
-                Value<String?> days = const Value.absent(),
-                Value<bool> isSynced = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => EventosCompanion.insert(
-                id: id,
-                name: name,
-                start: start,
-                end: end,
-                repeat: repeat,
-                days: days,
-                isSynced: isSynced,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$EventosTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback:
-              ({
-                paradasRefs = false,
-                eventoChoferesRefs = false,
-                eventoColectivosRefs = false,
-              }) {
-                return PrefetchHooks(
-                  db: db,
-                  explicitlyWatchedTables: [
-                    if (paradasRefs) db.paradas,
-                    if (eventoChoferesRefs) db.eventoChoferes,
-                    if (eventoColectivosRefs) db.eventoColectivos,
-                  ],
-                  addJoins: null,
-                  getPrefetchedDataCallback: (items) async {
-                    return [
-                      if (paradasRefs)
-                        await $_getPrefetchedData<
-                          Evento,
-                          $EventosTable,
-                          Parada
-                        >(
-                          currentTable: table,
-                          referencedTable: $$EventosTableReferences
-                              ._paradasRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$EventosTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).paradasRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.eventId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (eventoChoferesRefs)
-                        await $_getPrefetchedData<
-                          Evento,
-                          $EventosTable,
-                          EventoChofere
-                        >(
-                          currentTable: table,
-                          referencedTable: $$EventosTableReferences
-                              ._eventoChoferesRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$EventosTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).eventoChoferesRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.eventId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (eventoColectivosRefs)
-                        await $_getPrefetchedData<
-                          Evento,
-                          $EventosTable,
-                          EventoColectivo
-                        >(
-                          currentTable: table,
-                          referencedTable: $$EventosTableReferences
-                              ._eventoColectivosRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$EventosTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).eventoColectivosRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.eventId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                    ];
-                  },
-                );
-              },
-        ),
-      );
-}
-
-typedef $$EventosTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $EventosTable,
-      Evento,
-      $$EventosTableFilterComposer,
-      $$EventosTableOrderingComposer,
-      $$EventosTableAnnotationComposer,
-      $$EventosTableCreateCompanionBuilder,
-      $$EventosTableUpdateCompanionBuilder,
-      (Evento, $$EventosTableReferences),
-      Evento,
-      PrefetchHooks Function({
-        bool paradasRefs,
-        bool eventoChoferesRefs,
-        bool eventoColectivosRefs,
-      })
-    >;
-typedef $$ParadasTableCreateCompanionBuilder =
-    ParadasCompanion Function({
-      required String id,
-      required String name,
-      required String eventId,
-      required int orderIndex,
-      Value<int> rowid,
-    });
-typedef $$ParadasTableUpdateCompanionBuilder =
-    ParadasCompanion Function({
-      Value<String> id,
-      Value<String> name,
-      Value<String> eventId,
-      Value<int> orderIndex,
-      Value<int> rowid,
-    });
-
-final class $$ParadasTableReferences
-    extends BaseReferences<_$AppDatabase, $ParadasTable, Parada> {
-  $$ParadasTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $EventosTable _eventIdTable(_$AppDatabase db) => db.eventos
-      .createAlias($_aliasNameGenerator(db.paradas.eventId, db.eventos.id));
-
-  $$EventosTableProcessedTableManager get eventId {
-    final $_column = $_itemColumn<String>('event_id')!;
-
-    final manager = $$EventosTableTableManager(
-      $_db,
-      $_db.eventos,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$ParadasTableFilterComposer
-    extends Composer<_$AppDatabase, $ParadasTable> {
-  $$ParadasTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<int> get orderIndex => $composableBuilder(
-    column: $table.orderIndex,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$EventosTableFilterComposer get eventId {
-    final $$EventosTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableFilterComposer(
-            $db: $db,
-            $table: $db.eventos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$ParadasTableOrderingComposer
-    extends Composer<_$AppDatabase, $ParadasTable> {
-  $$ParadasTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<int> get orderIndex => $composableBuilder(
-    column: $table.orderIndex,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$EventosTableOrderingComposer get eventId {
-    final $$EventosTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableOrderingComposer(
-            $db: $db,
-            $table: $db.eventos,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$ParadasTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ParadasTable> {
-  $$ParadasTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
   GeneratedColumn<int> get orderIndex => $composableBuilder(
     column: $table.orderIndex,
     builder: (column) => column,
   );
 
-  $$EventosTableAnnotationComposer get eventId {
-    final $$EventosTableAnnotationComposer composer = $composerBuilder(
+  $$EventsTableAnnotationComposer get eventId {
+    final $$EventsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
+      referencedTable: $db.events,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableAnnotationComposer(
+          }) => $$EventsTableAnnotationComposer(
             $db: $db,
-            $table: $db.eventos,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3643,42 +3888,44 @@ class $$ParadasTableAnnotationComposer
   }
 }
 
-class $$ParadasTableTableManager
+class $$StopsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $ParadasTable,
-          Parada,
-          $$ParadasTableFilterComposer,
-          $$ParadasTableOrderingComposer,
-          $$ParadasTableAnnotationComposer,
-          $$ParadasTableCreateCompanionBuilder,
-          $$ParadasTableUpdateCompanionBuilder,
-          (Parada, $$ParadasTableReferences),
-          Parada,
+          $StopsTable,
+          Stop,
+          $$StopsTableFilterComposer,
+          $$StopsTableOrderingComposer,
+          $$StopsTableAnnotationComposer,
+          $$StopsTableCreateCompanionBuilder,
+          $$StopsTableUpdateCompanionBuilder,
+          (Stop, $$StopsTableReferences),
+          Stop,
           PrefetchHooks Function({bool eventId})
         > {
-  $$ParadasTableTableManager(_$AppDatabase db, $ParadasTable table)
+  $$StopsTableTableManager(_$AppDatabase db, $StopsTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$ParadasTableFilterComposer($db: db, $table: table),
+              $$StopsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$ParadasTableOrderingComposer($db: db, $table: table),
+              $$StopsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$ParadasTableAnnotationComposer($db: db, $table: table),
+              $$StopsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<DateTime?> start = const Value.absent(),
                 Value<String> eventId = const Value.absent(),
                 Value<int> orderIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => ParadasCompanion(
+              }) => StopsCompanion(
                 id: id,
                 name: name,
+                start: start,
                 eventId: eventId,
                 orderIndex: orderIndex,
                 rowid: rowid,
@@ -3687,22 +3934,22 @@ class $$ParadasTableTableManager
               ({
                 required String id,
                 required String name,
+                Value<DateTime?> start = const Value.absent(),
                 required String eventId,
                 required int orderIndex,
                 Value<int> rowid = const Value.absent(),
-              }) => ParadasCompanion.insert(
+              }) => StopsCompanion.insert(
                 id: id,
                 name: name,
+                start: start,
                 eventId: eventId,
                 orderIndex: orderIndex,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
-                (e) => (
-                  e.readTable(table),
-                  $$ParadasTableReferences(db, table, e),
-                ),
+                (e) =>
+                    (e.readTable(table), $$StopsTableReferences(db, table, e)),
               )
               .toList(),
           prefetchHooksCallback: ({eventId = false}) {
@@ -3730,9 +3977,9 @@ class $$ParadasTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.eventId,
-                                referencedTable: $$ParadasTableReferences
+                                referencedTable: $$StopsTableReferences
                                     ._eventIdTable(db),
-                                referencedColumn: $$ParadasTableReferences
+                                referencedColumn: $$StopsTableReferences
                                     ._eventIdTable(db)
                                     .id,
                               )
@@ -3750,52 +3997,51 @@ class $$ParadasTableTableManager
       );
 }
 
-typedef $$ParadasTableProcessedTableManager =
+typedef $$StopsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $ParadasTable,
-      Parada,
-      $$ParadasTableFilterComposer,
-      $$ParadasTableOrderingComposer,
-      $$ParadasTableAnnotationComposer,
-      $$ParadasTableCreateCompanionBuilder,
-      $$ParadasTableUpdateCompanionBuilder,
-      (Parada, $$ParadasTableReferences),
-      Parada,
+      $StopsTable,
+      Stop,
+      $$StopsTableFilterComposer,
+      $$StopsTableOrderingComposer,
+      $$StopsTableAnnotationComposer,
+      $$StopsTableCreateCompanionBuilder,
+      $$StopsTableUpdateCompanionBuilder,
+      (Stop, $$StopsTableReferences),
+      Stop,
       PrefetchHooks Function({bool eventId})
     >;
-typedef $$EventoChoferesTableCreateCompanionBuilder =
-    EventoChoferesCompanion Function({
+typedef $$EventChoferesTableCreateCompanionBuilder =
+    EventChoferesCompanion Function({
       required String eventId,
       required String choferId,
       Value<int> rowid,
     });
-typedef $$EventoChoferesTableUpdateCompanionBuilder =
-    EventoChoferesCompanion Function({
+typedef $$EventChoferesTableUpdateCompanionBuilder =
+    EventChoferesCompanion Function({
       Value<String> eventId,
       Value<String> choferId,
       Value<int> rowid,
     });
 
-final class $$EventoChoferesTableReferences
-    extends BaseReferences<_$AppDatabase, $EventoChoferesTable, EventoChofere> {
-  $$EventoChoferesTableReferences(
+final class $$EventChoferesTableReferences
+    extends BaseReferences<_$AppDatabase, $EventChoferesTable, EventChofere> {
+  $$EventChoferesTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $EventosTable _eventIdTable(_$AppDatabase db) =>
-      db.eventos.createAlias(
-        $_aliasNameGenerator(db.eventoChoferes.eventId, db.eventos.id),
-      );
+  static $EventsTable _eventIdTable(_$AppDatabase db) => db.events.createAlias(
+    $_aliasNameGenerator(db.eventChoferes.eventId, db.events.id),
+  );
 
-  $$EventosTableProcessedTableManager get eventId {
+  $$EventsTableProcessedTableManager get eventId {
     final $_column = $_itemColumn<String>('event_id')!;
 
-    final manager = $$EventosTableTableManager(
+    final manager = $$EventsTableTableManager(
       $_db,
-      $_db.eventos,
+      $_db.events,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
     if (item == null) return manager;
@@ -3806,7 +4052,7 @@ final class $$EventoChoferesTableReferences
 
   static $ChoferesTable _choferIdTable(_$AppDatabase db) =>
       db.choferes.createAlias(
-        $_aliasNameGenerator(db.eventoChoferes.choferId, db.choferes.id),
+        $_aliasNameGenerator(db.eventChoferes.choferId, db.choferes.id),
       );
 
   $$ChoferesTableProcessedTableManager get choferId {
@@ -3824,29 +4070,29 @@ final class $$EventoChoferesTableReferences
   }
 }
 
-class $$EventoChoferesTableFilterComposer
-    extends Composer<_$AppDatabase, $EventoChoferesTable> {
-  $$EventoChoferesTableFilterComposer({
+class $$EventChoferesTableFilterComposer
+    extends Composer<_$AppDatabase, $EventChoferesTable> {
+  $$EventChoferesTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EventosTableFilterComposer get eventId {
-    final $$EventosTableFilterComposer composer = $composerBuilder(
+  $$EventsTableFilterComposer get eventId {
+    final $$EventsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
+      referencedTable: $db.events,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableFilterComposer(
+          }) => $$EventsTableFilterComposer(
             $db: $db,
-            $table: $db.eventos,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3880,29 +4126,29 @@ class $$EventoChoferesTableFilterComposer
   }
 }
 
-class $$EventoChoferesTableOrderingComposer
-    extends Composer<_$AppDatabase, $EventoChoferesTable> {
-  $$EventoChoferesTableOrderingComposer({
+class $$EventChoferesTableOrderingComposer
+    extends Composer<_$AppDatabase, $EventChoferesTable> {
+  $$EventChoferesTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EventosTableOrderingComposer get eventId {
-    final $$EventosTableOrderingComposer composer = $composerBuilder(
+  $$EventsTableOrderingComposer get eventId {
+    final $$EventsTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
+      referencedTable: $db.events,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableOrderingComposer(
+          }) => $$EventsTableOrderingComposer(
             $db: $db,
-            $table: $db.eventos,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3936,29 +4182,29 @@ class $$EventoChoferesTableOrderingComposer
   }
 }
 
-class $$EventoChoferesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $EventoChoferesTable> {
-  $$EventoChoferesTableAnnotationComposer({
+class $$EventChoferesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EventChoferesTable> {
+  $$EventChoferesTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EventosTableAnnotationComposer get eventId {
-    final $$EventosTableAnnotationComposer composer = $composerBuilder(
+  $$EventsTableAnnotationComposer get eventId {
+    final $$EventsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
+      referencedTable: $db.events,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableAnnotationComposer(
+          }) => $$EventsTableAnnotationComposer(
             $db: $db,
-            $table: $db.eventos,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3992,40 +4238,38 @@ class $$EventoChoferesTableAnnotationComposer
   }
 }
 
-class $$EventoChoferesTableTableManager
+class $$EventChoferesTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $EventoChoferesTable,
-          EventoChofere,
-          $$EventoChoferesTableFilterComposer,
-          $$EventoChoferesTableOrderingComposer,
-          $$EventoChoferesTableAnnotationComposer,
-          $$EventoChoferesTableCreateCompanionBuilder,
-          $$EventoChoferesTableUpdateCompanionBuilder,
-          (EventoChofere, $$EventoChoferesTableReferences),
-          EventoChofere,
+          $EventChoferesTable,
+          EventChofere,
+          $$EventChoferesTableFilterComposer,
+          $$EventChoferesTableOrderingComposer,
+          $$EventChoferesTableAnnotationComposer,
+          $$EventChoferesTableCreateCompanionBuilder,
+          $$EventChoferesTableUpdateCompanionBuilder,
+          (EventChofere, $$EventChoferesTableReferences),
+          EventChofere,
           PrefetchHooks Function({bool eventId, bool choferId})
         > {
-  $$EventoChoferesTableTableManager(
-    _$AppDatabase db,
-    $EventoChoferesTable table,
-  ) : super(
+  $$EventChoferesTableTableManager(_$AppDatabase db, $EventChoferesTable table)
+    : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$EventoChoferesTableFilterComposer($db: db, $table: table),
+              $$EventChoferesTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$EventoChoferesTableOrderingComposer($db: db, $table: table),
+              $$EventChoferesTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$EventoChoferesTableAnnotationComposer($db: db, $table: table),
+              $$EventChoferesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> eventId = const Value.absent(),
                 Value<String> choferId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => EventoChoferesCompanion(
+              }) => EventChoferesCompanion(
                 eventId: eventId,
                 choferId: choferId,
                 rowid: rowid,
@@ -4035,7 +4279,7 @@ class $$EventoChoferesTableTableManager
                 required String eventId,
                 required String choferId,
                 Value<int> rowid = const Value.absent(),
-              }) => EventoChoferesCompanion.insert(
+              }) => EventChoferesCompanion.insert(
                 eventId: eventId,
                 choferId: choferId,
                 rowid: rowid,
@@ -4044,7 +4288,7 @@ class $$EventoChoferesTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$EventoChoferesTableReferences(db, table, e),
+                  $$EventChoferesTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -4073,12 +4317,11 @@ class $$EventoChoferesTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.eventId,
-                                referencedTable: $$EventoChoferesTableReferences
+                                referencedTable: $$EventChoferesTableReferences
                                     ._eventIdTable(db),
-                                referencedColumn:
-                                    $$EventoChoferesTableReferences
-                                        ._eventIdTable(db)
-                                        .id,
+                                referencedColumn: $$EventChoferesTableReferences
+                                    ._eventIdTable(db)
+                                    .id,
                               )
                               as T;
                     }
@@ -4087,12 +4330,11 @@ class $$EventoChoferesTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.choferId,
-                                referencedTable: $$EventoChoferesTableReferences
+                                referencedTable: $$EventChoferesTableReferences
                                     ._choferIdTable(db),
-                                referencedColumn:
-                                    $$EventoChoferesTableReferences
-                                        ._choferIdTable(db)
-                                        .id,
+                                referencedColumn: $$EventChoferesTableReferences
+                                    ._choferIdTable(db)
+                                    .id,
                               )
                               as T;
                     }
@@ -4108,53 +4350,52 @@ class $$EventoChoferesTableTableManager
       );
 }
 
-typedef $$EventoChoferesTableProcessedTableManager =
+typedef $$EventChoferesTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $EventoChoferesTable,
-      EventoChofere,
-      $$EventoChoferesTableFilterComposer,
-      $$EventoChoferesTableOrderingComposer,
-      $$EventoChoferesTableAnnotationComposer,
-      $$EventoChoferesTableCreateCompanionBuilder,
-      $$EventoChoferesTableUpdateCompanionBuilder,
-      (EventoChofere, $$EventoChoferesTableReferences),
-      EventoChofere,
+      $EventChoferesTable,
+      EventChofere,
+      $$EventChoferesTableFilterComposer,
+      $$EventChoferesTableOrderingComposer,
+      $$EventChoferesTableAnnotationComposer,
+      $$EventChoferesTableCreateCompanionBuilder,
+      $$EventChoferesTableUpdateCompanionBuilder,
+      (EventChofere, $$EventChoferesTableReferences),
+      EventChofere,
       PrefetchHooks Function({bool eventId, bool choferId})
     >;
-typedef $$EventoColectivosTableCreateCompanionBuilder =
-    EventoColectivosCompanion Function({
+typedef $$EventColectivosTableCreateCompanionBuilder =
+    EventColectivosCompanion Function({
       required String eventId,
       required String colectivoId,
       Value<int> rowid,
     });
-typedef $$EventoColectivosTableUpdateCompanionBuilder =
-    EventoColectivosCompanion Function({
+typedef $$EventColectivosTableUpdateCompanionBuilder =
+    EventColectivosCompanion Function({
       Value<String> eventId,
       Value<String> colectivoId,
       Value<int> rowid,
     });
 
-final class $$EventoColectivosTableReferences
+final class $$EventColectivosTableReferences
     extends
-        BaseReferences<_$AppDatabase, $EventoColectivosTable, EventoColectivo> {
-  $$EventoColectivosTableReferences(
+        BaseReferences<_$AppDatabase, $EventColectivosTable, EventColectivo> {
+  $$EventColectivosTableReferences(
     super.$_db,
     super.$_table,
     super.$_typedResult,
   );
 
-  static $EventosTable _eventIdTable(_$AppDatabase db) =>
-      db.eventos.createAlias(
-        $_aliasNameGenerator(db.eventoColectivos.eventId, db.eventos.id),
-      );
+  static $EventsTable _eventIdTable(_$AppDatabase db) => db.events.createAlias(
+    $_aliasNameGenerator(db.eventColectivos.eventId, db.events.id),
+  );
 
-  $$EventosTableProcessedTableManager get eventId {
+  $$EventsTableProcessedTableManager get eventId {
     final $_column = $_itemColumn<String>('event_id')!;
 
-    final manager = $$EventosTableTableManager(
+    final manager = $$EventsTableTableManager(
       $_db,
-      $_db.eventos,
+      $_db.events,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
     if (item == null) return manager;
@@ -4165,7 +4406,7 @@ final class $$EventoColectivosTableReferences
 
   static $ColectivosTable _colectivoIdTable(_$AppDatabase db) =>
       db.colectivos.createAlias(
-        $_aliasNameGenerator(db.eventoColectivos.colectivoId, db.colectivos.id),
+        $_aliasNameGenerator(db.eventColectivos.colectivoId, db.colectivos.id),
       );
 
   $$ColectivosTableProcessedTableManager get colectivoId {
@@ -4183,29 +4424,29 @@ final class $$EventoColectivosTableReferences
   }
 }
 
-class $$EventoColectivosTableFilterComposer
-    extends Composer<_$AppDatabase, $EventoColectivosTable> {
-  $$EventoColectivosTableFilterComposer({
+class $$EventColectivosTableFilterComposer
+    extends Composer<_$AppDatabase, $EventColectivosTable> {
+  $$EventColectivosTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EventosTableFilterComposer get eventId {
-    final $$EventosTableFilterComposer composer = $composerBuilder(
+  $$EventsTableFilterComposer get eventId {
+    final $$EventsTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
+      referencedTable: $db.events,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableFilterComposer(
+          }) => $$EventsTableFilterComposer(
             $db: $db,
-            $table: $db.eventos,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4239,29 +4480,29 @@ class $$EventoColectivosTableFilterComposer
   }
 }
 
-class $$EventoColectivosTableOrderingComposer
-    extends Composer<_$AppDatabase, $EventoColectivosTable> {
-  $$EventoColectivosTableOrderingComposer({
+class $$EventColectivosTableOrderingComposer
+    extends Composer<_$AppDatabase, $EventColectivosTable> {
+  $$EventColectivosTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EventosTableOrderingComposer get eventId {
-    final $$EventosTableOrderingComposer composer = $composerBuilder(
+  $$EventsTableOrderingComposer get eventId {
+    final $$EventsTableOrderingComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
+      referencedTable: $db.events,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableOrderingComposer(
+          }) => $$EventsTableOrderingComposer(
             $db: $db,
-            $table: $db.eventos,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4295,29 +4536,29 @@ class $$EventoColectivosTableOrderingComposer
   }
 }
 
-class $$EventoColectivosTableAnnotationComposer
-    extends Composer<_$AppDatabase, $EventoColectivosTable> {
-  $$EventoColectivosTableAnnotationComposer({
+class $$EventColectivosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EventColectivosTable> {
+  $$EventColectivosTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  $$EventosTableAnnotationComposer get eventId {
-    final $$EventosTableAnnotationComposer composer = $composerBuilder(
+  $$EventsTableAnnotationComposer get eventId {
+    final $$EventsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.eventId,
-      referencedTable: $db.eventos,
+      referencedTable: $db.events,
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EventosTableAnnotationComposer(
+          }) => $$EventsTableAnnotationComposer(
             $db: $db,
-            $table: $db.eventos,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4351,40 +4592,40 @@ class $$EventoColectivosTableAnnotationComposer
   }
 }
 
-class $$EventoColectivosTableTableManager
+class $$EventColectivosTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $EventoColectivosTable,
-          EventoColectivo,
-          $$EventoColectivosTableFilterComposer,
-          $$EventoColectivosTableOrderingComposer,
-          $$EventoColectivosTableAnnotationComposer,
-          $$EventoColectivosTableCreateCompanionBuilder,
-          $$EventoColectivosTableUpdateCompanionBuilder,
-          (EventoColectivo, $$EventoColectivosTableReferences),
-          EventoColectivo,
+          $EventColectivosTable,
+          EventColectivo,
+          $$EventColectivosTableFilterComposer,
+          $$EventColectivosTableOrderingComposer,
+          $$EventColectivosTableAnnotationComposer,
+          $$EventColectivosTableCreateCompanionBuilder,
+          $$EventColectivosTableUpdateCompanionBuilder,
+          (EventColectivo, $$EventColectivosTableReferences),
+          EventColectivo,
           PrefetchHooks Function({bool eventId, bool colectivoId})
         > {
-  $$EventoColectivosTableTableManager(
+  $$EventColectivosTableTableManager(
     _$AppDatabase db,
-    $EventoColectivosTable table,
+    $EventColectivosTable table,
   ) : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$EventoColectivosTableFilterComposer($db: db, $table: table),
+              $$EventColectivosTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$EventoColectivosTableOrderingComposer($db: db, $table: table),
+              $$EventColectivosTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$EventoColectivosTableAnnotationComposer($db: db, $table: table),
+              $$EventColectivosTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> eventId = const Value.absent(),
                 Value<String> colectivoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => EventoColectivosCompanion(
+              }) => EventColectivosCompanion(
                 eventId: eventId,
                 colectivoId: colectivoId,
                 rowid: rowid,
@@ -4394,7 +4635,7 @@ class $$EventoColectivosTableTableManager
                 required String eventId,
                 required String colectivoId,
                 Value<int> rowid = const Value.absent(),
-              }) => EventoColectivosCompanion.insert(
+              }) => EventColectivosCompanion.insert(
                 eventId: eventId,
                 colectivoId: colectivoId,
                 rowid: rowid,
@@ -4403,7 +4644,7 @@ class $$EventoColectivosTableTableManager
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$EventoColectivosTableReferences(db, table, e),
+                  $$EventColectivosTableReferences(db, table, e),
                 ),
               )
               .toList(),
@@ -4433,10 +4674,10 @@ class $$EventoColectivosTableTableManager
                                 currentTable: table,
                                 currentColumn: table.eventId,
                                 referencedTable:
-                                    $$EventoColectivosTableReferences
+                                    $$EventColectivosTableReferences
                                         ._eventIdTable(db),
                                 referencedColumn:
-                                    $$EventoColectivosTableReferences
+                                    $$EventColectivosTableReferences
                                         ._eventIdTable(db)
                                         .id,
                               )
@@ -4448,10 +4689,10 @@ class $$EventoColectivosTableTableManager
                                 currentTable: table,
                                 currentColumn: table.colectivoId,
                                 referencedTable:
-                                    $$EventoColectivosTableReferences
+                                    $$EventColectivosTableReferences
                                         ._colectivoIdTable(db),
                                 referencedColumn:
-                                    $$EventoColectivosTableReferences
+                                    $$EventColectivosTableReferences
                                         ._colectivoIdTable(db)
                                         .id,
                               )
@@ -4469,18 +4710,18 @@ class $$EventoColectivosTableTableManager
       );
 }
 
-typedef $$EventoColectivosTableProcessedTableManager =
+typedef $$EventColectivosTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $EventoColectivosTable,
-      EventoColectivo,
-      $$EventoColectivosTableFilterComposer,
-      $$EventoColectivosTableOrderingComposer,
-      $$EventoColectivosTableAnnotationComposer,
-      $$EventoColectivosTableCreateCompanionBuilder,
-      $$EventoColectivosTableUpdateCompanionBuilder,
-      (EventoColectivo, $$EventoColectivosTableReferences),
-      EventoColectivo,
+      $EventColectivosTable,
+      EventColectivo,
+      $$EventColectivosTableFilterComposer,
+      $$EventColectivosTableOrderingComposer,
+      $$EventColectivosTableAnnotationComposer,
+      $$EventColectivosTableCreateCompanionBuilder,
+      $$EventColectivosTableUpdateCompanionBuilder,
+      (EventColectivo, $$EventColectivosTableReferences),
+      EventColectivo,
       PrefetchHooks Function({bool eventId, bool colectivoId})
     >;
 
@@ -4491,12 +4732,12 @@ class $AppDatabaseManager {
       $$ChoferesTableTableManager(_db, _db.choferes);
   $$ColectivosTableTableManager get colectivos =>
       $$ColectivosTableTableManager(_db, _db.colectivos);
-  $$EventosTableTableManager get eventos =>
-      $$EventosTableTableManager(_db, _db.eventos);
-  $$ParadasTableTableManager get paradas =>
-      $$ParadasTableTableManager(_db, _db.paradas);
-  $$EventoChoferesTableTableManager get eventoChoferes =>
-      $$EventoChoferesTableTableManager(_db, _db.eventoChoferes);
-  $$EventoColectivosTableTableManager get eventoColectivos =>
-      $$EventoColectivosTableTableManager(_db, _db.eventoColectivos);
+  $$EventsTableTableManager get events =>
+      $$EventsTableTableManager(_db, _db.events);
+  $$StopsTableTableManager get stops =>
+      $$StopsTableTableManager(_db, _db.stops);
+  $$EventChoferesTableTableManager get eventChoferes =>
+      $$EventChoferesTableTableManager(_db, _db.eventChoferes);
+  $$EventColectivosTableTableManager get eventColectivos =>
+      $$EventColectivosTableTableManager(_db, _db.eventColectivos);
 }

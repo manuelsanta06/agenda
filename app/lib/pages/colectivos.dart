@@ -86,9 +86,10 @@ class _colectivosPageState extends State<colectivosPage>{
           if(nuevo == null)return;
           await db.into(db.colectivos).insert(nuevo);
       
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Colectivo guardado')),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const SnackBar(content: Text('Colectivo guardado')),
+            backgroundColor:Colors.green,
+          ));
         },
         backgroundColor: colectivosPage.mainColor,
         child:Icon(Icons.add),

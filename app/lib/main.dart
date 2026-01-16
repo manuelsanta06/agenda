@@ -1,6 +1,7 @@
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'database/app_database.dart';
 
@@ -50,7 +51,22 @@ class _MyAppState extends State<MyApp>{
   @override
   Widget build(BuildContext context,){
     return MaterialApp(
+      title: "Pincen",
       debugShowCheckedModeBanner: false,
+
+      locale: const Locale('es', 'ES'), 
+      
+      //supported lenguajes
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('es', 'ES'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      
       theme: ThemeData.light().copyWith(
         textTheme: ThemeData.light().textTheme.apply(
           fontFamily: 'FiraCode Nerd Font',

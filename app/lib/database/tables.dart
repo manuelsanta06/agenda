@@ -1,3 +1,4 @@
+import 'package:agenda/pages/calendar.dart';
 import 'package:drift/drift.dart';
 
 //Tabla de CHOFERES
@@ -13,6 +14,8 @@ class Choferes extends Table {
   TextColumn get picturePath => text().nullable()();
 
   BoolColumn get is_active => boolean().withDefault(const Constant(true))();
+
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -32,20 +35,73 @@ class Colectivos extends Table {
 
   BoolColumn get is_active => boolean().withDefault(const Constant(true))();
 
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
 
 //Tabla de EVENTOS (Viajes)
-class Eventos extends Table {
+
+enum WeekDays {
+  NONE,      // 0
+  MONDAY,    // 1
+  TUESDAY,   // 2
+  WEDNESDAY, // 3
+  THURSDAY,  // 4
+  FRIDAY,    // 5
+  SATURDAY,  // 6
+  SUNDAY     // 7
+}
+
+// Convertidor: List<WeekDays> <-> String ("1 2 3")
+class WeekDaysConverter extends TypeConverter<List<WeekDays>, String> {
+  const WeekDaysConverter();
+
+  //[String] -> [List]
+  @override
+  List<WeekDays> fromSql(String fromDb) {
+    if (fromDb.isEmpty) return [];
+    
+    return fromDb
+        .split(' ')
+        .where((element) => element.isNotEmpty) // Seguridad contra espacios dobles
+        .map((numberString) {
+          final index = int.tryParse(numberString);
+          if (index != null && index >= 0 && index < WeekDays.values.length) {
+            return WeekDays.values[index];
+          }
+          return WeekDays.NONE; // Fallback
+        })
+        .toList();
+  }
+
+  //[List] -> [String]
+  @override
+  String toSql(List<WeekDays> value) {
+    if (value.isEmpty) return "";
+    
+    return value.map((day) => day.index.toString()).join(' ');
+  }
+}
+
+enum EventStates{
+  REMOVED,
+  DONE,
+  PENDING,
+  REPEATING
+}
+
+class Events extends Table {
   TextColumn get id => text()();
-  TextColumn get name => text().nullable()();
+  TextColumn get name => text()();
   
-  DateTimeColumn get start => dateTime()();
-  DateTimeColumn get end => dateTime().nullable()();
   BoolColumn get repeat => boolean().withDefault(const Constant(false))();
 
-  TextColumn get days => text().nullable()();
+  TextColumn get days => text().map(const WeekDaysConverter()).nullable()();
+
+  IntColumn get state => intEnum<EventStates>()();
+  BoolColumn get isTrip => boolean()();
 
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 
@@ -55,12 +111,13 @@ class Eventos extends Table {
 
 //Tabla de PARADAS 
 // Un evento tiene muchas paradas.
-class Paradas extends Table {
+class Stops extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
+  DateTimeColumn get start => dateTime().nullable()();
   
   // Relación: A qué evento pertenece esta parada
-  TextColumn get eventId => text().references(Eventos, #id)();
+  TextColumn get eventId => text().references(Events, #id,onDelete: KeyAction.cascade)();
   
   // Para saber el orden de las paradas
   IntColumn get orderIndex => integer()();
@@ -72,18 +129,18 @@ class Paradas extends Table {
 //Tablas Intermedias 
 
 // Un Evento tiene muchos Choferes, y un Chofer muchos Eventos
-class EventoChoferes extends Table {
-  TextColumn get eventId => text().references(Eventos, #id)();
-  TextColumn get choferId => text().references(Choferes, #id)();
+class EventChoferes extends Table {
+  TextColumn get eventId => text().references(Events, #id,onDelete: KeyAction.cascade)();
+  TextColumn get choferId => text().references(Choferes, #id,onDelete: KeyAction.cascade)();
   
   @override
   Set<Column> get primaryKey => {eventId, choferId};
 }
 
 // Un Evento tiene muchos Colectivos
-class EventoColectivos extends Table {
-  TextColumn get eventId => text().references(Eventos, #id)();
-  TextColumn get colectivoId => text().references(Colectivos, #id)();
+class EventColectivos extends Table {
+  TextColumn get eventId => text().references(Events, #id,onDelete: KeyAction.cascade)();
+  TextColumn get colectivoId => text().references(Colectivos, #id,onDelete: KeyAction.cascade)();
   
   @override
   Set<Column> get primaryKey => {eventId, colectivoId};

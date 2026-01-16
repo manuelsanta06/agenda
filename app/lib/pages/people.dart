@@ -1,10 +1,8 @@
-import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../database/app_database.dart';
 import '../utilities/people.dart';
 import '../widgets/searchBar.dart';
-import '../widgets/imageImput.dart';
-import '../database/app_database.dart';
 
 typedef Chofer=Chofere;
 
@@ -54,9 +52,13 @@ class _peoplePageState extends State<peoplePage>{
               builder:(context, snapshot){
                 if(snapshot.hasError){
                   return Center(
-                    child: Text("Error: ${snapshot.error}\nperdon, pasale captura a manu", 
+                    child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
+                      Error: ${snapshot.error}
+                      Stacktrace:
+                      ${snapshot.stackTrace.toString()
+                        .split('\n').take(6).join('\n')}""", 
                       style: TextStyle(color: Colors.red))
-                  );
+                  ));
                 }
                 if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
@@ -90,9 +92,10 @@ class _peoplePageState extends State<peoplePage>{
           if(nuevo == null)return;
           await db.into(db.choferes).insert(nuevo);
       
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('chofer guardado')),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content:const SnackBar(content: Text('chofer guardado')),
+            backgroundColor:Colors.green,
+          ));
         },
         backgroundColor: peoplePage.mainColor,
         child:Icon(Icons.add),
