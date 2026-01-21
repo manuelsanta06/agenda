@@ -1106,6 +1106,28 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _contactNameMeta = const VerificationMeta(
+    'contactName',
+  );
+  @override
+  late final GeneratedColumn<String> contactName = GeneratedColumn<String>(
+    'contact_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _contactMeta = const VerificationMeta(
+    'contact',
+  );
+  @override
+  late final GeneratedColumn<String> contact = GeneratedColumn<String>(
+    'contact',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _repeatMeta = const VerificationMeta('repeat');
   @override
   late final GeneratedColumn<bool> repeat = GeneratedColumn<bool>(
@@ -1128,6 +1150,29 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       ).withConverter<List<WeekDays>?>($EventsTable.$converterdaysn);
+  static const VerificationMeta _startDateTimeMeta = const VerificationMeta(
+    'startDateTime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startDateTime =
+      GeneratedColumn<DateTime>(
+        'start_date_time',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _endDateTimeMeta = const VerificationMeta(
+    'endDateTime',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endDateTime = GeneratedColumn<DateTime>(
+    'end_date_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   late final GeneratedColumnWithTypeConverter<EventStates, int> state =
       GeneratedColumn<int>(
@@ -1137,6 +1182,15 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
         type: DriftSqlType.int,
         requiredDuringInsert: true,
       ).withConverter<EventStates>($EventsTable.$converterstate);
+  @override
+  late final GeneratedColumnWithTypeConverter<EventTypes, int> type =
+      GeneratedColumn<int>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<EventTypes>($EventsTable.$convertertype);
   static const VerificationMeta _isTripMeta = const VerificationMeta('isTrip');
   @override
   late final GeneratedColumn<bool> isTrip = GeneratedColumn<bool>(
@@ -1168,9 +1222,14 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   List<GeneratedColumn> get $columns => [
     id,
     name,
+    contactName,
+    contact,
     repeat,
     days,
+    startDateTime,
+    endDateTime,
     state,
+    type,
     isTrip,
     isSynced,
   ];
@@ -1199,10 +1258,45 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('contact_name')) {
+      context.handle(
+        _contactNameMeta,
+        contactName.isAcceptableOrUnknown(
+          data['contact_name']!,
+          _contactNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('contact')) {
+      context.handle(
+        _contactMeta,
+        contact.isAcceptableOrUnknown(data['contact']!, _contactMeta),
+      );
+    }
     if (data.containsKey('repeat')) {
       context.handle(
         _repeatMeta,
         repeat.isAcceptableOrUnknown(data['repeat']!, _repeatMeta),
+      );
+    }
+    if (data.containsKey('start_date_time')) {
+      context.handle(
+        _startDateTimeMeta,
+        startDateTime.isAcceptableOrUnknown(
+          data['start_date_time']!,
+          _startDateTimeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_startDateTimeMeta);
+    }
+    if (data.containsKey('end_date_time')) {
+      context.handle(
+        _endDateTimeMeta,
+        endDateTime.isAcceptableOrUnknown(
+          data['end_date_time']!,
+          _endDateTimeMeta,
+        ),
       );
     }
     if (data.containsKey('is_trip')) {
@@ -1236,6 +1330,14 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      contactName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contact_name'],
+      ),
+      contact: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}contact'],
+      ),
       repeat: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}repeat'],
@@ -1246,10 +1348,24 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
           data['${effectivePrefix}days'],
         ),
       ),
+      startDateTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_date_time'],
+      )!,
+      endDateTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end_date_time'],
+      ),
       state: $EventsTable.$converterstate.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.int,
           data['${effectivePrefix}state'],
+        )!,
+      ),
+      type: $EventsTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}type'],
         )!,
       ),
       isTrip: attachedDatabase.typeMapping.read(
@@ -1274,22 +1390,34 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
       NullAwareTypeConverter.wrap($converterdays);
   static JsonTypeConverter2<EventStates, int, int> $converterstate =
       const EnumIndexConverter<EventStates>(EventStates.values);
+  static JsonTypeConverter2<EventTypes, int, int> $convertertype =
+      const EnumIndexConverter<EventTypes>(EventTypes.values);
 }
 
 class Event extends DataClass implements Insertable<Event> {
   final String id;
   final String name;
+  final String? contactName;
+  final String? contact;
   final bool repeat;
   final List<WeekDays>? days;
+  final DateTime startDateTime;
+  final DateTime? endDateTime;
   final EventStates state;
+  final EventTypes type;
   final bool isTrip;
   final bool isSynced;
   const Event({
     required this.id,
     required this.name,
+    this.contactName,
+    this.contact,
     required this.repeat,
     this.days,
+    required this.startDateTime,
+    this.endDateTime,
     required this.state,
+    required this.type,
     required this.isTrip,
     required this.isSynced,
   });
@@ -1298,12 +1426,25 @@ class Event extends DataClass implements Insertable<Event> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || contactName != null) {
+      map['contact_name'] = Variable<String>(contactName);
+    }
+    if (!nullToAbsent || contact != null) {
+      map['contact'] = Variable<String>(contact);
+    }
     map['repeat'] = Variable<bool>(repeat);
     if (!nullToAbsent || days != null) {
       map['days'] = Variable<String>($EventsTable.$converterdaysn.toSql(days));
     }
+    map['start_date_time'] = Variable<DateTime>(startDateTime);
+    if (!nullToAbsent || endDateTime != null) {
+      map['end_date_time'] = Variable<DateTime>(endDateTime);
+    }
     {
       map['state'] = Variable<int>($EventsTable.$converterstate.toSql(state));
+    }
+    {
+      map['type'] = Variable<int>($EventsTable.$convertertype.toSql(type));
     }
     map['is_trip'] = Variable<bool>(isTrip);
     map['is_synced'] = Variable<bool>(isSynced);
@@ -1314,9 +1455,20 @@ class Event extends DataClass implements Insertable<Event> {
     return EventsCompanion(
       id: Value(id),
       name: Value(name),
+      contactName: contactName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contactName),
+      contact: contact == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contact),
       repeat: Value(repeat),
       days: days == null && nullToAbsent ? const Value.absent() : Value(days),
+      startDateTime: Value(startDateTime),
+      endDateTime: endDateTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endDateTime),
       state: Value(state),
+      type: Value(type),
       isTrip: Value(isTrip),
       isSynced: Value(isSynced),
     );
@@ -1330,10 +1482,17 @@ class Event extends DataClass implements Insertable<Event> {
     return Event(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      contactName: serializer.fromJson<String?>(json['contactName']),
+      contact: serializer.fromJson<String?>(json['contact']),
       repeat: serializer.fromJson<bool>(json['repeat']),
       days: serializer.fromJson<List<WeekDays>?>(json['days']),
+      startDateTime: serializer.fromJson<DateTime>(json['startDateTime']),
+      endDateTime: serializer.fromJson<DateTime?>(json['endDateTime']),
       state: $EventsTable.$converterstate.fromJson(
         serializer.fromJson<int>(json['state']),
+      ),
+      type: $EventsTable.$convertertype.fromJson(
+        serializer.fromJson<int>(json['type']),
       ),
       isTrip: serializer.fromJson<bool>(json['isTrip']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
@@ -1345,11 +1504,16 @@ class Event extends DataClass implements Insertable<Event> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
+      'contactName': serializer.toJson<String?>(contactName),
+      'contact': serializer.toJson<String?>(contact),
       'repeat': serializer.toJson<bool>(repeat),
       'days': serializer.toJson<List<WeekDays>?>(days),
+      'startDateTime': serializer.toJson<DateTime>(startDateTime),
+      'endDateTime': serializer.toJson<DateTime?>(endDateTime),
       'state': serializer.toJson<int>(
         $EventsTable.$converterstate.toJson(state),
       ),
+      'type': serializer.toJson<int>($EventsTable.$convertertype.toJson(type)),
       'isTrip': serializer.toJson<bool>(isTrip),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
@@ -1358,17 +1522,27 @@ class Event extends DataClass implements Insertable<Event> {
   Event copyWith({
     String? id,
     String? name,
+    Value<String?> contactName = const Value.absent(),
+    Value<String?> contact = const Value.absent(),
     bool? repeat,
     Value<List<WeekDays>?> days = const Value.absent(),
+    DateTime? startDateTime,
+    Value<DateTime?> endDateTime = const Value.absent(),
     EventStates? state,
+    EventTypes? type,
     bool? isTrip,
     bool? isSynced,
   }) => Event(
     id: id ?? this.id,
     name: name ?? this.name,
+    contactName: contactName.present ? contactName.value : this.contactName,
+    contact: contact.present ? contact.value : this.contact,
     repeat: repeat ?? this.repeat,
     days: days.present ? days.value : this.days,
+    startDateTime: startDateTime ?? this.startDateTime,
+    endDateTime: endDateTime.present ? endDateTime.value : this.endDateTime,
     state: state ?? this.state,
+    type: type ?? this.type,
     isTrip: isTrip ?? this.isTrip,
     isSynced: isSynced ?? this.isSynced,
   );
@@ -1376,9 +1550,20 @@ class Event extends DataClass implements Insertable<Event> {
     return Event(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
+      contactName: data.contactName.present
+          ? data.contactName.value
+          : this.contactName,
+      contact: data.contact.present ? data.contact.value : this.contact,
       repeat: data.repeat.present ? data.repeat.value : this.repeat,
       days: data.days.present ? data.days.value : this.days,
+      startDateTime: data.startDateTime.present
+          ? data.startDateTime.value
+          : this.startDateTime,
+      endDateTime: data.endDateTime.present
+          ? data.endDateTime.value
+          : this.endDateTime,
       state: data.state.present ? data.state.value : this.state,
+      type: data.type.present ? data.type.value : this.type,
       isTrip: data.isTrip.present ? data.isTrip.value : this.isTrip,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
@@ -1389,9 +1574,14 @@ class Event extends DataClass implements Insertable<Event> {
     return (StringBuffer('Event(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('contactName: $contactName, ')
+          ..write('contact: $contact, ')
           ..write('repeat: $repeat, ')
           ..write('days: $days, ')
+          ..write('startDateTime: $startDateTime, ')
+          ..write('endDateTime: $endDateTime, ')
           ..write('state: $state, ')
+          ..write('type: $type, ')
           ..write('isTrip: $isTrip, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
@@ -1399,17 +1589,34 @@ class Event extends DataClass implements Insertable<Event> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, repeat, days, state, isTrip, isSynced);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    contactName,
+    contact,
+    repeat,
+    days,
+    startDateTime,
+    endDateTime,
+    state,
+    type,
+    isTrip,
+    isSynced,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Event &&
           other.id == this.id &&
           other.name == this.name &&
+          other.contactName == this.contactName &&
+          other.contact == this.contact &&
           other.repeat == this.repeat &&
           other.days == this.days &&
+          other.startDateTime == this.startDateTime &&
+          other.endDateTime == this.endDateTime &&
           other.state == this.state &&
+          other.type == this.type &&
           other.isTrip == this.isTrip &&
           other.isSynced == this.isSynced);
 }
@@ -1417,18 +1624,28 @@ class Event extends DataClass implements Insertable<Event> {
 class EventsCompanion extends UpdateCompanion<Event> {
   final Value<String> id;
   final Value<String> name;
+  final Value<String?> contactName;
+  final Value<String?> contact;
   final Value<bool> repeat;
   final Value<List<WeekDays>?> days;
+  final Value<DateTime> startDateTime;
+  final Value<DateTime?> endDateTime;
   final Value<EventStates> state;
+  final Value<EventTypes> type;
   final Value<bool> isTrip;
   final Value<bool> isSynced;
   final Value<int> rowid;
   const EventsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.contactName = const Value.absent(),
+    this.contact = const Value.absent(),
     this.repeat = const Value.absent(),
     this.days = const Value.absent(),
+    this.startDateTime = const Value.absent(),
+    this.endDateTime = const Value.absent(),
     this.state = const Value.absent(),
+    this.type = const Value.absent(),
     this.isTrip = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1436,22 +1653,34 @@ class EventsCompanion extends UpdateCompanion<Event> {
   EventsCompanion.insert({
     required String id,
     required String name,
+    this.contactName = const Value.absent(),
+    this.contact = const Value.absent(),
     this.repeat = const Value.absent(),
     this.days = const Value.absent(),
+    required DateTime startDateTime,
+    this.endDateTime = const Value.absent(),
     required EventStates state,
+    required EventTypes type,
     required bool isTrip,
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
+       startDateTime = Value(startDateTime),
        state = Value(state),
+       type = Value(type),
        isTrip = Value(isTrip);
   static Insertable<Event> custom({
     Expression<String>? id,
     Expression<String>? name,
+    Expression<String>? contactName,
+    Expression<String>? contact,
     Expression<bool>? repeat,
     Expression<String>? days,
+    Expression<DateTime>? startDateTime,
+    Expression<DateTime>? endDateTime,
     Expression<int>? state,
+    Expression<int>? type,
     Expression<bool>? isTrip,
     Expression<bool>? isSynced,
     Expression<int>? rowid,
@@ -1459,9 +1688,14 @@ class EventsCompanion extends UpdateCompanion<Event> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (contactName != null) 'contact_name': contactName,
+      if (contact != null) 'contact': contact,
       if (repeat != null) 'repeat': repeat,
       if (days != null) 'days': days,
+      if (startDateTime != null) 'start_date_time': startDateTime,
+      if (endDateTime != null) 'end_date_time': endDateTime,
       if (state != null) 'state': state,
+      if (type != null) 'type': type,
       if (isTrip != null) 'is_trip': isTrip,
       if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
@@ -1471,9 +1705,14 @@ class EventsCompanion extends UpdateCompanion<Event> {
   EventsCompanion copyWith({
     Value<String>? id,
     Value<String>? name,
+    Value<String?>? contactName,
+    Value<String?>? contact,
     Value<bool>? repeat,
     Value<List<WeekDays>?>? days,
+    Value<DateTime>? startDateTime,
+    Value<DateTime?>? endDateTime,
     Value<EventStates>? state,
+    Value<EventTypes>? type,
     Value<bool>? isTrip,
     Value<bool>? isSynced,
     Value<int>? rowid,
@@ -1481,9 +1720,14 @@ class EventsCompanion extends UpdateCompanion<Event> {
     return EventsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
+      contactName: contactName ?? this.contactName,
+      contact: contact ?? this.contact,
       repeat: repeat ?? this.repeat,
       days: days ?? this.days,
+      startDateTime: startDateTime ?? this.startDateTime,
+      endDateTime: endDateTime ?? this.endDateTime,
       state: state ?? this.state,
+      type: type ?? this.type,
       isTrip: isTrip ?? this.isTrip,
       isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
@@ -1499,6 +1743,12 @@ class EventsCompanion extends UpdateCompanion<Event> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (contactName.present) {
+      map['contact_name'] = Variable<String>(contactName.value);
+    }
+    if (contact.present) {
+      map['contact'] = Variable<String>(contact.value);
+    }
     if (repeat.present) {
       map['repeat'] = Variable<bool>(repeat.value);
     }
@@ -1507,9 +1757,20 @@ class EventsCompanion extends UpdateCompanion<Event> {
         $EventsTable.$converterdaysn.toSql(days.value),
       );
     }
+    if (startDateTime.present) {
+      map['start_date_time'] = Variable<DateTime>(startDateTime.value);
+    }
+    if (endDateTime.present) {
+      map['end_date_time'] = Variable<DateTime>(endDateTime.value);
+    }
     if (state.present) {
       map['state'] = Variable<int>(
         $EventsTable.$converterstate.toSql(state.value),
+      );
+    }
+    if (type.present) {
+      map['type'] = Variable<int>(
+        $EventsTable.$convertertype.toSql(type.value),
       );
     }
     if (isTrip.present) {
@@ -1529,9 +1790,14 @@ class EventsCompanion extends UpdateCompanion<Event> {
     return (StringBuffer('EventsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
+          ..write('contactName: $contactName, ')
+          ..write('contact: $contact, ')
           ..write('repeat: $repeat, ')
           ..write('days: $days, ')
+          ..write('startDateTime: $startDateTime, ')
+          ..write('endDateTime: $endDateTime, ')
           ..write('state: $state, ')
+          ..write('type: $type, ')
           ..write('isTrip: $isTrip, ')
           ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
@@ -3167,9 +3433,14 @@ typedef $$EventsTableCreateCompanionBuilder =
     EventsCompanion Function({
       required String id,
       required String name,
+      Value<String?> contactName,
+      Value<String?> contact,
       Value<bool> repeat,
       Value<List<WeekDays>?> days,
+      required DateTime startDateTime,
+      Value<DateTime?> endDateTime,
       required EventStates state,
+      required EventTypes type,
       required bool isTrip,
       Value<bool> isSynced,
       Value<int> rowid,
@@ -3178,9 +3449,14 @@ typedef $$EventsTableUpdateCompanionBuilder =
     EventsCompanion Function({
       Value<String> id,
       Value<String> name,
+      Value<String?> contactName,
+      Value<String?> contact,
       Value<bool> repeat,
       Value<List<WeekDays>?> days,
+      Value<DateTime> startDateTime,
+      Value<DateTime?> endDateTime,
       Value<EventStates> state,
+      Value<EventTypes> type,
       Value<bool> isTrip,
       Value<bool> isSynced,
       Value<int> rowid,
@@ -3267,6 +3543,16 @@ class $$EventsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get contactName => $composableBuilder(
+    column: $table.contactName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get contact => $composableBuilder(
+    column: $table.contact,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<bool> get repeat => $composableBuilder(
     column: $table.repeat,
     builder: (column) => ColumnFilters(column),
@@ -3278,9 +3564,25 @@ class $$EventsTableFilterComposer
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
+  ColumnFilters<DateTime> get startDateTime => $composableBuilder(
+    column: $table.startDateTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endDateTime => $composableBuilder(
+    column: $table.endDateTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnWithTypeConverterFilters<EventStates, EventStates, int> get state =>
       $composableBuilder(
         column: $table.state,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnWithTypeConverterFilters<EventTypes, EventTypes, int> get type =>
+      $composableBuilder(
+        column: $table.type,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
 
@@ -3389,6 +3691,16 @@ class $$EventsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get contactName => $composableBuilder(
+    column: $table.contactName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get contact => $composableBuilder(
+    column: $table.contact,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get repeat => $composableBuilder(
     column: $table.repeat,
     builder: (column) => ColumnOrderings(column),
@@ -3399,8 +3711,23 @@ class $$EventsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get startDateTime => $composableBuilder(
+    column: $table.startDateTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endDateTime => $composableBuilder(
+    column: $table.endDateTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get state => $composableBuilder(
     column: $table.state,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get type => $composableBuilder(
+    column: $table.type,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3430,14 +3757,35 @@ class $$EventsTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
+  GeneratedColumn<String> get contactName => $composableBuilder(
+    column: $table.contactName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get contact =>
+      $composableBuilder(column: $table.contact, builder: (column) => column);
+
   GeneratedColumn<bool> get repeat =>
       $composableBuilder(column: $table.repeat, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<List<WeekDays>?, String> get days =>
       $composableBuilder(column: $table.days, builder: (column) => column);
 
+  GeneratedColumn<DateTime> get startDateTime => $composableBuilder(
+    column: $table.startDateTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get endDateTime => $composableBuilder(
+    column: $table.endDateTime,
+    builder: (column) => column,
+  );
+
   GeneratedColumnWithTypeConverter<EventStates, int> get state =>
       $composableBuilder(column: $table.state, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<EventTypes, int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 
   GeneratedColumn<bool> get isTrip =>
       $composableBuilder(column: $table.isTrip, builder: (column) => column);
@@ -3555,18 +3903,28 @@ class $$EventsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
+                Value<String?> contactName = const Value.absent(),
+                Value<String?> contact = const Value.absent(),
                 Value<bool> repeat = const Value.absent(),
                 Value<List<WeekDays>?> days = const Value.absent(),
+                Value<DateTime> startDateTime = const Value.absent(),
+                Value<DateTime?> endDateTime = const Value.absent(),
                 Value<EventStates> state = const Value.absent(),
+                Value<EventTypes> type = const Value.absent(),
                 Value<bool> isTrip = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => EventsCompanion(
                 id: id,
                 name: name,
+                contactName: contactName,
+                contact: contact,
                 repeat: repeat,
                 days: days,
+                startDateTime: startDateTime,
+                endDateTime: endDateTime,
                 state: state,
+                type: type,
                 isTrip: isTrip,
                 isSynced: isSynced,
                 rowid: rowid,
@@ -3575,18 +3933,28 @@ class $$EventsTableTableManager
               ({
                 required String id,
                 required String name,
+                Value<String?> contactName = const Value.absent(),
+                Value<String?> contact = const Value.absent(),
                 Value<bool> repeat = const Value.absent(),
                 Value<List<WeekDays>?> days = const Value.absent(),
+                required DateTime startDateTime,
+                Value<DateTime?> endDateTime = const Value.absent(),
                 required EventStates state,
+                required EventTypes type,
                 required bool isTrip,
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => EventsCompanion.insert(
                 id: id,
                 name: name,
+                contactName: contactName,
+                contact: contact,
                 repeat: repeat,
                 days: days,
+                startDateTime: startDateTime,
+                endDateTime: endDateTime,
                 state: state,
+                type: type,
                 isTrip: isTrip,
                 isSynced: isSynced,
                 rowid: rowid,

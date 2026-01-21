@@ -85,7 +85,14 @@ class WeekDaysConverter extends TypeConverter<List<WeekDays>, String> {
   }
 }
 
+enum EventTypes{
+  NONE,
+  EVENT,
+  REMINDER,
+  SCHOOL,
+}
 enum EventStates{
+  NONE,
   REMOVED,
   DONE,
   PENDING,
@@ -95,12 +102,17 @@ enum EventStates{
 class Events extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
+  TextColumn get contactName => text().nullable()();
+  TextColumn get contact => text().nullable()();
   
   BoolColumn get repeat => boolean().withDefault(const Constant(false))();
-
   TextColumn get days => text().map(const WeekDaysConverter()).nullable()();
 
+  DateTimeColumn get startDateTime => dateTime()();
+  DateTimeColumn get endDateTime => dateTime().nullable()();
+
   IntColumn get state => intEnum<EventStates>()();
+  IntColumn get type => intEnum<EventTypes>()();
   BoolColumn get isTrip => boolean()();
 
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();

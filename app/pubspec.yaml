@@ -47,6 +47,7 @@ dependencies:
   provider: ^6.1.5+1
   flutter_localizations:
     sdk: flutter
+  drift_db_viewer: ^2.1.0
 
 dev_dependencies:
   flutter_test:

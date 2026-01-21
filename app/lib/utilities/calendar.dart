@@ -4,40 +4,205 @@ import 'package:agenda/database/app_database.dart';
 import 'package:drift/drift.dart' as drift; 
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import '../constants.dart' as constants;
+import '../widgets/timeinputs.dart';
 
-Future<DateTime?> getDate(BuildContext context,DateTime? initialDate)async{
-  return await showDatePicker(
-    context: context,
-    initialDate: initialDate??DateTime.now(),
-    initialDatePickerMode: DatePickerMode.day,
-    initialEntryMode: DatePickerEntryMode.calendar,
-    firstDate: constants.firstDate,
-    lastDate: constants.lastDay,
-  );
-}
-Future<TimeOfDay?> getTime(BuildContext context)async{
-  return await showTimePicker(
-  context: context,
-    initialTime: TimeOfDay(hour: 0,minute: 0),
-    initialEntryMode: TimePickerEntryMode.dial,
-    orientation: Orientation.portrait,
-    builder: (BuildContext context, Widget? child) {
-      return Directionality(
-        textDirection: TextDirection.ltr,
-        child: child!,
-      );
-    },
-  );
-}
-Future<DateTime?> getDatetime(BuildContext context,DateTime? initialDate)async{
-  final DateTime? date=await getDate(context,initialDate);
-  if(date==null)return null;
-  final TimeOfDay? time=await getTime(context);
-  if(time==null)return null;
-  return DateTime(date.year,date.month,date.day,time.hour,time.minute);
-}
+class EventCard extends StatelessWidget{
+  final Event eve;
+  final List<Stop> sto;
+  final Color maincolor;
 
+  const EventCard({
+    super.key,
+    required this.eve,
+    required this.sto,
+    required this.maincolor,
+  });
+
+  Widget weekDaysDots(){
+    return Container(
+      //alignment: Alignment.centerLeft,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children:WeekDays.values.map((day){
+          if(day==WeekDays.NONE)return Container();
+          return Container(
+            width: 20,
+            height: 20,
+            margin: const EdgeInsets.only(right: 4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: (eve.days?.contains(day)??false)?maincolor:Colors.grey,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              getDayLetter(day), // Función auxiliar para la letra
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                // Si está activo: Letra blanca. Si no: Letra gris.
+                color:Colors.white,
+              ),
+            ),
+          );
+        }).toList(),
+      )
+    );
+  }
+
+  Widget stopsLine(){
+    final stopsToShow = sto.length > 4? 
+      [sto.first, sto.last] 
+      :sto;
+    bool fillDot=true;
+    final now=DateTime.now();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child:Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            height: 2,
+            color: Colors.grey.shade300,
+            margin: const EdgeInsets.symmetric(horizontal: 10), 
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children:stopsToShow.map((stop) {
+              DateTime? stopDay;
+              if((!eve.repeat)||stop.start==null)stopDay=stop.start;
+              else{
+                stopDay=DateTime(
+                  now.year, 
+                  now.month, 
+                  now.day, 
+                  stop.start!.hour, 
+                  stop.start!.minute
+                );
+              }
+              if(stopDay?.isAfter(DateTime.now())??false)fillDot=false;
+              return stopToDot(stop,fillDot);
+            }).toList(),
+          ),
+          if(sto.length > 4)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            color: Colors.white,
+            child: Text(
+              "+${sto.length - 2}", 
+              style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)
+            ),
+          ),
+        ],
+      )
+    );
+  }
+  Widget stopToDot(Stop stop, bool fillDot) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        //time above the dot
+        Text(
+          stop.start != null 
+            ? "${stop.start!.hour.toString().padLeft(2,'0')}:${stop.start!.minute.toString().padLeft(2,'0')}" 
+            : "",
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        
+        const SizedBox(height: 4),
+
+        //the dot
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: fillDot ? maincolor : Colors.white,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: maincolor, 
+              width: 2.5
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.white12,
+                spreadRadius: 3,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 4),
+
+        //stop name
+        SizedBox(
+          width: 60, 
+          child: Text(
+            stop.name,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              height: 1.1,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context){
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      child:Material(
+        color: eve.state!=EventStates.REMOVED?Colors.white12:Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.hardEdge,
+        child:InkWell(
+          onTap: (){},
+          child:Padding(padding:const EdgeInsets.all(14),child:Column(
+            crossAxisAlignment:CrossAxisAlignment.start,
+            children:[
+              Text(
+                eve.name,
+                style:TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
+                ),
+              ),
+              Text(
+                switch(eve.type){
+                  EventTypes.NONE=> "Error",
+                  EventTypes.EVENT=> "Evento",
+                  EventTypes.SCHOOL=> "Recorrido",
+                  EventTypes.REMINDER=> "Recordatorio",
+                },
+                style:TextStyle(
+                  color: maincolor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 10.0,
+                ),
+              ),
+                
+              if(eve.repeat)
+              weekDaysDots(),
+              if(eve.type!=EventTypes.NONE||sto.isNotEmpty)
+              stopsLine(),
+
+            ]
+          )),
+        )
+      ),
+    );
+  }
+}
 
 
 //Return a cuple EventsCompanion/StopsCompanion
@@ -45,9 +210,9 @@ class CreateTripSheet extends StatefulWidget {
   final bool isTrip;
   final Event? eve;
   final Color mainColor;
-  DateTime? startDate;
+  DateTime startDate;
 
-  CreateTripSheet({super.key,required this.mainColor ,this.eve, required this.isTrip,this.startDate});
+  CreateTripSheet({super.key,required this.mainColor ,this.eve, required this.isTrip,required this.startDate});
 
   @override
   State<CreateTripSheet> createState() => _CreateTripSheetState();
@@ -55,6 +220,8 @@ class CreateTripSheet extends StatefulWidget {
 
 class _CreateTripSheetState extends State<CreateTripSheet> {
   final _nameC = TextEditingController();
+  final _contactNameC = TextEditingController();
+  final _contactC = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   Set<WeekDays> weekDays=<WeekDays>{WeekDays.MONDAY};
   bool repeat=false;
@@ -64,14 +231,14 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
   @override
   void initState() {
     super.initState();
-    _stopDateTime=[widget.startDate];
+    _stopDateTime=[DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0)];
     _stopControllers=[TextEditingController()];
   }
 
   void _addStopField() {
     setState((){
       _stopControllers.add(TextEditingController());
-      _stopDateTime.add(null);
+      _stopDateTime.add(DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0));
     });
   }
 
@@ -83,7 +250,18 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
   }
 
   void _getDateTime(int index)async{
-     _stopDateTime[index]=await getDatetime(context,_stopDateTime[index])??_stopDateTime[index];
+     if(!repeat||index==0)_stopDateTime[index]=await getDatetime(context,_stopDateTime[index])??_stopDateTime[index];
+     else{
+      final tmp=await getTime(context);
+      if(tmp==null)return;
+      _stopDateTime[index]=DateTime(
+        _stopDateTime.first!.year,
+        _stopDateTime.first!.month,
+        _stopDateTime.first!.day,
+        tmp.hour,   // Usas la hora de TimeOfDay
+        tmp.minute, // Usas los minutos de TimeOfDay
+      );
+   }
      setState((){});
   }
 
@@ -92,9 +270,15 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
       final newTrip =EventsCompanion(
         id: drift.Value(widget.eve?.id?? Uuid().v4()),
         name: drift.Value(_nameC.text),
+        contactName:drift.Value(_contactNameC.text),
+        contact:drift.Value(_contactC.text),
+        days: drift.Value(weekDays.toList()),
+        startDateTime: drift.Value(_stopDateTime.first!),
+        endDateTime: drift.Value(null),
         repeat: drift.Value(repeat),
         isTrip: drift.Value(widget.isTrip),
-        state: drift.Value(EventStates.DONE),
+        state: drift.Value(EventStates.PENDING),
+        type: drift.Value(EventTypes.NONE),
       );
 
       final List<StopsCompanion> newStops = [];
@@ -206,9 +390,29 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                 multiSelectionEnabled: true,
                 showSelectedIcon: false,
               ),
+              const SizedBox(height: 8),
 
-              // TODO: chofer-colectivo
-              Row(),
+              Row(children: [
+                Expanded(child:TextFormField(
+                  controller:_contactNameC,
+                  textCapitalization: TextCapitalization.words,
+                  decoration:InputDecoration(
+                    labelText:"Persona",
+                    border:const OutlineInputBorder(),
+                    prefixIcon:const Icon(Icons.person),
+                  ),
+                )),
+                const SizedBox(width: 8),
+                Expanded(child:TextFormField(
+                  controller:_contactC,
+                  keyboardType: TextInputType.phone,
+                  decoration:InputDecoration(
+                    labelText:"Contacto",
+                    border:const OutlineInputBorder(),
+                    prefixIcon:const Icon(Icons.phone),
+                  ),
+                )),
+              ]),
 
               // STOPS
               Text(
@@ -226,7 +430,9 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                         Container(
                           margin: EdgeInsets.only(right:5),
                           child:CircleAvatar(
-                            backgroundColor: _stopDateTime[index]==null?Colors.red:Colors.green,
+                            backgroundColor:(((_stopDateTime[index]?.hour??0)==0)
+                              &&((_stopDateTime[index]?.minute??0)==0))?
+                              Colors.red:Colors.green,
                             child:IconButton(
                               icon: const Icon(Icons.calendar_month),
                               onPressed:()=>_getDateTime(index),
@@ -241,13 +447,16 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                             prefixIcon:const Icon(Icons.location_on_outlined),
                           ),
                           validator:(value) {
-                            if (index==0&&_stopDateTime[0]==null&&(value == null || value.isEmpty))
+                            if (index==0
+                              &&(((_stopDateTime[0]?.hour??0)==0)
+                              &&((_stopDateTime[0]?.minute??0)==0))
+                              &&(value == null || value.isEmpty))
                               return 'Ingresa la parada';
                             return null;
                           },
                         )),
                         // DELETE BUTTON
-                        if (_stopControllers.length > 1)
+                        if (_stopControllers.length>1&&index!=0)
                         IconButton(
                           icon:const Icon(Icons.remove_circle_outline, color:Colors.red),
                           onPressed:() => _removeStopField(index),

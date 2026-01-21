@@ -146,7 +146,9 @@ Widget colectivoToCard(BuildContext context, Colectivo bus, Color mainColor){
                     onPressed:()async{
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content:Text("'${bus.name==""?bus.plate:bus.name}' Eliminado")));
+                        content:Text("'${bus.name==""?bus.plate:bus.name}' Eliminado"),
+                        backgroundColor:Colors.red,
+                      ));
                       final db=Provider.of<AppDatabase>(context, listen: false);
                       await (db.update(db.colectivos)
                         ..where((tbl)=>tbl.id.equals(bus.id)))

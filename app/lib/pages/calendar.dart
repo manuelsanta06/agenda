@@ -9,17 +9,8 @@ import '../constants.dart' as constants;
 import 'package:table_calendar/table_calendar.dart';
 
 
-
-enum EventTypes{
-  NONE,
-  EVENT,
-  JOURNEY
-}
-
-
-
-
-
+//TODO: turn into a statelessWidget??
+//everithing that updastes is part of a stream
 class calendarPage extends StatefulWidget {
   const calendarPage({super.key});
   static const Color mainColor=Colors.cyan;
@@ -44,6 +35,15 @@ class _calendarPageState extends State<calendarPage>{
   void dispose() {
     super.dispose();
   }
+  void errorSnackBar(BuildContext context){
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content:Text('Algo salio mal. Viaje borrado'),
+        duration: Duration(seconds: 5),
+        backgroundColor:Colors.red,
+      ),
+    );
+  }
 
   void _showCreateTripSheet(bool trip) async {
     final (EventsCompanion, List<StopsCompanion>)? newBoth = await showModalBottomSheet(
@@ -51,28 +51,23 @@ class _calendarPageState extends State<calendarPage>{
       isScrollControlled:true,
       builder:(context) => CreateTripSheet(isTrip:trip,startDate:_selectedDay,mainColor:calendarPage.mainColor),
     );
-    if(newBoth==null)return;
+    if(newBoth==null){return;}
     final (newEvent, newStops) = newBoth;
-    if(newEvent == null||newStops==null) return;//unnecesary
+    if(newEvent==null||newStops==null){errorSnackBar(context);return;}//unnecesary
 
-    final db= Provider.of<AppDatabase>(context);
+    final db= Provider.of<AppDatabase>(context,listen: false);
 
     try{
-    await db.transaction(() async {
-      await db.into(db.events).insert(newEvent);
+      await db.transaction(() async {
+        await db.into(db.events).insert(newEvent);
 
-      await db.batch((batch){
-        batch.insertAll(db.stops, newStops);
+        await db.batch((batch){
+          batch.insertAll(db.stops, newStops);
+        });
       });
-    });
     }catch(e){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:Text('Algo salio mal. Viaje borrado'),
-          backgroundColor:Colors.red,
-        ),
-      );
-      print(e);
+      errorSnackBar(context);
+      print("ERROR DB: $e");
       return;
     }
 
@@ -80,7 +75,7 @@ class _calendarPageState extends State<calendarPage>{
     // Confirmation snackBar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:Text('Viaje "${newEvent.name}" creado.'),
+        content:Text('Viaje "${newEvent.name.value}" creado.'),
         backgroundColor:Colors.green,
       ),
     );
@@ -88,6 +83,8 @@ class _calendarPageState extends State<calendarPage>{
   
   @override
   Widget build(BuildContext context) {
+    final db = Provider.of<AppDatabase>(context);
+
     return Scaffold(
       body:Stack(
         fit:StackFit.expand,
@@ -142,15 +139,44 @@ class _calendarPageState extends State<calendarPage>{
 
             const SizedBox(height: 8.0),
 
-            //Expanded(
-            //  child: ListView.builder(
-            //    itemCount: _selectedEvents.length,
-            //    itemBuilder: (context, index) {
-            //      final event = _selectedEvents[index];
-            //      return _buildEventCard(event);
-            //    },
-            //  ),
-            //),
+            Expanded(
+              child:StreamBuilder<List<EventWithStops>>(
+                stream: db.watchEventsWithStops(_selectedDay),
+                builder:(context, snapshot){
+                  if(snapshot.hasError){
+                    return Center(
+                      child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
+                        Error: ${snapshot.error}
+                        Stacktrace:
+                        ${snapshot.stackTrace.toString()
+                          .split('\n').take(6).join('\n')}""", 
+                        style: TextStyle(color: Colors.red))
+                    ));
+                  }
+                  if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
+
+                  final fullList =snapshot.data??List<EventWithStops>.empty();
+
+                  final filtered = searchQuery.isEmpty
+                    ? fullList
+                    : fullList.where((c){
+                      return (c.event.name.toLowerCase().contains(searchQuery.toLowerCase()));
+                    }).toList();
+                  if(filtered.isEmpty)return const Center(child:Text("???"));
+
+                  return ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder:(context, index){
+                      return EventCard(
+                        eve:filtered[index].event,
+                        sto:filtered[index].stops,
+                        maincolor:calendarPage.mainColor,
+                      );
+                    },
+                  );
+                },
+              )
+            ),
 
           ],),),
 

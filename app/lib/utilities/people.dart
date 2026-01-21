@@ -108,7 +108,9 @@ Widget choferToCard(BuildContext context,Chofer chofe, Color mainColor){
                   onPressed:()async{
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content:Text("Eliminado")));
+                      content:Text("Eliminado"),
+                      backgroundColor:Colors.red,
+                    ));
                     final db=Provider.of<AppDatabase>(context, listen: false);
                     await (db.update(db.choferes)
                       ..where((tbl)=>tbl.id.equals(chofe.id)))
@@ -195,6 +197,8 @@ Future<ChoferesCompanion?> getChofer(BuildContext context, Color mainColor,Chofe
                         dni: drift.Value(dniC.text),
                         mobileNumber: drift.Value(mobileNumberC.text),
                         picturePath: drift.Value(pictureD),
+                        is_active: drift.Value(true),
+                        isSynced: drift.Value(false),
                     ));
                   },
                   style:ElevatedButton.styleFrom(
@@ -259,29 +263,30 @@ Future<ChoferesCompanion?> getChofer(BuildContext context, Color mainColor,Chofe
                 ),
                 alignment: Alignment.center,
                 child: const Text(
-                  "Clic para subir una foto",
+                  "Subir foto",
                   style: TextStyle(color: Color(0xFF94A3B8)),
                 ),
               ),
             ),
 
             const SizedBox(height: 15),
-            SizedBox(
-              width: double.infinity,
-              child:OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF94A3B8),
-                  side: const BorderSide(color: Color(0xFF334155)),
-                  padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: (){},
-                child: const Text(
-                  "Importar desde Contactos",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ),
+            //TODO?
+            //SizedBox(
+            //  width: double.infinity,
+            //  child:OutlinedButton(
+            //    style: OutlinedButton.styleFrom(
+            //      foregroundColor: const Color(0xFF94A3B8),
+            //      side: const BorderSide(color: Color(0xFF334155)),
+            //      padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
+            //      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            //    ),
+            //    onPressed: (){},
+            //    child: const Text(
+            //      "Importar desde Contactos",
+            //      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            //    ),
+            //  ),
+            //),
 
             const SizedBox(height: 20),
           ],

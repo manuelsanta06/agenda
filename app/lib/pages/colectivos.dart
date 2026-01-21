@@ -87,7 +87,7 @@ class _colectivosPageState extends State<colectivosPage>{
           await db.into(db.colectivos).insert(nuevo);
       
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: const SnackBar(content: Text('Colectivo guardado')),
+            content: const Text('Colectivo guardado'),
             backgroundColor:Colors.green,
           ));
         },

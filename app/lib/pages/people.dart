@@ -93,7 +93,7 @@ class _peoplePageState extends State<peoplePage>{
           await db.into(db.choferes).insert(nuevo);
       
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content:const SnackBar(content: Text('chofer guardado')),
+            content:const Text('chofer guardado'),
             backgroundColor:Colors.green,
           ));
         },
