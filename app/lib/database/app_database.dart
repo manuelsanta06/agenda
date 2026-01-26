@@ -30,6 +30,71 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
+  Future<List<(Colectivo, bool)>> getColectivosWithAvailability(
+    DateTime start, DateTime end, String? excludedEventId) async {
+  
+    final busyQuery = select(eventColectivos).join([
+      innerJoin(events, events.id.equalsExp(eventColectivos.eventId))
+    ]);
+    busyQuery.where(
+      events.startDateTime.isSmallerThanValue(end) &
+      events.endDateTime.isBiggerThanValue(start) &
+      (excludedEventId != null ? events.id.equals(excludedEventId).not() : const Constant(true))
+    );
+    final busyIds = await busyQuery
+        .map((row) => row.readTable(eventColectivos).colectivoId)
+        .get();
+    final busySet = busyIds.toSet();
+
+    final allColectivos = await (select(colectivos)
+      ..where((u) => u.is_active.equals(true))
+      ..orderBy([(t) => OrderingTerm(expression: t.name)])
+    ).get();
+
+    final List<(Colectivo, bool)> result = allColectivos.map((c) {
+      return (c, busySet.contains(c.id));
+    }).toList();
+
+    //sorting
+    result.sort((a, b) {
+      if (a.$2 == b.$2) return 0;
+      return a.$2 ? 1 : -1;
+    });
+    return result;
+  }
+  Future<List<(Chofere, bool)>> getChoferesWithAvailability(
+    DateTime start, DateTime end, String? excludedEventId) async {
+  
+    final busyQuery = select(eventChoferes).join([
+      innerJoin(events, events.id.equalsExp(eventChoferes.eventId))
+    ]);
+    busyQuery.where(
+      events.startDateTime.isSmallerThanValue(end) &
+      events.endDateTime.isBiggerThanValue(start) &
+      (excludedEventId != null ? events.id.equals(excludedEventId).not() : const Constant(true))
+    );
+    final busyIds = await busyQuery
+        .map((row) => row.readTable(eventChoferes).choferId)
+        .get();
+    final busySet = busyIds.toSet();
+
+    final allChoferes = await (select(choferes)
+      ..where((u) => u.is_active.equals(true))
+      ..orderBy([(t) => OrderingTerm(expression: t.name)])
+    ).get();
+
+    final List<(Chofere, bool)> result = allChoferes.map((c) {
+      return (c, busySet.contains(c.id));
+    }).toList();
+
+    //sorting
+    result.sort((a, b) {
+      if (a.$2 == b.$2) return 0;
+      return a.$2 ? 1 : -1;
+    });
+    return result;
+  }
+
   Stream<List<EventWithStops>> watchEventsWithStops(DateTime day) {
     final startOfDay = DateTime(day.year, day.month, day.day);
     final endOfDay = startOfDay.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));

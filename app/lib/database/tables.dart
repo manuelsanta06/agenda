@@ -91,12 +91,33 @@ enum EventTypes{
   REMINDER,
   SCHOOL,
 }
+String eventTypeToString(EventTypes type){
+  switch(type){
+    case EventTypes.NONE: return "Error";
+    case EventTypes.EVENT: return "Viaje";
+    case EventTypes.SCHOOL: return "Recorrido";
+    case EventTypes.REMINDER: return "Recordatorio";
+  }
+}
 enum EventStates{
   NONE,
   REMOVED,
   DONE,
   PENDING,
-  REPEATING
+  REPEATING,
+  INCOMPLETE,
+  HAPPENING
+}
+String eventStateToString(EventStates type){
+  switch(type){
+    case EventStates.NONE:        return "Error";
+    case EventStates.REMOVED:     return "Borrado";
+    case EventStates.DONE:        return "Finalizado";
+    case EventStates.PENDING:     return "Pendiente";
+    case EventStates.REPEATING:   return "Repitiendose";
+    case EventStates.INCOMPLETE:  return "Icompleto";
+    case EventStates.HAPPENING:  return "Ahora";
+  }
 }
 
 class Events extends Table {
@@ -109,7 +130,8 @@ class Events extends Table {
   TextColumn get days => text().map(const WeekDaysConverter()).nullable()();
 
   DateTimeColumn get startDateTime => dateTime()();
-  DateTimeColumn get endDateTime => dateTime().nullable()();
+  DateTimeColumn get endDateTime => dateTime()();
+  DateTimeColumn get stopRepeatingDateTime => dateTime().nullable()();
 
   IntColumn get state => intEnum<EventStates>()();
   IntColumn get type => intEnum<EventTypes>()();

@@ -72,7 +72,14 @@ class _colectivosPageState extends State<colectivosPage>{
                   return ListView.builder(
                     itemCount: filtered.length,
                     itemBuilder:(context, index){
-                      return colectivoToCard(context, filtered[index],colectivosPage.mainColor);
+                      return colectivoToCard(
+                        context,filtered[index],colectivosPage.mainColor,
+                        onPressed:(!filtered[index].is_active)?
+                          null:()=>inputFuelDialog(context,filtered[index]),
+                        onLongPress:(filtered[index].is_active)?
+                          ()=>removeColectivoDialog(context,filtered[index],false):
+                          ()=>removeColectivoDialog(context,filtered[index],true),
+                      );
                     },
                   );
                 },

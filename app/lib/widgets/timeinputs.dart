@@ -1,19 +1,5 @@
 import 'package:flutter/material.dart';
 import '../constants.dart' as constants;
-import '../database/tables.dart';
-
-String getDayLetter(WeekDays day) {
-  switch (day) {
-    case WeekDays.MONDAY: return 'L';
-    case WeekDays.TUESDAY: return 'M';
-    case WeekDays.WEDNESDAY: return 'M';
-    case WeekDays.THURSDAY: return 'J';
-    case WeekDays.FRIDAY: return 'V';
-    case WeekDays.SATURDAY: return 'S';
-    case WeekDays.SUNDAY: return 'D';
-    default: return '';
-  }
-}
 
 Future<DateTime?> getDate(BuildContext context,DateTime? initialDate)async{
   return await showDatePicker(

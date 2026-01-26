@@ -1169,10 +1169,21 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   late final GeneratedColumn<DateTime> endDateTime = GeneratedColumn<DateTime>(
     'end_date_time',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
+  static const VerificationMeta _stopRepeatingDateTimeMeta =
+      const VerificationMeta('stopRepeatingDateTime');
+  @override
+  late final GeneratedColumn<DateTime> stopRepeatingDateTime =
+      GeneratedColumn<DateTime>(
+        'stop_repeating_date_time',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   late final GeneratedColumnWithTypeConverter<EventStates, int> state =
       GeneratedColumn<int>(
@@ -1228,6 +1239,7 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
     days,
     startDateTime,
     endDateTime,
+    stopRepeatingDateTime,
     state,
     type,
     isTrip,
@@ -1298,6 +1310,17 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
           _endDateTimeMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_endDateTimeMeta);
+    }
+    if (data.containsKey('stop_repeating_date_time')) {
+      context.handle(
+        _stopRepeatingDateTimeMeta,
+        stopRepeatingDateTime.isAcceptableOrUnknown(
+          data['stop_repeating_date_time']!,
+          _stopRepeatingDateTimeMeta,
+        ),
+      );
     }
     if (data.containsKey('is_trip')) {
       context.handle(
@@ -1355,6 +1378,10 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
       endDateTime: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}end_date_time'],
+      )!,
+      stopRepeatingDateTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}stop_repeating_date_time'],
       ),
       state: $EventsTable.$converterstate.fromSql(
         attachedDatabase.typeMapping.read(
@@ -1402,7 +1429,8 @@ class Event extends DataClass implements Insertable<Event> {
   final bool repeat;
   final List<WeekDays>? days;
   final DateTime startDateTime;
-  final DateTime? endDateTime;
+  final DateTime endDateTime;
+  final DateTime? stopRepeatingDateTime;
   final EventStates state;
   final EventTypes type;
   final bool isTrip;
@@ -1415,7 +1443,8 @@ class Event extends DataClass implements Insertable<Event> {
     required this.repeat,
     this.days,
     required this.startDateTime,
-    this.endDateTime,
+    required this.endDateTime,
+    this.stopRepeatingDateTime,
     required this.state,
     required this.type,
     required this.isTrip,
@@ -1437,8 +1466,11 @@ class Event extends DataClass implements Insertable<Event> {
       map['days'] = Variable<String>($EventsTable.$converterdaysn.toSql(days));
     }
     map['start_date_time'] = Variable<DateTime>(startDateTime);
-    if (!nullToAbsent || endDateTime != null) {
-      map['end_date_time'] = Variable<DateTime>(endDateTime);
+    map['end_date_time'] = Variable<DateTime>(endDateTime);
+    if (!nullToAbsent || stopRepeatingDateTime != null) {
+      map['stop_repeating_date_time'] = Variable<DateTime>(
+        stopRepeatingDateTime,
+      );
     }
     {
       map['state'] = Variable<int>($EventsTable.$converterstate.toSql(state));
@@ -1464,9 +1496,10 @@ class Event extends DataClass implements Insertable<Event> {
       repeat: Value(repeat),
       days: days == null && nullToAbsent ? const Value.absent() : Value(days),
       startDateTime: Value(startDateTime),
-      endDateTime: endDateTime == null && nullToAbsent
+      endDateTime: Value(endDateTime),
+      stopRepeatingDateTime: stopRepeatingDateTime == null && nullToAbsent
           ? const Value.absent()
-          : Value(endDateTime),
+          : Value(stopRepeatingDateTime),
       state: Value(state),
       type: Value(type),
       isTrip: Value(isTrip),
@@ -1487,7 +1520,10 @@ class Event extends DataClass implements Insertable<Event> {
       repeat: serializer.fromJson<bool>(json['repeat']),
       days: serializer.fromJson<List<WeekDays>?>(json['days']),
       startDateTime: serializer.fromJson<DateTime>(json['startDateTime']),
-      endDateTime: serializer.fromJson<DateTime?>(json['endDateTime']),
+      endDateTime: serializer.fromJson<DateTime>(json['endDateTime']),
+      stopRepeatingDateTime: serializer.fromJson<DateTime?>(
+        json['stopRepeatingDateTime'],
+      ),
       state: $EventsTable.$converterstate.fromJson(
         serializer.fromJson<int>(json['state']),
       ),
@@ -1509,7 +1545,10 @@ class Event extends DataClass implements Insertable<Event> {
       'repeat': serializer.toJson<bool>(repeat),
       'days': serializer.toJson<List<WeekDays>?>(days),
       'startDateTime': serializer.toJson<DateTime>(startDateTime),
-      'endDateTime': serializer.toJson<DateTime?>(endDateTime),
+      'endDateTime': serializer.toJson<DateTime>(endDateTime),
+      'stopRepeatingDateTime': serializer.toJson<DateTime?>(
+        stopRepeatingDateTime,
+      ),
       'state': serializer.toJson<int>(
         $EventsTable.$converterstate.toJson(state),
       ),
@@ -1527,7 +1566,8 @@ class Event extends DataClass implements Insertable<Event> {
     bool? repeat,
     Value<List<WeekDays>?> days = const Value.absent(),
     DateTime? startDateTime,
-    Value<DateTime?> endDateTime = const Value.absent(),
+    DateTime? endDateTime,
+    Value<DateTime?> stopRepeatingDateTime = const Value.absent(),
     EventStates? state,
     EventTypes? type,
     bool? isTrip,
@@ -1540,7 +1580,10 @@ class Event extends DataClass implements Insertable<Event> {
     repeat: repeat ?? this.repeat,
     days: days.present ? days.value : this.days,
     startDateTime: startDateTime ?? this.startDateTime,
-    endDateTime: endDateTime.present ? endDateTime.value : this.endDateTime,
+    endDateTime: endDateTime ?? this.endDateTime,
+    stopRepeatingDateTime: stopRepeatingDateTime.present
+        ? stopRepeatingDateTime.value
+        : this.stopRepeatingDateTime,
     state: state ?? this.state,
     type: type ?? this.type,
     isTrip: isTrip ?? this.isTrip,
@@ -1562,6 +1605,9 @@ class Event extends DataClass implements Insertable<Event> {
       endDateTime: data.endDateTime.present
           ? data.endDateTime.value
           : this.endDateTime,
+      stopRepeatingDateTime: data.stopRepeatingDateTime.present
+          ? data.stopRepeatingDateTime.value
+          : this.stopRepeatingDateTime,
       state: data.state.present ? data.state.value : this.state,
       type: data.type.present ? data.type.value : this.type,
       isTrip: data.isTrip.present ? data.isTrip.value : this.isTrip,
@@ -1580,6 +1626,7 @@ class Event extends DataClass implements Insertable<Event> {
           ..write('days: $days, ')
           ..write('startDateTime: $startDateTime, ')
           ..write('endDateTime: $endDateTime, ')
+          ..write('stopRepeatingDateTime: $stopRepeatingDateTime, ')
           ..write('state: $state, ')
           ..write('type: $type, ')
           ..write('isTrip: $isTrip, ')
@@ -1598,6 +1645,7 @@ class Event extends DataClass implements Insertable<Event> {
     days,
     startDateTime,
     endDateTime,
+    stopRepeatingDateTime,
     state,
     type,
     isTrip,
@@ -1615,6 +1663,7 @@ class Event extends DataClass implements Insertable<Event> {
           other.days == this.days &&
           other.startDateTime == this.startDateTime &&
           other.endDateTime == this.endDateTime &&
+          other.stopRepeatingDateTime == this.stopRepeatingDateTime &&
           other.state == this.state &&
           other.type == this.type &&
           other.isTrip == this.isTrip &&
@@ -1629,7 +1678,8 @@ class EventsCompanion extends UpdateCompanion<Event> {
   final Value<bool> repeat;
   final Value<List<WeekDays>?> days;
   final Value<DateTime> startDateTime;
-  final Value<DateTime?> endDateTime;
+  final Value<DateTime> endDateTime;
+  final Value<DateTime?> stopRepeatingDateTime;
   final Value<EventStates> state;
   final Value<EventTypes> type;
   final Value<bool> isTrip;
@@ -1644,6 +1694,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     this.days = const Value.absent(),
     this.startDateTime = const Value.absent(),
     this.endDateTime = const Value.absent(),
+    this.stopRepeatingDateTime = const Value.absent(),
     this.state = const Value.absent(),
     this.type = const Value.absent(),
     this.isTrip = const Value.absent(),
@@ -1658,7 +1709,8 @@ class EventsCompanion extends UpdateCompanion<Event> {
     this.repeat = const Value.absent(),
     this.days = const Value.absent(),
     required DateTime startDateTime,
-    this.endDateTime = const Value.absent(),
+    required DateTime endDateTime,
+    this.stopRepeatingDateTime = const Value.absent(),
     required EventStates state,
     required EventTypes type,
     required bool isTrip,
@@ -1667,6 +1719,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
   }) : id = Value(id),
        name = Value(name),
        startDateTime = Value(startDateTime),
+       endDateTime = Value(endDateTime),
        state = Value(state),
        type = Value(type),
        isTrip = Value(isTrip);
@@ -1679,6 +1732,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     Expression<String>? days,
     Expression<DateTime>? startDateTime,
     Expression<DateTime>? endDateTime,
+    Expression<DateTime>? stopRepeatingDateTime,
     Expression<int>? state,
     Expression<int>? type,
     Expression<bool>? isTrip,
@@ -1694,6 +1748,8 @@ class EventsCompanion extends UpdateCompanion<Event> {
       if (days != null) 'days': days,
       if (startDateTime != null) 'start_date_time': startDateTime,
       if (endDateTime != null) 'end_date_time': endDateTime,
+      if (stopRepeatingDateTime != null)
+        'stop_repeating_date_time': stopRepeatingDateTime,
       if (state != null) 'state': state,
       if (type != null) 'type': type,
       if (isTrip != null) 'is_trip': isTrip,
@@ -1710,7 +1766,8 @@ class EventsCompanion extends UpdateCompanion<Event> {
     Value<bool>? repeat,
     Value<List<WeekDays>?>? days,
     Value<DateTime>? startDateTime,
-    Value<DateTime?>? endDateTime,
+    Value<DateTime>? endDateTime,
+    Value<DateTime?>? stopRepeatingDateTime,
     Value<EventStates>? state,
     Value<EventTypes>? type,
     Value<bool>? isTrip,
@@ -1726,6 +1783,8 @@ class EventsCompanion extends UpdateCompanion<Event> {
       days: days ?? this.days,
       startDateTime: startDateTime ?? this.startDateTime,
       endDateTime: endDateTime ?? this.endDateTime,
+      stopRepeatingDateTime:
+          stopRepeatingDateTime ?? this.stopRepeatingDateTime,
       state: state ?? this.state,
       type: type ?? this.type,
       isTrip: isTrip ?? this.isTrip,
@@ -1763,6 +1822,11 @@ class EventsCompanion extends UpdateCompanion<Event> {
     if (endDateTime.present) {
       map['end_date_time'] = Variable<DateTime>(endDateTime.value);
     }
+    if (stopRepeatingDateTime.present) {
+      map['stop_repeating_date_time'] = Variable<DateTime>(
+        stopRepeatingDateTime.value,
+      );
+    }
     if (state.present) {
       map['state'] = Variable<int>(
         $EventsTable.$converterstate.toSql(state.value),
@@ -1796,6 +1860,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
           ..write('days: $days, ')
           ..write('startDateTime: $startDateTime, ')
           ..write('endDateTime: $endDateTime, ')
+          ..write('stopRepeatingDateTime: $stopRepeatingDateTime, ')
           ..write('state: $state, ')
           ..write('type: $type, ')
           ..write('isTrip: $isTrip, ')
@@ -3438,7 +3503,8 @@ typedef $$EventsTableCreateCompanionBuilder =
       Value<bool> repeat,
       Value<List<WeekDays>?> days,
       required DateTime startDateTime,
-      Value<DateTime?> endDateTime,
+      required DateTime endDateTime,
+      Value<DateTime?> stopRepeatingDateTime,
       required EventStates state,
       required EventTypes type,
       required bool isTrip,
@@ -3454,7 +3520,8 @@ typedef $$EventsTableUpdateCompanionBuilder =
       Value<bool> repeat,
       Value<List<WeekDays>?> days,
       Value<DateTime> startDateTime,
-      Value<DateTime?> endDateTime,
+      Value<DateTime> endDateTime,
+      Value<DateTime?> stopRepeatingDateTime,
       Value<EventStates> state,
       Value<EventTypes> type,
       Value<bool> isTrip,
@@ -3571,6 +3638,11 @@ class $$EventsTableFilterComposer
 
   ColumnFilters<DateTime> get endDateTime => $composableBuilder(
     column: $table.endDateTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get stopRepeatingDateTime => $composableBuilder(
+    column: $table.stopRepeatingDateTime,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3721,6 +3793,11 @@ class $$EventsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get stopRepeatingDateTime => $composableBuilder(
+    column: $table.stopRepeatingDateTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get state => $composableBuilder(
     column: $table.state,
     builder: (column) => ColumnOrderings(column),
@@ -3778,6 +3855,11 @@ class $$EventsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get endDateTime => $composableBuilder(
     column: $table.endDateTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get stopRepeatingDateTime => $composableBuilder(
+    column: $table.stopRepeatingDateTime,
     builder: (column) => column,
   );
 
@@ -3908,7 +3990,8 @@ class $$EventsTableTableManager
                 Value<bool> repeat = const Value.absent(),
                 Value<List<WeekDays>?> days = const Value.absent(),
                 Value<DateTime> startDateTime = const Value.absent(),
-                Value<DateTime?> endDateTime = const Value.absent(),
+                Value<DateTime> endDateTime = const Value.absent(),
+                Value<DateTime?> stopRepeatingDateTime = const Value.absent(),
                 Value<EventStates> state = const Value.absent(),
                 Value<EventTypes> type = const Value.absent(),
                 Value<bool> isTrip = const Value.absent(),
@@ -3923,6 +4006,7 @@ class $$EventsTableTableManager
                 days: days,
                 startDateTime: startDateTime,
                 endDateTime: endDateTime,
+                stopRepeatingDateTime: stopRepeatingDateTime,
                 state: state,
                 type: type,
                 isTrip: isTrip,
@@ -3938,7 +4022,8 @@ class $$EventsTableTableManager
                 Value<bool> repeat = const Value.absent(),
                 Value<List<WeekDays>?> days = const Value.absent(),
                 required DateTime startDateTime,
-                Value<DateTime?> endDateTime = const Value.absent(),
+                required DateTime endDateTime,
+                Value<DateTime?> stopRepeatingDateTime = const Value.absent(),
                 required EventStates state,
                 required EventTypes type,
                 required bool isTrip,
@@ -3953,6 +4038,7 @@ class $$EventsTableTableManager
                 days: days,
                 startDateTime: startDateTime,
                 endDateTime: endDateTime,
+                stopRepeatingDateTime: stopRepeatingDateTime,
                 state: state,
                 type: type,
                 isTrip: isTrip,

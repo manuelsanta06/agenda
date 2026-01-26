@@ -1,10 +1,11 @@
-import 'package:agenda/pages/calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:agenda/database/app_database.dart';
 import 'package:drift/drift.dart' as drift; 
-import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import '../pages/eventInfo.dart';
 import '../widgets/timeinputs.dart';
+import '../widgets/eventDetails.dart';
+
 
 class EventCard extends StatelessWidget{
   final Event eve;
@@ -18,155 +19,26 @@ class EventCard extends StatelessWidget{
     required this.maincolor,
   });
 
-  Widget weekDaysDots(){
-    return Container(
-      //alignment: Alignment.centerLeft,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children:WeekDays.values.map((day){
-          if(day==WeekDays.NONE)return Container();
-          return Container(
-            width: 20,
-            height: 20,
-            margin: const EdgeInsets.only(right: 4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: (eve.days?.contains(day)??false)?maincolor:Colors.grey,
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              getDayLetter(day), // Función auxiliar para la letra
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                // Si está activo: Letra blanca. Si no: Letra gris.
-                color:Colors.white,
-              ),
-            ),
-          );
-        }).toList(),
-      )
-    );
-  }
 
-  Widget stopsLine(){
-    final stopsToShow = sto.length > 4? 
-      [sto.first, sto.last] 
-      :sto;
-    bool fillDot=true;
-    final now=DateTime.now();
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child:Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            height: 2,
-            color: Colors.grey.shade300,
-            margin: const EdgeInsets.symmetric(horizontal: 10), 
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children:stopsToShow.map((stop) {
-              DateTime? stopDay;
-              if((!eve.repeat)||stop.start==null)stopDay=stop.start;
-              else{
-                stopDay=DateTime(
-                  now.year, 
-                  now.month, 
-                  now.day, 
-                  stop.start!.hour, 
-                  stop.start!.minute
-                );
-              }
-              if(stopDay?.isAfter(DateTime.now())??false)fillDot=false;
-              return stopToDot(stop,fillDot);
-            }).toList(),
-          ),
-          if(sto.length > 4)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            color: Colors.white,
-            child: Text(
-              "+${sto.length - 2}", 
-              style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)
-            ),
-          ),
-        ],
-      )
-    );
-  }
-  Widget stopToDot(Stop stop, bool fillDot) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        //time above the dot
-        Text(
-          stop.start != null 
-            ? "${stop.start!.hour.toString().padLeft(2,'0')}:${stop.start!.minute.toString().padLeft(2,'0')}" 
-            : "",
-          style: TextStyle(
-            fontSize: 10,
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        
-        const SizedBox(height: 4),
-
-        //the dot
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: fillDot ? maincolor : Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: maincolor, 
-              width: 2.5
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.white12,
-                spreadRadius: 3,
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 4),
-
-        //stop name
-        SizedBox(
-          width: 60, 
-          child: Text(
-            stop.name,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              height: 1.1,
-            ),
-          ),
-        ),
-      ],
+  void _onClick(BuildContext context){
+    Navigator.of(context).push(
+      MaterialPageRoute(builder:(context)=>eventInfo(eve:eve,sto:sto,maincolor:maincolor)),
     );
   }
 
   @override
   Widget build(BuildContext context){
+    Color colo=Theme.of(context).cardColor;
+    if(eve.state==EventStates.REMOVED)colo=Colors.red.withValues(alpha:0.3);
+    else if(eve.state==EventStates.INCOMPLETE)colo=Color.fromARGB(175,255,92,0);
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+      margin: const EdgeInsets.symmetric(vertical:8, horizontal:10),
       child:Material(
-        color: eve.state!=EventStates.REMOVED?Colors.white12:Colors.red.withOpacity(0.1),
+        color: colo,
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.hardEdge,
         child:InkWell(
-          onTap: (){},
+          onTap: ()=>_onClick(context),
           child:Padding(padding:const EdgeInsets.all(14),child:Column(
             crossAxisAlignment:CrossAxisAlignment.start,
             children:[
@@ -178,12 +50,7 @@ class EventCard extends StatelessWidget{
                 ),
               ),
               Text(
-                switch(eve.type){
-                  EventTypes.NONE=> "Error",
-                  EventTypes.EVENT=> "Evento",
-                  EventTypes.SCHOOL=> "Recorrido",
-                  EventTypes.REMINDER=> "Recordatorio",
-                },
+                eventTypeToString(eve.type),
                 style:TextStyle(
                   color: maincolor,
                   fontWeight: FontWeight.w900,
@@ -192,9 +59,9 @@ class EventCard extends StatelessWidget{
               ),
                 
               if(eve.repeat)
-              weekDaysDots(),
+              weekDaysDots(eve.days,maincolor),
               if(eve.type!=EventTypes.NONE||sto.isNotEmpty)
-              stopsLine(),
+              stopsLineHorizontal(sto,eve.repeat,maincolor),
 
             ]
           )),
@@ -203,6 +70,7 @@ class EventCard extends StatelessWidget{
     );
   }
 }
+
 
 
 //Return a cuple EventsCompanion/StopsCompanion
@@ -226,7 +94,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
   Set<WeekDays> weekDays=<WeekDays>{WeekDays.MONDAY};
   bool repeat=false;
 
-  late List<DateTime?> _stopDateTime;
+  late List<DateTime> _stopDateTime;
   late List<TextEditingController> _stopControllers;
   @override
   void initState() {
@@ -238,7 +106,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
   void _addStopField() {
     setState((){
       _stopControllers.add(TextEditingController());
-      _stopDateTime.add(DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0));
+      _stopDateTime.add(DateTime(_stopDateTime[0].year,_stopDateTime[0].month,_stopDateTime[0].day,0,0));
     });
   }
 
@@ -250,7 +118,8 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
   }
 
   void _getDateTime(int index)async{
-     if(!repeat||index==0)_stopDateTime[index]=await getDatetime(context,_stopDateTime[index])??_stopDateTime[index];
+     if(!repeat||index==0)
+       _stopDateTime[index]=await getDatetime(context,_stopDateTime[index])??_stopDateTime[index];
      else{
       final tmp=await getTime(context);
       if(tmp==null)return;
@@ -273,12 +142,12 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
         contactName:drift.Value(_contactNameC.text),
         contact:drift.Value(_contactC.text),
         days: drift.Value(weekDays.toList()),
-        startDateTime: drift.Value(_stopDateTime.first!),
-        endDateTime: drift.Value(null),
+        startDateTime: drift.Value(_stopDateTime.first),
+        endDateTime: drift.Value(_stopDateTime.last),
         repeat: drift.Value(repeat),
         isTrip: drift.Value(widget.isTrip),
-        state: drift.Value(EventStates.PENDING),
-        type: drift.Value(EventTypes.NONE),
+        state: drift.Value(EventStates.INCOMPLETE),
+        type: drift.Value(widget.isTrip?EventTypes.EVENT:EventTypes.REMINDER),
       );
 
       final List<StopsCompanion> newStops = [];
@@ -310,9 +179,8 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
 
   @override
   Widget build(BuildContext context) {
-    //altura del 80% del dispositivo
     return FractionallySizedBox(
-      heightFactor:0.8,
+      heightFactor:0.9,
       child:Container(
         padding:const EdgeInsets.all(16.0),
         decoration:const BoxDecoration(
@@ -390,7 +258,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                 multiSelectionEnabled: true,
                 showSelectedIcon: false,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 5),
 
               Row(children: [
                 Expanded(child:TextFormField(
@@ -413,6 +281,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                   ),
                 )),
               ]),
+              const SizedBox(height: 5),
 
               // STOPS
               Text(
@@ -447,11 +316,18 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                             prefixIcon:const Icon(Icons.location_on_outlined),
                           ),
                           validator:(value) {
-                            if (index==0
-                              &&(((_stopDateTime[0]?.hour??0)==0)
-                              &&((_stopDateTime[0]?.minute??0)==0))
-                              &&(value == null || value.isEmpty))
-                              return 'Ingresa la parada';
+                            if(_stopControllers.length<2)return "Minimo 2 paradas";
+                            if ((index==0
+                              &&((_stopDateTime[0].hour==0)
+                              &&(_stopDateTime[0].minute==0)))
+                              ||(index==(_stopControllers.length-1)
+                              &&((_stopDateTime.last.hour==0)
+                              &&(_stopDateTime.last.minute==0)))
+                              ||(value == null || value.isEmpty))
+                              return 'Completa la parada';
+                            if(index==(_stopControllers.length-1)
+                              &&(_stopDateTime.first.isAfter(_stopDateTime.last)))
+                              return "Horarios invalidos";
                             return null;
                           },
                         )),

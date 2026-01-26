@@ -78,7 +78,13 @@ class _peoplePageState extends State<peoplePage>{
                 return ListView.builder(
                   itemCount: filtered.length,
                   itemBuilder:(context, index){
-                    return choferToCard(context,filtered[index],peoplePage.mainColor);
+                    return choferToCard(
+                      context,filtered[index],peoplePage.mainColor,
+                      onPressed: ()=>{},
+                      onLongPress: (filtered[index].is_active)?
+                        ()=>removeChoferDialog(context,filtered[index],false):
+                        ()=>removeChoferDialog(context,filtered[index],true)
+                    );
                   },
                 );
               },

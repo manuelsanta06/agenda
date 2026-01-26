@@ -1,6 +1,7 @@
 import 'package:agenda/database/app_database.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../widgets/imageImput.dart';
+import 'phoneParser.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -11,8 +12,6 @@ typedef Chofer=Chofere;
 
 Color rotateColor(Color ete,int rotation){
   return HSLColor.fromAHSL(1.0,(HSLColor.fromColor(ete).hue+rotation)%360,1.0,0.5).toColor();
-  //final hsl=HSLColor.fromColor(ete);
-  //return hsl.withHue((hsl.hue+rotation)%360).toColor();
 }
 
 Widget dataLine(String text, Color mainColor) {
@@ -52,7 +51,7 @@ Widget buildAvatar(Chofer chofe, Color mainColor){
       ),
     );
   }
-  final letters;
+  String letters;
   if(chofe.alias?.isNotEmpty??false)letters=chofe.alias![0];
   else letters=((chofe.name?.isNotEmpty??false)?chofe.name![0]:"")+
         ((chofe.surname?.isNotEmpty??false)?chofe.surname![0].toLowerCase():"");
@@ -80,49 +79,62 @@ Widget buildAvatar(Chofer chofe, Color mainColor){
   );
 }
 
-Widget choferToCard(BuildContext context,Chofer chofe, Color mainColor){
+
+Future<void> removeChoferDialog(BuildContext context, Chofer chofe,bool restaurar)async{
+  return showDialog<void>(
+    context: context,
+    builder:(BuildContext context){
+      return AlertDialog(
+        title: Text("${restaurar?"Restaurar":"Eliminar"} chofer?"),
+        content:Text("¿Seguro que queres ${restaurar?"restaurar":"eliminar"} '${chofe.alias?.isNotEmpty??false?chofe.alias:chofe.name}'?"),
+        actions: [
+          TextButton(
+            child: const Text("Cancelar"),
+            onPressed:()=> Navigator.pop(context),
+          ),
+          TextButton(
+            child:Text(restaurar?"Restaurar":"Eliminar", style: TextStyle(color: Colors.red)),
+            onPressed:()async{
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content:Text(restaurar?"Restaurado":"Eliminado"),
+                backgroundColor:Colors.red,
+              ));
+              final db=Provider.of<AppDatabase>(context, listen: false);
+              await (db.update(db.choferes)
+                ..where((tbl)=>tbl.id.equals(chofe.id)))
+                .write(ChoferesCompanion(
+                  is_active: drift.Value(restaurar)
+                ));
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
+Widget choferToCard(
+  BuildContext context,
+  Chofer chofe,
+  Color mainColor, {
+  bool busy=false,
+  VoidCallback? onPressed,
+  VoidCallback? onLongPress,
+}){
+  
   return  Container(
     margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-
     child: Material(
-      color: chofe.is_active?Colors.white12:Colors.red.withOpacity(0.1),
+      color: chofe.is_active&&!busy?Colors.white12:Colors.red.withOpacity(0.1),
       borderRadius: BorderRadius.circular(14),
       clipBehavior: Clip.hardEdge,
 
       child:InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: (){return;},
-        onLongPress: ()=>showDialog<void>(
-          context: context,
-          builder:(BuildContext context){
-            return AlertDialog(
-              title: const Text("Eliminar hofer?"),
-              content:Text("¿Seguro que queres eliminar '${chofe.alias?.isNotEmpty??false?chofe.alias:chofe.name}'?"),
-              actions: [
-                TextButton(
-                  child: const Text("Cancelar"),
-                  onPressed:()=> Navigator.pop(context),
-                ),
-                TextButton(
-                  child: const Text("Eliminar", style: TextStyle(color: Colors.red)),
-                  onPressed:()async{
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content:Text("Eliminado"),
-                      backgroundColor:Colors.red,
-                    ));
-                    final db=Provider.of<AppDatabase>(context, listen: false);
-                    await (db.update(db.choferes)
-                      ..where((tbl)=>tbl.id.equals(chofe.id)))
-                      .write(ChoferesCompanion(
-                        is_active: drift.Value(false)
-                      ));
-                  },
-                ),
-              ],
-            );
-          },
-        ),
+        onTap: onPressed,
+        onLongPress:onLongPress,
         child: Padding(padding:const EdgeInsets.all(14),child:Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -154,6 +166,29 @@ Widget choferToCard(BuildContext context,Chofer chofe, Color mainColor){
     ),
   );
 }
+
+Future<Chofer?> choferCardSelectionList(BuildContext context,List<(Chofer, bool)> chofes,Color maincolor)async{
+  return await showModalBottomSheet<Chofer>(
+    context:context,
+    builder:(BuildContext context){
+      //if(chofes.isEmpty)return Text("No hay choferes");
+      return ListView.builder(
+        itemCount:chofes.length,
+        itemBuilder:(context,index){
+          return Container(
+            margin: EdgeInsets.symmetric(horizontal:15,vertical:10),
+            child:choferToCard(
+              context,chofes[index].$1,maincolor,
+              busy:chofes[index].$2,
+              onPressed:()=>Navigator.of(context).pop(chofes[index].$1),
+            )
+          );
+        },
+      );
+    },
+  );
+}
+
 Future<ChoferesCompanion?> getChofer(BuildContext context, Color mainColor,Chofer? chofe){
   final nameC = TextEditingController(text: chofe?.name??"");
   final surNameC = TextEditingController(text: chofe?.surname??"");
@@ -195,7 +230,7 @@ Future<ChoferesCompanion?> getChofer(BuildContext context, Color mainColor,Chofe
                         surname: drift.Value(surNameC.text),
                         alias: drift.Value(aliasC.text),
                         dni: drift.Value(dniC.text),
-                        mobileNumber: drift.Value(mobileNumberC.text),
+                        mobileNumber: drift.Value(phoneParser(mobileNumberC.text)),
                         picturePath: drift.Value(pictureD),
                         is_active: drift.Value(true),
                         isSynced: drift.Value(false),

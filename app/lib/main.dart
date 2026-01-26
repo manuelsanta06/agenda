@@ -67,7 +67,10 @@ class _MyAppState extends State<MyApp>{
         GlobalCupertinoLocalizations.delegate,
       ],
       
+      //LIGHT THEME COLORS
       theme: ThemeData.light().copyWith(
+        scaffoldBackgroundColor: const Color(0xFFF3F4F6),
+        cardColor: Colors.white,
         textTheme: ThemeData.light().textTheme.apply(
           fontFamily: 'FiraCode Nerd Font',
         ),
@@ -82,7 +85,10 @@ class _MyAppState extends State<MyApp>{
           ),
         ),
       ),
+      //DARK THEME COLORS
       darkTheme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        cardColor: Colors.white12,
         textTheme: ThemeData.dark().textTheme.apply(
           fontFamily: 'FiraCode Nerd Font',
         ),
