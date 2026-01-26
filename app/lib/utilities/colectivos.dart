@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../database/app_database.dart';
+import '../widgets/searchBar.dart';
 
 bool isToday(DateTime date){
   final now = DateTime.now();
@@ -210,22 +211,40 @@ Widget colectivoToCard(
 }
 
 Future<Colectivo?> colectivoCardSelectionList(BuildContext context,List<(Colectivo,bool)> buses,Color maincolor)async{
+  String searchQuery="";
   return await showModalBottomSheet<Colectivo>(
     context:context,
+    isScrollControlled: true,
+    constraints:BoxConstraints(maxHeight:MediaQuery.of(context).size.height*0.8),
     builder:(BuildContext context){
-      return ListView.builder(
-        itemCount:buses.length,
-        itemBuilder:(context,index){
-          return Container(
-            margin: EdgeInsets.symmetric(horizontal:15,vertical:10),
-            child:colectivoToCard(
-              context,buses[index].$1,maincolor,
-              busy:buses[index].$2,
-              onPressed:()=>Navigator.of(context).pop(buses[index].$1),
-            )
-          );
-        },
-      );
+      return StatefulBuilder(builder:(BuildContext context,StateSetter setStateModal){
+        final filtered=buses.where((s){
+          return (s.$1.name?.contains(searchQuery)??false)
+            ||s.$1.plate.contains(searchQuery);
+        }).toList();
+        return Padding(padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),child:Column(
+          mainAxisSize:MainAxisSize.min,
+          children:[
+            const SizedBox(height:10),
+            mySearchBar(onChanged:(value)=>setStateModal((){searchQuery=value;})),
+            const SizedBox(height:10),
+            Flexible(child:ListView.builder(
+              shrinkWrap: true,
+              itemCount:filtered.length,
+              itemBuilder:(context,index){
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal:15),
+                  child:colectivoToCard(
+                    context,filtered[index].$1,maincolor,
+                    busy:filtered[index].$2,
+                    onPressed:()=>Navigator.of(context).pop(filtered[index].$1),
+                  )
+                );
+              },
+            ))
+          ]
+        ));
+      });
     },
   );
 }

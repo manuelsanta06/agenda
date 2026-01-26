@@ -1,6 +1,7 @@
 import 'package:agenda/database/app_database.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../widgets/imageImput.dart';
+import '../widgets/searchBar.dart';
 import 'phoneParser.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -168,23 +169,41 @@ Widget choferToCard(
 }
 
 Future<Chofer?> choferCardSelectionList(BuildContext context,List<(Chofer, bool)> chofes,Color maincolor)async{
+  String searchQuery="";
   return await showModalBottomSheet<Chofer>(
     context:context,
+    isScrollControlled: true,
+    constraints:BoxConstraints(maxHeight:MediaQuery.of(context).size.height*0.8),
     builder:(BuildContext context){
-      //if(chofes.isEmpty)return Text("No hay choferes");
-      return ListView.builder(
-        itemCount:chofes.length,
-        itemBuilder:(context,index){
-          return Container(
-            margin: EdgeInsets.symmetric(horizontal:15,vertical:10),
-            child:choferToCard(
-              context,chofes[index].$1,maincolor,
-              busy:chofes[index].$2,
-              onPressed:()=>Navigator.of(context).pop(chofes[index].$1),
-            )
-          );
-        },
-      );
+      return StatefulBuilder(builder:(BuildContext context,StateSetter setStateModal){
+        final filtered=chofes.where((s){
+          return (s.$1.name?.contains(searchQuery)??false)
+            ||(s.$1.surname?.contains(searchQuery)??false)
+            ||(s.$1.alias?.contains(searchQuery)??false);
+        }).toList();
+        return Padding(padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),child:Column(
+          mainAxisSize:MainAxisSize.min,
+          children:[
+            const SizedBox(height:10),
+            mySearchBar(onChanged:(value)=>setStateModal((){searchQuery=value;})),
+            const SizedBox(height:10),
+            Flexible(child:ListView.builder(
+              shrinkWrap: true,
+              itemCount:filtered.length,
+              itemBuilder:(context,index){
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal:15),
+                  child:choferToCard(
+                    context,filtered[index].$1,maincolor,
+                    busy:filtered[index].$2,
+                    onPressed:()=>Navigator.of(context).pop(filtered[index].$1),
+                  )
+                );
+              },
+            ))
+          ]
+        ));
+      });
     },
   );
 }

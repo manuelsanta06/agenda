@@ -26,7 +26,7 @@ class _peoplePageState extends State<peoplePage>{
     return Scaffold(
       body:SafeArea(child: Column(
         children: [
-          mySearchBar(onChanged: (value){setState((){searchQuery = value;});},),
+          mySearchBar(onChanged:(value){setState((){searchQuery = value;});}),
 
           Container(
             margin:const EdgeInsets.symmetric(horizontal: 10),
