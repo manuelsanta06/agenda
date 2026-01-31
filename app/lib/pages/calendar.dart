@@ -8,12 +8,21 @@ import 'package:provider/provider.dart';
 import '../constants.dart' as constants;
 import 'package:table_calendar/table_calendar.dart';
 
+import 'package:drift_db_viewer/drift_db_viewer.dart';
 
-//TODO: turn into a statelessWidget??
-//everithing that updastes is part of a stream
 class calendarPage extends StatefulWidget {
   const calendarPage({super.key});
   static const Color mainColor=Colors.cyan;
+
+  void errorSnackBar(BuildContext context){
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content:Text('Algo salio mal. Viaje borrado'),
+        duration: Duration(seconds: 5),
+        backgroundColor:Colors.red,
+      ),
+    );
+  }
 
   @override
   State<calendarPage> createState() => _calendarPageState();
@@ -22,6 +31,7 @@ class calendarPage extends StatefulWidget {
 
 class _calendarPageState extends State<calendarPage>{
   String searchQuery = "";
+  bool recorridos=false;
 
   DateTime _focusedDay = DateTime.now(), _selectedDay=DateTime.now();
   CalendarFormat _calendarFormat=CalendarFormat.week;
@@ -35,15 +45,6 @@ class _calendarPageState extends State<calendarPage>{
   void dispose() {
     super.dispose();
   }
-  void errorSnackBar(BuildContext context){
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content:Text('Algo salio mal. Viaje borrado'),
-        duration: Duration(seconds: 5),
-        backgroundColor:Colors.red,
-      ),
-    );
-  }
 
   void _showCreateTripSheet(bool trip) async {
     final (EventsCompanion, List<StopsCompanion>)? newBoth = await showModalBottomSheet(
@@ -53,7 +54,7 @@ class _calendarPageState extends State<calendarPage>{
     );
     if(newBoth==null){return;}
     final (newEvent, newStops) = newBoth;
-    if(newEvent==null||newStops==null){errorSnackBar(context);return;}//unnecesary
+    if(newEvent==null||newStops==null){widget.errorSnackBar(context);return;}//unnecesary
 
     final db= Provider.of<AppDatabase>(context,listen: false);
 
@@ -66,7 +67,7 @@ class _calendarPageState extends State<calendarPage>{
         });
       });
     }catch(e){
-      errorSnackBar(context);
+      widget.errorSnackBar(context);
       print("ERROR DB: $e");
       return;
     }
@@ -92,6 +93,24 @@ class _calendarPageState extends State<calendarPage>{
           // main page
           SafeArea(child:Column(children:[
             mySearchBar(onChanged:(value){setState((){searchQuery = value;});},),
+            Container(
+              margin:const EdgeInsets.symmetric(horizontal: 10),
+              child:Row(children: [
+                Expanded(child: Text(
+                  "Recorridos",
+                  style:TextStyle(fontSize:16, fontWeight:recorridos?FontWeight.bold:FontWeight.normal),
+                )),
+                Switch(
+                  value: recorridos,
+                  activeThumbColor: Colors.white,
+                  activeTrackColor:calendarPage.mainColor,
+                  onChanged:(bool value){
+                    setState((){recorridos=value;});
+                  }
+                )
+              ])
+            ),
+
             TableCalendar(
               focusedDay: _focusedDay,
               firstDay: constants.firstDate,
@@ -190,7 +209,10 @@ class _calendarPageState extends State<calendarPage>{
                 buildMiniFab(
                   icon: Icons.school,
                   label: "Recorrido",
-                  onPressed:(){},//TODO
+                  onPressed:(){
+                    final db = Provider.of<AppDatabase>(context, listen: false);
+                    Navigator.of(context).push(MaterialPageRoute(builder:(context)=>DriftDbViewer(db)));
+                  },//TODO
                 ),
                 buildMiniFab(
                   icon: Icons.directions_bus,

@@ -32,16 +32,47 @@ Future<String?> quickChangeDialog(BuildContext context, String title,{String def
 class BasicCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
+  final Color? tonality;
+  final Color? borderColor;
+  final VoidCallback? onPressed;
+  final VoidCallback? onLongPressed;
+  final Widget? actionIcon;
+  final VoidCallback? onActionPressed;
+  final AlignmentGeometry actionPosition;
 
-  const BasicCard({super.key,required this.child,this.padding});
+  const BasicCard({
+    super.key,
+    required this.child,
+    this.padding,
+    this.margin,
+    this.tonality,
+    this.borderColor,
+    this.onPressed,
+    this.onLongPressed,
+    this.actionIcon,
+    this.onActionPressed,
+    this.actionPosition = Alignment.topRight,
+  });
 
   @override
   Widget build(BuildContext context){
+    final content=(onPressed!=null||onLongPressed!=null)?
+      InkWell(
+        onTap: onPressed,
+        onLongPress: onLongPressed,
+        child:child,
+      ):
+      child;
     return Container(
+      margin: margin,
       padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor, 
+        color:tonality==null?
+          Theme.of(context).cardColor:
+          Color.alphaBlend(tonality!.withAlpha(50),Theme.of(context).cardColor),
         borderRadius: BorderRadius.circular(16),
+        border: BoxBorder.all(color:borderColor??Colors.black,width:borderColor==null?0:2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -50,7 +81,25 @@ class BasicCard extends StatelessWidget {
           ),
         ],
       ),
-      child: child,
+      child:actionIcon == null
+        ?content
+        :Stack(
+          children: [
+            content,
+            Positioned.fill(
+              child: Align(
+                alignment: actionPosition,
+                child:onActionPressed != null
+                  ?InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: onActionPressed,
+                    child: actionIcon,
+                  )
+                  : actionIcon,
+              ),
+            ),
+          ],
+        ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:agenda/utilities/phoneParser.dart';
 import 'package:flutter/material.dart';
 import 'package:agenda/database/app_database.dart';
 import 'package:drift/drift.dart' as drift; 
@@ -22,7 +23,12 @@ class EventCard extends StatelessWidget{
 
   void _onClick(BuildContext context){
     Navigator.of(context).push(
-      MaterialPageRoute(builder:(context)=>eventInfo(eve:eve,sto:sto,maincolor:maincolor)),
+      MaterialPageRoute(builder:(context)=>eventInfo(maincolor,eve:eve,sto:sto)),
+    );
+  }
+  void _onLongClick(BuildContext context){
+    Navigator.of(context).push(
+      MaterialPageRoute(builder:(context)=>eventInfo(maincolor,eve:eve,sto:sto)),
     );
   }
 
@@ -31,6 +37,7 @@ class EventCard extends StatelessWidget{
     Color colo=Theme.of(context).cardColor;
     if(eve.state==EventStates.REMOVED)colo=Colors.red.withValues(alpha:0.3);
     else if(eve.state==EventStates.INCOMPLETE)colo=Color.fromARGB(175,255,92,0);
+    else if(eve.state==EventStates.DONE)colo=Color.fromARGB(175,0,255,0);
     return Container(
       margin: const EdgeInsets.symmetric(vertical:8, horizontal:10),
       child:Material(
@@ -39,6 +46,7 @@ class EventCard extends StatelessWidget{
         clipBehavior: Clip.hardEdge,
         child:InkWell(
           onTap: ()=>_onClick(context),
+          onLongPress:()=>_onLongClick(context),
           child:Padding(padding:const EdgeInsets.all(14),child:Column(
             crossAxisAlignment:CrossAxisAlignment.start,
             children:[
@@ -70,7 +78,6 @@ class EventCard extends StatelessWidget{
     );
   }
 }
-
 
 
 //Return a cuple EventsCompanion/StopsCompanion
@@ -140,7 +147,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
         id: drift.Value(widget.eve?.id?? Uuid().v4()),
         name: drift.Value(_nameC.text),
         contactName:drift.Value(_contactNameC.text),
-        contact:drift.Value(_contactC.text),
+        contact:drift.Value(phoneParser(_contactC.text)),
         days: drift.Value(weekDays.toList()),
         startDateTime: drift.Value(_stopDateTime.first),
         endDateTime: drift.Value(_stopDateTime.last),
@@ -267,6 +274,10 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                   decoration:InputDecoration(
                     labelText:"Persona",
                     border:const OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: widget.mainColor, width: 2),
+                    ),
                     prefixIcon:const Icon(Icons.person),
                   ),
                 )),
@@ -277,6 +288,10 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                   decoration:InputDecoration(
                     labelText:"Contacto",
                     border:const OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: widget.mainColor, width: 2),
+                    ),
                     prefixIcon:const Icon(Icons.phone),
                   ),
                 )),
@@ -312,7 +327,12 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                           controller:_stopControllers[index],
                           decoration:InputDecoration(
                             labelText:widget.isTrip?'Parada ${index + 1}':"Lugar",
-                            border:const OutlineInputBorder(),
+                            //border:const OutlineInputBorder(),
+                            border: OutlineInputBorder(borderRadius:BorderRadius.circular(12)),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: widget.mainColor, width: 2),
+                            ),
                             prefixIcon:const Icon(Icons.location_on_outlined),
                           ),
                           validator:(value) {

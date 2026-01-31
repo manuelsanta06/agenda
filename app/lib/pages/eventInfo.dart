@@ -1,5 +1,6 @@
 import 'package:agenda/utilities/colectivos.dart';
 import 'package:agenda/utilities/people.dart';
+import 'package:agenda/utilities/events.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:agenda/database/app_database.dart';
@@ -13,22 +14,23 @@ import '../utilities/phoneParser.dart';
 
 
 class eventInfo extends StatelessWidget{
-  Event eve;
-  List<Stop> sto;
-  Color maincolor;
+  final Event eve;
+  final List<Stop> sto;
+  late Color maincolor;
 
-  eventInfo({
+  eventInfo(
+    Color color,{
     super.key,
     required this.eve,
     required this.sto,
-    required this.maincolor,
   }){
     if(eve.state==EventStates.REMOVED||eve.state==EventStates.INCOMPLETE)maincolor=Color.fromARGB(175,255,92,0);
+    else maincolor=color;
   }
 
-  Future<void> _updateEvent(AppDatabase db)async{
-    eve=(await ((db.select(db.events)..where((s)=>s.id.equals(eve.id))).get()))[0];
-  }
+  //Future<void> _updateEvent(AppDatabase db)async{
+  //  eve=(await ((db.select(db.events)..where((s)=>s.id.equals(eve.id))).get()))[0];
+  //}
 
 
   @override
@@ -157,7 +159,7 @@ class eventInfo extends StatelessWidget{
                   onLongPress:()async{
                     await (db.delete(db.eventChoferes)
                       ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.choferId.equals(sel.id))).go();
-                    await _updateFullEventState(deafDb);
+                    await updateFullEventState(deafDb,eve);
                   },
                 );}).toList(),
               );
@@ -174,7 +176,7 @@ class eventInfo extends StatelessWidget{
               eventId: drift.Value(eve.id),
               choferId: drift.Value(selection.id),
             ));
-            await _updateFullEventState(deafDb);
+            await updateFullEventState(deafDb,eve);
           })
         ])),
 
@@ -211,7 +213,7 @@ class eventInfo extends StatelessWidget{
                   onLongPress:()async{
                     await (db.delete(db.eventColectivos)
                       ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.colectivoId.equals(sel.id))).go();
-                    await _updateFullEventState(deafDb);
+                    await updateFullEventState(deafDb,eve);
                   },
                 );}).toList(),
               );
@@ -226,7 +228,7 @@ class eventInfo extends StatelessWidget{
               eventId: drift.Value(eve.id),
               colectivoId: drift.Value(selection.id),
             ));
-            await _updateFullEventState(deafDb);
+            await updateFullEventState(deafDb,eve);
           }),
         ],)),
 
@@ -241,38 +243,6 @@ class eventInfo extends StatelessWidget{
     );
   }
 
-  Future<EventStates> _getEventCompletitionState(AppDatabase db)async{
-    final colectivosCount = await (db.select(db.eventColectivos)
-      ..where((tbl) => tbl.eventId.equals(eve.id))
-    ).get().then((list) => list.length);
-
-    final choferesCount = await (db.select(db.eventChoferes)
-      ..where((tbl) => tbl.eventId.equals(eve.id))
-    ).get().then((list) => list.length);
-    return colectivosCount==0||choferesCount==0||choferesCount!=colectivosCount?
-      EventStates.INCOMPLETE:
-      EventStates.NONE;
-  }
-  EventStates _getEventDateState(AppDatabase db){
-    if(eve.endDateTime==null)return EventStates.NONE;
-    final now=DateTime.now();
-    if(now.isBefore(eve.endDateTime!))return EventStates.DONE;
-    if(now.isAfter(eve.startDateTime)&&now.isBefore(eve.endDateTime!))return EventStates.HAPPENING;
-    return EventStates.PENDING;
-  }
-
-  Future<void> _updateFullEventState(AppDatabase db)async{
-
-    EventStates newState=await _getEventCompletitionState(db);
-    if(newState==EventStates.NONE)newState=_getEventDateState(db);
-
-    await (db.update(db.events)
-      ..where((tbl) => tbl.id.equals(eve.id))
-    ).write(EventsCompanion(
-      state: drift.Value(newState),
-      isSynced: const drift.Value(false),
-    ));
-  }
 
   Widget _buildSectionTitle(String title) {
     return Container(

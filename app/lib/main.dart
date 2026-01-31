@@ -9,7 +9,7 @@ import 'pages/home.dart';
 import 'pages/colectivos.dart';
 import 'pages/people.dart';
 import 'pages/calendar.dart';
-import 'pages/trips.dart';
+import 'pages/recorridos.dart';
 
 bool darkMode=true;
 
@@ -38,7 +38,7 @@ class _MyAppState extends State<MyApp>{
     peoplePage(),
     calendarPage(),
     homePage(),
-    tripsPage(),
+    recorridosPage(),
     colectivosPage(),
   ];
 
@@ -58,8 +58,8 @@ class _MyAppState extends State<MyApp>{
       
       //supported lenguajes
       supportedLocales: const [
-        Locale('en', 'US'),
         Locale('es', 'ES'),
+        Locale('en', 'US'),
       ],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -129,9 +129,9 @@ class _MyAppState extends State<MyApp>{
               label: 'Inicio',
             ),
             BottomNavigationBarItem(
-              backgroundColor: tripsPage.mainColor,
-              icon: Icon(Icons.question_mark),
-              label: '???',
+              backgroundColor: recorridosPage.mainColor,
+              icon: Icon(Icons.school),
+              label: 'Recorridos',
             ),
             BottomNavigationBarItem(
               backgroundColor: colectivosPage.mainColor,

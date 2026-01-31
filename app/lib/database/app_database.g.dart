@@ -1083,6 +1083,413 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
   }
 }
 
+class $RecorridosTable extends Recorridos
+    with TableInfo<$RecorridosTable, Recorrido> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecorridosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pinnedMeta = const VerificationMeta('pinned');
+  @override
+  late final GeneratedColumn<bool> pinned = GeneratedColumn<bool>(
+    'pinned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("pinned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _basePriceMeta = const VerificationMeta(
+    'basePrice',
+  );
+  @override
+  late final GeneratedColumn<int> basePrice = GeneratedColumn<int>(
+    'base_price',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    pinned,
+    basePrice,
+    isActive,
+    isSynced,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recorridos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Recorrido> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('pinned')) {
+      context.handle(
+        _pinnedMeta,
+        pinned.isAcceptableOrUnknown(data['pinned']!, _pinnedMeta),
+      );
+    }
+    if (data.containsKey('base_price')) {
+      context.handle(
+        _basePriceMeta,
+        basePrice.isAcceptableOrUnknown(data['base_price']!, _basePriceMeta),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Recorrido map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Recorrido(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      pinned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}pinned'],
+      )!,
+      basePrice: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}base_price'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+    );
+  }
+
+  @override
+  $RecorridosTable createAlias(String alias) {
+    return $RecorridosTable(attachedDatabase, alias);
+  }
+}
+
+class Recorrido extends DataClass implements Insertable<Recorrido> {
+  final String id;
+  final String name;
+  final bool pinned;
+  final int basePrice;
+  final bool isActive;
+  final bool isSynced;
+  const Recorrido({
+    required this.id,
+    required this.name,
+    required this.pinned,
+    required this.basePrice,
+    required this.isActive,
+    required this.isSynced,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    map['pinned'] = Variable<bool>(pinned);
+    map['base_price'] = Variable<int>(basePrice);
+    map['is_active'] = Variable<bool>(isActive);
+    map['is_synced'] = Variable<bool>(isSynced);
+    return map;
+  }
+
+  RecorridosCompanion toCompanion(bool nullToAbsent) {
+    return RecorridosCompanion(
+      id: Value(id),
+      name: Value(name),
+      pinned: Value(pinned),
+      basePrice: Value(basePrice),
+      isActive: Value(isActive),
+      isSynced: Value(isSynced),
+    );
+  }
+
+  factory Recorrido.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Recorrido(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      pinned: serializer.fromJson<bool>(json['pinned']),
+      basePrice: serializer.fromJson<int>(json['basePrice']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'pinned': serializer.toJson<bool>(pinned),
+      'basePrice': serializer.toJson<int>(basePrice),
+      'isActive': serializer.toJson<bool>(isActive),
+      'isSynced': serializer.toJson<bool>(isSynced),
+    };
+  }
+
+  Recorrido copyWith({
+    String? id,
+    String? name,
+    bool? pinned,
+    int? basePrice,
+    bool? isActive,
+    bool? isSynced,
+  }) => Recorrido(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    pinned: pinned ?? this.pinned,
+    basePrice: basePrice ?? this.basePrice,
+    isActive: isActive ?? this.isActive,
+    isSynced: isSynced ?? this.isSynced,
+  );
+  Recorrido copyWithCompanion(RecorridosCompanion data) {
+    return Recorrido(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      pinned: data.pinned.present ? data.pinned.value : this.pinned,
+      basePrice: data.basePrice.present ? data.basePrice.value : this.basePrice,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Recorrido(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('pinned: $pinned, ')
+          ..write('basePrice: $basePrice, ')
+          ..write('isActive: $isActive, ')
+          ..write('isSynced: $isSynced')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, name, pinned, basePrice, isActive, isSynced);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Recorrido &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.pinned == this.pinned &&
+          other.basePrice == this.basePrice &&
+          other.isActive == this.isActive &&
+          other.isSynced == this.isSynced);
+}
+
+class RecorridosCompanion extends UpdateCompanion<Recorrido> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<bool> pinned;
+  final Value<int> basePrice;
+  final Value<bool> isActive;
+  final Value<bool> isSynced;
+  final Value<int> rowid;
+  const RecorridosCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.pinned = const Value.absent(),
+    this.basePrice = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RecorridosCompanion.insert({
+    required String id,
+    required String name,
+    this.pinned = const Value.absent(),
+    this.basePrice = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name);
+  static Insertable<Recorrido> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<bool>? pinned,
+    Expression<int>? basePrice,
+    Expression<bool>? isActive,
+    Expression<bool>? isSynced,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (pinned != null) 'pinned': pinned,
+      if (basePrice != null) 'base_price': basePrice,
+      if (isActive != null) 'is_active': isActive,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RecorridosCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<bool>? pinned,
+    Value<int>? basePrice,
+    Value<bool>? isActive,
+    Value<bool>? isSynced,
+    Value<int>? rowid,
+  }) {
+    return RecorridosCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      pinned: pinned ?? this.pinned,
+      basePrice: basePrice ?? this.basePrice,
+      isActive: isActive ?? this.isActive,
+      isSynced: isSynced ?? this.isSynced,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (pinned.present) {
+      map['pinned'] = Variable<bool>(pinned.value);
+    }
+    if (basePrice.present) {
+      map['base_price'] = Variable<int>(basePrice.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecorridosCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('pinned: $pinned, ')
+          ..write('basePrice: $basePrice, ')
+          ..write('isActive: $isActive, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1229,6 +1636,20 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _recorridoIdMeta = const VerificationMeta(
+    'recorridoId',
+  );
+  @override
+  late final GeneratedColumn<String> recorridoId = GeneratedColumn<String>(
+    'recorrido_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES recorridos (id)',
+    ),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1244,6 +1665,7 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
     type,
     isTrip,
     isSynced,
+    recorridoId,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1336,6 +1758,15 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
         isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
       );
     }
+    if (data.containsKey('recorrido_id')) {
+      context.handle(
+        _recorridoIdMeta,
+        recorridoId.isAcceptableOrUnknown(
+          data['recorrido_id']!,
+          _recorridoIdMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1403,6 +1834,10 @@ class $EventsTable extends Events with TableInfo<$EventsTable, Event> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_synced'],
       )!,
+      recorridoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recorrido_id'],
+      ),
     );
   }
 
@@ -1435,6 +1870,7 @@ class Event extends DataClass implements Insertable<Event> {
   final EventTypes type;
   final bool isTrip;
   final bool isSynced;
+  final String? recorridoId;
   const Event({
     required this.id,
     required this.name,
@@ -1449,6 +1885,7 @@ class Event extends DataClass implements Insertable<Event> {
     required this.type,
     required this.isTrip,
     required this.isSynced,
+    this.recorridoId,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1480,6 +1917,9 @@ class Event extends DataClass implements Insertable<Event> {
     }
     map['is_trip'] = Variable<bool>(isTrip);
     map['is_synced'] = Variable<bool>(isSynced);
+    if (!nullToAbsent || recorridoId != null) {
+      map['recorrido_id'] = Variable<String>(recorridoId);
+    }
     return map;
   }
 
@@ -1504,6 +1944,9 @@ class Event extends DataClass implements Insertable<Event> {
       type: Value(type),
       isTrip: Value(isTrip),
       isSynced: Value(isSynced),
+      recorridoId: recorridoId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recorridoId),
     );
   }
 
@@ -1532,6 +1975,7 @@ class Event extends DataClass implements Insertable<Event> {
       ),
       isTrip: serializer.fromJson<bool>(json['isTrip']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
+      recorridoId: serializer.fromJson<String?>(json['recorridoId']),
     );
   }
   @override
@@ -1555,6 +1999,7 @@ class Event extends DataClass implements Insertable<Event> {
       'type': serializer.toJson<int>($EventsTable.$convertertype.toJson(type)),
       'isTrip': serializer.toJson<bool>(isTrip),
       'isSynced': serializer.toJson<bool>(isSynced),
+      'recorridoId': serializer.toJson<String?>(recorridoId),
     };
   }
 
@@ -1572,6 +2017,7 @@ class Event extends DataClass implements Insertable<Event> {
     EventTypes? type,
     bool? isTrip,
     bool? isSynced,
+    Value<String?> recorridoId = const Value.absent(),
   }) => Event(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -1588,6 +2034,7 @@ class Event extends DataClass implements Insertable<Event> {
     type: type ?? this.type,
     isTrip: isTrip ?? this.isTrip,
     isSynced: isSynced ?? this.isSynced,
+    recorridoId: recorridoId.present ? recorridoId.value : this.recorridoId,
   );
   Event copyWithCompanion(EventsCompanion data) {
     return Event(
@@ -1612,6 +2059,9 @@ class Event extends DataClass implements Insertable<Event> {
       type: data.type.present ? data.type.value : this.type,
       isTrip: data.isTrip.present ? data.isTrip.value : this.isTrip,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      recorridoId: data.recorridoId.present
+          ? data.recorridoId.value
+          : this.recorridoId,
     );
   }
 
@@ -1630,7 +2080,8 @@ class Event extends DataClass implements Insertable<Event> {
           ..write('state: $state, ')
           ..write('type: $type, ')
           ..write('isTrip: $isTrip, ')
-          ..write('isSynced: $isSynced')
+          ..write('isSynced: $isSynced, ')
+          ..write('recorridoId: $recorridoId')
           ..write(')'))
         .toString();
   }
@@ -1650,6 +2101,7 @@ class Event extends DataClass implements Insertable<Event> {
     type,
     isTrip,
     isSynced,
+    recorridoId,
   );
   @override
   bool operator ==(Object other) =>
@@ -1667,7 +2119,8 @@ class Event extends DataClass implements Insertable<Event> {
           other.state == this.state &&
           other.type == this.type &&
           other.isTrip == this.isTrip &&
-          other.isSynced == this.isSynced);
+          other.isSynced == this.isSynced &&
+          other.recorridoId == this.recorridoId);
 }
 
 class EventsCompanion extends UpdateCompanion<Event> {
@@ -1684,6 +2137,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
   final Value<EventTypes> type;
   final Value<bool> isTrip;
   final Value<bool> isSynced;
+  final Value<String?> recorridoId;
   final Value<int> rowid;
   const EventsCompanion({
     this.id = const Value.absent(),
@@ -1699,6 +2153,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     this.type = const Value.absent(),
     this.isTrip = const Value.absent(),
     this.isSynced = const Value.absent(),
+    this.recorridoId = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   EventsCompanion.insert({
@@ -1715,6 +2170,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     required EventTypes type,
     required bool isTrip,
     this.isSynced = const Value.absent(),
+    this.recorridoId = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -1737,6 +2193,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     Expression<int>? type,
     Expression<bool>? isTrip,
     Expression<bool>? isSynced,
+    Expression<String>? recorridoId,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1754,6 +2211,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
       if (type != null) 'type': type,
       if (isTrip != null) 'is_trip': isTrip,
       if (isSynced != null) 'is_synced': isSynced,
+      if (recorridoId != null) 'recorrido_id': recorridoId,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1772,6 +2230,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
     Value<EventTypes>? type,
     Value<bool>? isTrip,
     Value<bool>? isSynced,
+    Value<String?>? recorridoId,
     Value<int>? rowid,
   }) {
     return EventsCompanion(
@@ -1789,6 +2248,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
       type: type ?? this.type,
       isTrip: isTrip ?? this.isTrip,
       isSynced: isSynced ?? this.isSynced,
+      recorridoId: recorridoId ?? this.recorridoId,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1843,6 +2303,9 @@ class EventsCompanion extends UpdateCompanion<Event> {
     if (isSynced.present) {
       map['is_synced'] = Variable<bool>(isSynced.value);
     }
+    if (recorridoId.present) {
+      map['recorrido_id'] = Variable<String>(recorridoId.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1865,6 +2328,7 @@ class EventsCompanion extends UpdateCompanion<Event> {
           ..write('type: $type, ')
           ..write('isTrip: $isTrip, ')
           ..write('isSynced: $isSynced, ')
+          ..write('recorridoId: $recorridoId, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2680,17 +3144,1752 @@ class EventColectivosCompanion extends UpdateCompanion<EventColectivo> {
   }
 }
 
+class $RecorridoShiftsTable extends RecorridoShifts
+    with TableInfo<$RecorridoShiftsTable, RecorridoShift> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecorridoShiftsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recorridoIdMeta = const VerificationMeta(
+    'recorridoId',
+  );
+  @override
+  late final GeneratedColumn<String> recorridoId = GeneratedColumn<String>(
+    'recorrido_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES recorridos (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<WeekDays, int> weekDay =
+      GeneratedColumn<int>(
+        'week_day',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      ).withConverter<WeekDays>($RecorridoShiftsTable.$converterweekDay);
+  static const VerificationMeta _startTimeMeta = const VerificationMeta(
+    'startTime',
+  );
+  @override
+  late final GeneratedColumn<int> startTime = GeneratedColumn<int>(
+    'start_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endTimeMeta = const VerificationMeta(
+    'endTime',
+  );
+  @override
+  late final GeneratedColumn<int> endTime = GeneratedColumn<int>(
+    'end_time',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _shiftNameMeta = const VerificationMeta(
+    'shiftName',
+  );
+  @override
+  late final GeneratedColumn<String> shiftName = GeneratedColumn<String>(
+    'shift_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    recorridoId,
+    weekDay,
+    startTime,
+    endTime,
+    shiftName,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recorrido_shifts';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecorridoShift> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('recorrido_id')) {
+      context.handle(
+        _recorridoIdMeta,
+        recorridoId.isAcceptableOrUnknown(
+          data['recorrido_id']!,
+          _recorridoIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recorridoIdMeta);
+    }
+    if (data.containsKey('start_time')) {
+      context.handle(
+        _startTimeMeta,
+        startTime.isAcceptableOrUnknown(data['start_time']!, _startTimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startTimeMeta);
+    }
+    if (data.containsKey('end_time')) {
+      context.handle(
+        _endTimeMeta,
+        endTime.isAcceptableOrUnknown(data['end_time']!, _endTimeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endTimeMeta);
+    }
+    if (data.containsKey('shift_name')) {
+      context.handle(
+        _shiftNameMeta,
+        shiftName.isAcceptableOrUnknown(data['shift_name']!, _shiftNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_shiftNameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RecorridoShift map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecorridoShift(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      recorridoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recorrido_id'],
+      )!,
+      weekDay: $RecorridoShiftsTable.$converterweekDay.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}week_day'],
+        )!,
+      ),
+      startTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}start_time'],
+      )!,
+      endTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}end_time'],
+      )!,
+      shiftName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shift_name'],
+      )!,
+    );
+  }
+
+  @override
+  $RecorridoShiftsTable createAlias(String alias) {
+    return $RecorridoShiftsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<WeekDays, int, int> $converterweekDay =
+      const EnumIndexConverter<WeekDays>(WeekDays.values);
+}
+
+class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
+  final String id;
+  final String recorridoId;
+  final WeekDays weekDay;
+  final int startTime;
+  final int endTime;
+  final String shiftName;
+  const RecorridoShift({
+    required this.id,
+    required this.recorridoId,
+    required this.weekDay,
+    required this.startTime,
+    required this.endTime,
+    required this.shiftName,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['recorrido_id'] = Variable<String>(recorridoId);
+    {
+      map['week_day'] = Variable<int>(
+        $RecorridoShiftsTable.$converterweekDay.toSql(weekDay),
+      );
+    }
+    map['start_time'] = Variable<int>(startTime);
+    map['end_time'] = Variable<int>(endTime);
+    map['shift_name'] = Variable<String>(shiftName);
+    return map;
+  }
+
+  RecorridoShiftsCompanion toCompanion(bool nullToAbsent) {
+    return RecorridoShiftsCompanion(
+      id: Value(id),
+      recorridoId: Value(recorridoId),
+      weekDay: Value(weekDay),
+      startTime: Value(startTime),
+      endTime: Value(endTime),
+      shiftName: Value(shiftName),
+    );
+  }
+
+  factory RecorridoShift.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecorridoShift(
+      id: serializer.fromJson<String>(json['id']),
+      recorridoId: serializer.fromJson<String>(json['recorridoId']),
+      weekDay: $RecorridoShiftsTable.$converterweekDay.fromJson(
+        serializer.fromJson<int>(json['weekDay']),
+      ),
+      startTime: serializer.fromJson<int>(json['startTime']),
+      endTime: serializer.fromJson<int>(json['endTime']),
+      shiftName: serializer.fromJson<String>(json['shiftName']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'recorridoId': serializer.toJson<String>(recorridoId),
+      'weekDay': serializer.toJson<int>(
+        $RecorridoShiftsTable.$converterweekDay.toJson(weekDay),
+      ),
+      'startTime': serializer.toJson<int>(startTime),
+      'endTime': serializer.toJson<int>(endTime),
+      'shiftName': serializer.toJson<String>(shiftName),
+    };
+  }
+
+  RecorridoShift copyWith({
+    String? id,
+    String? recorridoId,
+    WeekDays? weekDay,
+    int? startTime,
+    int? endTime,
+    String? shiftName,
+  }) => RecorridoShift(
+    id: id ?? this.id,
+    recorridoId: recorridoId ?? this.recorridoId,
+    weekDay: weekDay ?? this.weekDay,
+    startTime: startTime ?? this.startTime,
+    endTime: endTime ?? this.endTime,
+    shiftName: shiftName ?? this.shiftName,
+  );
+  RecorridoShift copyWithCompanion(RecorridoShiftsCompanion data) {
+    return RecorridoShift(
+      id: data.id.present ? data.id.value : this.id,
+      recorridoId: data.recorridoId.present
+          ? data.recorridoId.value
+          : this.recorridoId,
+      weekDay: data.weekDay.present ? data.weekDay.value : this.weekDay,
+      startTime: data.startTime.present ? data.startTime.value : this.startTime,
+      endTime: data.endTime.present ? data.endTime.value : this.endTime,
+      shiftName: data.shiftName.present ? data.shiftName.value : this.shiftName,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecorridoShift(')
+          ..write('id: $id, ')
+          ..write('recorridoId: $recorridoId, ')
+          ..write('weekDay: $weekDay, ')
+          ..write('startTime: $startTime, ')
+          ..write('endTime: $endTime, ')
+          ..write('shiftName: $shiftName')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, recorridoId, weekDay, startTime, endTime, shiftName);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecorridoShift &&
+          other.id == this.id &&
+          other.recorridoId == this.recorridoId &&
+          other.weekDay == this.weekDay &&
+          other.startTime == this.startTime &&
+          other.endTime == this.endTime &&
+          other.shiftName == this.shiftName);
+}
+
+class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
+  final Value<String> id;
+  final Value<String> recorridoId;
+  final Value<WeekDays> weekDay;
+  final Value<int> startTime;
+  final Value<int> endTime;
+  final Value<String> shiftName;
+  final Value<int> rowid;
+  const RecorridoShiftsCompanion({
+    this.id = const Value.absent(),
+    this.recorridoId = const Value.absent(),
+    this.weekDay = const Value.absent(),
+    this.startTime = const Value.absent(),
+    this.endTime = const Value.absent(),
+    this.shiftName = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RecorridoShiftsCompanion.insert({
+    required String id,
+    required String recorridoId,
+    required WeekDays weekDay,
+    required int startTime,
+    required int endTime,
+    required String shiftName,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       recorridoId = Value(recorridoId),
+       weekDay = Value(weekDay),
+       startTime = Value(startTime),
+       endTime = Value(endTime),
+       shiftName = Value(shiftName);
+  static Insertable<RecorridoShift> custom({
+    Expression<String>? id,
+    Expression<String>? recorridoId,
+    Expression<int>? weekDay,
+    Expression<int>? startTime,
+    Expression<int>? endTime,
+    Expression<String>? shiftName,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (recorridoId != null) 'recorrido_id': recorridoId,
+      if (weekDay != null) 'week_day': weekDay,
+      if (startTime != null) 'start_time': startTime,
+      if (endTime != null) 'end_time': endTime,
+      if (shiftName != null) 'shift_name': shiftName,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RecorridoShiftsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? recorridoId,
+    Value<WeekDays>? weekDay,
+    Value<int>? startTime,
+    Value<int>? endTime,
+    Value<String>? shiftName,
+    Value<int>? rowid,
+  }) {
+    return RecorridoShiftsCompanion(
+      id: id ?? this.id,
+      recorridoId: recorridoId ?? this.recorridoId,
+      weekDay: weekDay ?? this.weekDay,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      shiftName: shiftName ?? this.shiftName,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (recorridoId.present) {
+      map['recorrido_id'] = Variable<String>(recorridoId.value);
+    }
+    if (weekDay.present) {
+      map['week_day'] = Variable<int>(
+        $RecorridoShiftsTable.$converterweekDay.toSql(weekDay.value),
+      );
+    }
+    if (startTime.present) {
+      map['start_time'] = Variable<int>(startTime.value);
+    }
+    if (endTime.present) {
+      map['end_time'] = Variable<int>(endTime.value);
+    }
+    if (shiftName.present) {
+      map['shift_name'] = Variable<String>(shiftName.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecorridoShiftsCompanion(')
+          ..write('id: $id, ')
+          ..write('recorridoId: $recorridoId, ')
+          ..write('weekDay: $weekDay, ')
+          ..write('startTime: $startTime, ')
+          ..write('endTime: $endTime, ')
+          ..write('shiftName: $shiftName, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ShiftChoferesTable extends ShiftChoferes
+    with TableInfo<$ShiftChoferesTable, ShiftChofere> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ShiftChoferesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _shiftIdMeta = const VerificationMeta(
+    'shiftId',
+  );
+  @override
+  late final GeneratedColumn<String> shiftId = GeneratedColumn<String>(
+    'shift_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES recorrido_shifts (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _choferIdMeta = const VerificationMeta(
+    'choferId',
+  );
+  @override
+  late final GeneratedColumn<String> choferId = GeneratedColumn<String>(
+    'chofer_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES choferes (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [shiftId, choferId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'shift_choferes';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ShiftChofere> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('shift_id')) {
+      context.handle(
+        _shiftIdMeta,
+        shiftId.isAcceptableOrUnknown(data['shift_id']!, _shiftIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_shiftIdMeta);
+    }
+    if (data.containsKey('chofer_id')) {
+      context.handle(
+        _choferIdMeta,
+        choferId.isAcceptableOrUnknown(data['chofer_id']!, _choferIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_choferIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {shiftId, choferId};
+  @override
+  ShiftChofere map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ShiftChofere(
+      shiftId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shift_id'],
+      )!,
+      choferId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}chofer_id'],
+      )!,
+    );
+  }
+
+  @override
+  $ShiftChoferesTable createAlias(String alias) {
+    return $ShiftChoferesTable(attachedDatabase, alias);
+  }
+}
+
+class ShiftChofere extends DataClass implements Insertable<ShiftChofere> {
+  final String shiftId;
+  final String choferId;
+  const ShiftChofere({required this.shiftId, required this.choferId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['shift_id'] = Variable<String>(shiftId);
+    map['chofer_id'] = Variable<String>(choferId);
+    return map;
+  }
+
+  ShiftChoferesCompanion toCompanion(bool nullToAbsent) {
+    return ShiftChoferesCompanion(
+      shiftId: Value(shiftId),
+      choferId: Value(choferId),
+    );
+  }
+
+  factory ShiftChofere.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ShiftChofere(
+      shiftId: serializer.fromJson<String>(json['shiftId']),
+      choferId: serializer.fromJson<String>(json['choferId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'shiftId': serializer.toJson<String>(shiftId),
+      'choferId': serializer.toJson<String>(choferId),
+    };
+  }
+
+  ShiftChofere copyWith({String? shiftId, String? choferId}) => ShiftChofere(
+    shiftId: shiftId ?? this.shiftId,
+    choferId: choferId ?? this.choferId,
+  );
+  ShiftChofere copyWithCompanion(ShiftChoferesCompanion data) {
+    return ShiftChofere(
+      shiftId: data.shiftId.present ? data.shiftId.value : this.shiftId,
+      choferId: data.choferId.present ? data.choferId.value : this.choferId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ShiftChofere(')
+          ..write('shiftId: $shiftId, ')
+          ..write('choferId: $choferId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(shiftId, choferId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ShiftChofere &&
+          other.shiftId == this.shiftId &&
+          other.choferId == this.choferId);
+}
+
+class ShiftChoferesCompanion extends UpdateCompanion<ShiftChofere> {
+  final Value<String> shiftId;
+  final Value<String> choferId;
+  final Value<int> rowid;
+  const ShiftChoferesCompanion({
+    this.shiftId = const Value.absent(),
+    this.choferId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ShiftChoferesCompanion.insert({
+    required String shiftId,
+    required String choferId,
+    this.rowid = const Value.absent(),
+  }) : shiftId = Value(shiftId),
+       choferId = Value(choferId);
+  static Insertable<ShiftChofere> custom({
+    Expression<String>? shiftId,
+    Expression<String>? choferId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (shiftId != null) 'shift_id': shiftId,
+      if (choferId != null) 'chofer_id': choferId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ShiftChoferesCompanion copyWith({
+    Value<String>? shiftId,
+    Value<String>? choferId,
+    Value<int>? rowid,
+  }) {
+    return ShiftChoferesCompanion(
+      shiftId: shiftId ?? this.shiftId,
+      choferId: choferId ?? this.choferId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (shiftId.present) {
+      map['shift_id'] = Variable<String>(shiftId.value);
+    }
+    if (choferId.present) {
+      map['chofer_id'] = Variable<String>(choferId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ShiftChoferesCompanion(')
+          ..write('shiftId: $shiftId, ')
+          ..write('choferId: $choferId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $ShiftColectivosTable extends ShiftColectivos
+    with TableInfo<$ShiftColectivosTable, ShiftColectivo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ShiftColectivosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _shiftIdMeta = const VerificationMeta(
+    'shiftId',
+  );
+  @override
+  late final GeneratedColumn<String> shiftId = GeneratedColumn<String>(
+    'shift_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES recorrido_shifts (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _colectivoIdMeta = const VerificationMeta(
+    'colectivoId',
+  );
+  @override
+  late final GeneratedColumn<String> colectivoId = GeneratedColumn<String>(
+    'colectivo_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES colectivos (id) ON DELETE CASCADE',
+    ),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [shiftId, colectivoId];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'shift_colectivos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<ShiftColectivo> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('shift_id')) {
+      context.handle(
+        _shiftIdMeta,
+        shiftId.isAcceptableOrUnknown(data['shift_id']!, _shiftIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_shiftIdMeta);
+    }
+    if (data.containsKey('colectivo_id')) {
+      context.handle(
+        _colectivoIdMeta,
+        colectivoId.isAcceptableOrUnknown(
+          data['colectivo_id']!,
+          _colectivoIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_colectivoIdMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {shiftId, colectivoId};
+  @override
+  ShiftColectivo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ShiftColectivo(
+      shiftId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}shift_id'],
+      )!,
+      colectivoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}colectivo_id'],
+      )!,
+    );
+  }
+
+  @override
+  $ShiftColectivosTable createAlias(String alias) {
+    return $ShiftColectivosTable(attachedDatabase, alias);
+  }
+}
+
+class ShiftColectivo extends DataClass implements Insertable<ShiftColectivo> {
+  final String shiftId;
+  final String colectivoId;
+  const ShiftColectivo({required this.shiftId, required this.colectivoId});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['shift_id'] = Variable<String>(shiftId);
+    map['colectivo_id'] = Variable<String>(colectivoId);
+    return map;
+  }
+
+  ShiftColectivosCompanion toCompanion(bool nullToAbsent) {
+    return ShiftColectivosCompanion(
+      shiftId: Value(shiftId),
+      colectivoId: Value(colectivoId),
+    );
+  }
+
+  factory ShiftColectivo.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ShiftColectivo(
+      shiftId: serializer.fromJson<String>(json['shiftId']),
+      colectivoId: serializer.fromJson<String>(json['colectivoId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'shiftId': serializer.toJson<String>(shiftId),
+      'colectivoId': serializer.toJson<String>(colectivoId),
+    };
+  }
+
+  ShiftColectivo copyWith({String? shiftId, String? colectivoId}) =>
+      ShiftColectivo(
+        shiftId: shiftId ?? this.shiftId,
+        colectivoId: colectivoId ?? this.colectivoId,
+      );
+  ShiftColectivo copyWithCompanion(ShiftColectivosCompanion data) {
+    return ShiftColectivo(
+      shiftId: data.shiftId.present ? data.shiftId.value : this.shiftId,
+      colectivoId: data.colectivoId.present
+          ? data.colectivoId.value
+          : this.colectivoId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ShiftColectivo(')
+          ..write('shiftId: $shiftId, ')
+          ..write('colectivoId: $colectivoId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(shiftId, colectivoId);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ShiftColectivo &&
+          other.shiftId == this.shiftId &&
+          other.colectivoId == this.colectivoId);
+}
+
+class ShiftColectivosCompanion extends UpdateCompanion<ShiftColectivo> {
+  final Value<String> shiftId;
+  final Value<String> colectivoId;
+  final Value<int> rowid;
+  const ShiftColectivosCompanion({
+    this.shiftId = const Value.absent(),
+    this.colectivoId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  ShiftColectivosCompanion.insert({
+    required String shiftId,
+    required String colectivoId,
+    this.rowid = const Value.absent(),
+  }) : shiftId = Value(shiftId),
+       colectivoId = Value(colectivoId);
+  static Insertable<ShiftColectivo> custom({
+    Expression<String>? shiftId,
+    Expression<String>? colectivoId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (shiftId != null) 'shift_id': shiftId,
+      if (colectivoId != null) 'colectivo_id': colectivoId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  ShiftColectivosCompanion copyWith({
+    Value<String>? shiftId,
+    Value<String>? colectivoId,
+    Value<int>? rowid,
+  }) {
+    return ShiftColectivosCompanion(
+      shiftId: shiftId ?? this.shiftId,
+      colectivoId: colectivoId ?? this.colectivoId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (shiftId.present) {
+      map['shift_id'] = Variable<String>(shiftId.value);
+    }
+    if (colectivoId.present) {
+      map['colectivo_id'] = Variable<String>(colectivoId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ShiftColectivosCompanion(')
+          ..write('shiftId: $shiftId, ')
+          ..write('colectivoId: $colectivoId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $EncargadosTable extends Encargados
+    with TableInfo<$EncargadosTable, Encargado> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EncargadosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
+  @override
+  late final GeneratedColumn<String> phone = GeneratedColumn<String>(
+    'phone',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _balanceMeta = const VerificationMeta(
+    'balance',
+  );
+  @override
+  late final GeneratedColumn<double> balance = GeneratedColumn<double>(
+    'balance',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, phone, balance, isSynced];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'encargados';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Encargado> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    }
+    if (data.containsKey('phone')) {
+      context.handle(
+        _phoneMeta,
+        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+      );
+    }
+    if (data.containsKey('balance')) {
+      context.handle(
+        _balanceMeta,
+        balance.isAcceptableOrUnknown(data['balance']!, _balanceMeta),
+      );
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Encargado map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Encargado(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      ),
+      phone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}phone'],
+      ),
+      balance: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}balance'],
+      )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+    );
+  }
+
+  @override
+  $EncargadosTable createAlias(String alias) {
+    return $EncargadosTable(attachedDatabase, alias);
+  }
+}
+
+class Encargado extends DataClass implements Insertable<Encargado> {
+  final String id;
+  final String? name;
+  final String? phone;
+  final double balance;
+  final bool isSynced;
+  const Encargado({
+    required this.id,
+    this.name,
+    this.phone,
+    required this.balance,
+    required this.isSynced,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    if (!nullToAbsent || name != null) {
+      map['name'] = Variable<String>(name);
+    }
+    if (!nullToAbsent || phone != null) {
+      map['phone'] = Variable<String>(phone);
+    }
+    map['balance'] = Variable<double>(balance);
+    map['is_synced'] = Variable<bool>(isSynced);
+    return map;
+  }
+
+  EncargadosCompanion toCompanion(bool nullToAbsent) {
+    return EncargadosCompanion(
+      id: Value(id),
+      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      phone: phone == null && nullToAbsent
+          ? const Value.absent()
+          : Value(phone),
+      balance: Value(balance),
+      isSynced: Value(isSynced),
+    );
+  }
+
+  factory Encargado.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Encargado(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String?>(json['name']),
+      phone: serializer.fromJson<String?>(json['phone']),
+      balance: serializer.fromJson<double>(json['balance']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String?>(name),
+      'phone': serializer.toJson<String?>(phone),
+      'balance': serializer.toJson<double>(balance),
+      'isSynced': serializer.toJson<bool>(isSynced),
+    };
+  }
+
+  Encargado copyWith({
+    String? id,
+    Value<String?> name = const Value.absent(),
+    Value<String?> phone = const Value.absent(),
+    double? balance,
+    bool? isSynced,
+  }) => Encargado(
+    id: id ?? this.id,
+    name: name.present ? name.value : this.name,
+    phone: phone.present ? phone.value : this.phone,
+    balance: balance ?? this.balance,
+    isSynced: isSynced ?? this.isSynced,
+  );
+  Encargado copyWithCompanion(EncargadosCompanion data) {
+    return Encargado(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      phone: data.phone.present ? data.phone.value : this.phone,
+      balance: data.balance.present ? data.balance.value : this.balance,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Encargado(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('phone: $phone, ')
+          ..write('balance: $balance, ')
+          ..write('isSynced: $isSynced')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, name, phone, balance, isSynced);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Encargado &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.phone == this.phone &&
+          other.balance == this.balance &&
+          other.isSynced == this.isSynced);
+}
+
+class EncargadosCompanion extends UpdateCompanion<Encargado> {
+  final Value<String> id;
+  final Value<String?> name;
+  final Value<String?> phone;
+  final Value<double> balance;
+  final Value<bool> isSynced;
+  final Value<int> rowid;
+  const EncargadosCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.balance = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  EncargadosCompanion.insert({
+    required String id,
+    this.name = const Value.absent(),
+    this.phone = const Value.absent(),
+    this.balance = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id);
+  static Insertable<Encargado> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? phone,
+    Expression<double>? balance,
+    Expression<bool>? isSynced,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (phone != null) 'phone': phone,
+      if (balance != null) 'balance': balance,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  EncargadosCompanion copyWith({
+    Value<String>? id,
+    Value<String?>? name,
+    Value<String?>? phone,
+    Value<double>? balance,
+    Value<bool>? isSynced,
+    Value<int>? rowid,
+  }) {
+    return EncargadosCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      balance: balance ?? this.balance,
+      isSynced: isSynced ?? this.isSynced,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (phone.present) {
+      map['phone'] = Variable<String>(phone.value);
+    }
+    if (balance.present) {
+      map['balance'] = Variable<double>(balance.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EncargadosCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('phone: $phone, ')
+          ..write('balance: $balance, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
+    with TableInfo<$RecorridoSubscriptionsTable, RecorridoSubscription> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $RecorridoSubscriptionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _recorridoIdMeta = const VerificationMeta(
+    'recorridoId',
+  );
+  @override
+  late final GeneratedColumn<String> recorridoId = GeneratedColumn<String>(
+    'recorrido_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES recorridos (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _encargadoIdMeta = const VerificationMeta(
+    'encargadoId',
+  );
+  @override
+  late final GeneratedColumn<String> encargadoId = GeneratedColumn<String>(
+    'encargado_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES encargados (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _studentNameMeta = const VerificationMeta(
+    'studentName',
+  );
+  @override
+  late final GeneratedColumn<String> studentName = GeneratedColumn<String>(
+    'student_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _addressMeta = const VerificationMeta(
+    'address',
+  );
+  @override
+  late final GeneratedColumn<String> address = GeneratedColumn<String>(
+    'address',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _customPriceMeta = const VerificationMeta(
+    'customPrice',
+  );
+  @override
+  late final GeneratedColumn<double> customPrice = GeneratedColumn<double>(
+    'custom_price',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    recorridoId,
+    encargadoId,
+    studentName,
+    address,
+    customPrice,
+    isActive,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'recorrido_subscriptions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<RecorridoSubscription> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('recorrido_id')) {
+      context.handle(
+        _recorridoIdMeta,
+        recorridoId.isAcceptableOrUnknown(
+          data['recorrido_id']!,
+          _recorridoIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recorridoIdMeta);
+    }
+    if (data.containsKey('encargado_id')) {
+      context.handle(
+        _encargadoIdMeta,
+        encargadoId.isAcceptableOrUnknown(
+          data['encargado_id']!,
+          _encargadoIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_encargadoIdMeta);
+    }
+    if (data.containsKey('student_name')) {
+      context.handle(
+        _studentNameMeta,
+        studentName.isAcceptableOrUnknown(
+          data['student_name']!,
+          _studentNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('address')) {
+      context.handle(
+        _addressMeta,
+        address.isAcceptableOrUnknown(data['address']!, _addressMeta),
+      );
+    }
+    if (data.containsKey('custom_price')) {
+      context.handle(
+        _customPriceMeta,
+        customPrice.isAcceptableOrUnknown(
+          data['custom_price']!,
+          _customPriceMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  RecorridoSubscription map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return RecorridoSubscription(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      recorridoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recorrido_id'],
+      )!,
+      encargadoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}encargado_id'],
+      )!,
+      studentName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}student_name'],
+      ),
+      address: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}address'],
+      ),
+      customPrice: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}custom_price'],
+      ),
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
+      )!,
+    );
+  }
+
+  @override
+  $RecorridoSubscriptionsTable createAlias(String alias) {
+    return $RecorridoSubscriptionsTable(attachedDatabase, alias);
+  }
+}
+
+class RecorridoSubscription extends DataClass
+    implements Insertable<RecorridoSubscription> {
+  final String id;
+  final String recorridoId;
+  final String encargadoId;
+  final String? studentName;
+  final String? address;
+  final double? customPrice;
+  final bool isActive;
+  const RecorridoSubscription({
+    required this.id,
+    required this.recorridoId,
+    required this.encargadoId,
+    this.studentName,
+    this.address,
+    this.customPrice,
+    required this.isActive,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['recorrido_id'] = Variable<String>(recorridoId);
+    map['encargado_id'] = Variable<String>(encargadoId);
+    if (!nullToAbsent || studentName != null) {
+      map['student_name'] = Variable<String>(studentName);
+    }
+    if (!nullToAbsent || address != null) {
+      map['address'] = Variable<String>(address);
+    }
+    if (!nullToAbsent || customPrice != null) {
+      map['custom_price'] = Variable<double>(customPrice);
+    }
+    map['is_active'] = Variable<bool>(isActive);
+    return map;
+  }
+
+  RecorridoSubscriptionsCompanion toCompanion(bool nullToAbsent) {
+    return RecorridoSubscriptionsCompanion(
+      id: Value(id),
+      recorridoId: Value(recorridoId),
+      encargadoId: Value(encargadoId),
+      studentName: studentName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(studentName),
+      address: address == null && nullToAbsent
+          ? const Value.absent()
+          : Value(address),
+      customPrice: customPrice == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customPrice),
+      isActive: Value(isActive),
+    );
+  }
+
+  factory RecorridoSubscription.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return RecorridoSubscription(
+      id: serializer.fromJson<String>(json['id']),
+      recorridoId: serializer.fromJson<String>(json['recorridoId']),
+      encargadoId: serializer.fromJson<String>(json['encargadoId']),
+      studentName: serializer.fromJson<String?>(json['studentName']),
+      address: serializer.fromJson<String?>(json['address']),
+      customPrice: serializer.fromJson<double?>(json['customPrice']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'recorridoId': serializer.toJson<String>(recorridoId),
+      'encargadoId': serializer.toJson<String>(encargadoId),
+      'studentName': serializer.toJson<String?>(studentName),
+      'address': serializer.toJson<String?>(address),
+      'customPrice': serializer.toJson<double?>(customPrice),
+      'isActive': serializer.toJson<bool>(isActive),
+    };
+  }
+
+  RecorridoSubscription copyWith({
+    String? id,
+    String? recorridoId,
+    String? encargadoId,
+    Value<String?> studentName = const Value.absent(),
+    Value<String?> address = const Value.absent(),
+    Value<double?> customPrice = const Value.absent(),
+    bool? isActive,
+  }) => RecorridoSubscription(
+    id: id ?? this.id,
+    recorridoId: recorridoId ?? this.recorridoId,
+    encargadoId: encargadoId ?? this.encargadoId,
+    studentName: studentName.present ? studentName.value : this.studentName,
+    address: address.present ? address.value : this.address,
+    customPrice: customPrice.present ? customPrice.value : this.customPrice,
+    isActive: isActive ?? this.isActive,
+  );
+  RecorridoSubscription copyWithCompanion(
+    RecorridoSubscriptionsCompanion data,
+  ) {
+    return RecorridoSubscription(
+      id: data.id.present ? data.id.value : this.id,
+      recorridoId: data.recorridoId.present
+          ? data.recorridoId.value
+          : this.recorridoId,
+      encargadoId: data.encargadoId.present
+          ? data.encargadoId.value
+          : this.encargadoId,
+      studentName: data.studentName.present
+          ? data.studentName.value
+          : this.studentName,
+      address: data.address.present ? data.address.value : this.address,
+      customPrice: data.customPrice.present
+          ? data.customPrice.value
+          : this.customPrice,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecorridoSubscription(')
+          ..write('id: $id, ')
+          ..write('recorridoId: $recorridoId, ')
+          ..write('encargadoId: $encargadoId, ')
+          ..write('studentName: $studentName, ')
+          ..write('address: $address, ')
+          ..write('customPrice: $customPrice, ')
+          ..write('isActive: $isActive')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    recorridoId,
+    encargadoId,
+    studentName,
+    address,
+    customPrice,
+    isActive,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RecorridoSubscription &&
+          other.id == this.id &&
+          other.recorridoId == this.recorridoId &&
+          other.encargadoId == this.encargadoId &&
+          other.studentName == this.studentName &&
+          other.address == this.address &&
+          other.customPrice == this.customPrice &&
+          other.isActive == this.isActive);
+}
+
+class RecorridoSubscriptionsCompanion
+    extends UpdateCompanion<RecorridoSubscription> {
+  final Value<String> id;
+  final Value<String> recorridoId;
+  final Value<String> encargadoId;
+  final Value<String?> studentName;
+  final Value<String?> address;
+  final Value<double?> customPrice;
+  final Value<bool> isActive;
+  final Value<int> rowid;
+  const RecorridoSubscriptionsCompanion({
+    this.id = const Value.absent(),
+    this.recorridoId = const Value.absent(),
+    this.encargadoId = const Value.absent(),
+    this.studentName = const Value.absent(),
+    this.address = const Value.absent(),
+    this.customPrice = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  RecorridoSubscriptionsCompanion.insert({
+    required String id,
+    required String recorridoId,
+    required String encargadoId,
+    this.studentName = const Value.absent(),
+    this.address = const Value.absent(),
+    this.customPrice = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       recorridoId = Value(recorridoId),
+       encargadoId = Value(encargadoId);
+  static Insertable<RecorridoSubscription> custom({
+    Expression<String>? id,
+    Expression<String>? recorridoId,
+    Expression<String>? encargadoId,
+    Expression<String>? studentName,
+    Expression<String>? address,
+    Expression<double>? customPrice,
+    Expression<bool>? isActive,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (recorridoId != null) 'recorrido_id': recorridoId,
+      if (encargadoId != null) 'encargado_id': encargadoId,
+      if (studentName != null) 'student_name': studentName,
+      if (address != null) 'address': address,
+      if (customPrice != null) 'custom_price': customPrice,
+      if (isActive != null) 'is_active': isActive,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  RecorridoSubscriptionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? recorridoId,
+    Value<String>? encargadoId,
+    Value<String?>? studentName,
+    Value<String?>? address,
+    Value<double?>? customPrice,
+    Value<bool>? isActive,
+    Value<int>? rowid,
+  }) {
+    return RecorridoSubscriptionsCompanion(
+      id: id ?? this.id,
+      recorridoId: recorridoId ?? this.recorridoId,
+      encargadoId: encargadoId ?? this.encargadoId,
+      studentName: studentName ?? this.studentName,
+      address: address ?? this.address,
+      customPrice: customPrice ?? this.customPrice,
+      isActive: isActive ?? this.isActive,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (recorridoId.present) {
+      map['recorrido_id'] = Variable<String>(recorridoId.value);
+    }
+    if (encargadoId.present) {
+      map['encargado_id'] = Variable<String>(encargadoId.value);
+    }
+    if (studentName.present) {
+      map['student_name'] = Variable<String>(studentName.value);
+    }
+    if (address.present) {
+      map['address'] = Variable<String>(address.value);
+    }
+    if (customPrice.present) {
+      map['custom_price'] = Variable<double>(customPrice.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('RecorridoSubscriptionsCompanion(')
+          ..write('id: $id, ')
+          ..write('recorridoId: $recorridoId, ')
+          ..write('encargadoId: $encargadoId, ')
+          ..write('studentName: $studentName, ')
+          ..write('address: $address, ')
+          ..write('customPrice: $customPrice, ')
+          ..write('isActive: $isActive, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $ChoferesTable choferes = $ChoferesTable(this);
   late final $ColectivosTable colectivos = $ColectivosTable(this);
+  late final $RecorridosTable recorridos = $RecorridosTable(this);
   late final $EventsTable events = $EventsTable(this);
   late final $StopsTable stops = $StopsTable(this);
   late final $EventChoferesTable eventChoferes = $EventChoferesTable(this);
   late final $EventColectivosTable eventColectivos = $EventColectivosTable(
     this,
   );
+  late final $RecorridoShiftsTable recorridoShifts = $RecorridoShiftsTable(
+    this,
+  );
+  late final $ShiftChoferesTable shiftChoferes = $ShiftChoferesTable(this);
+  late final $ShiftColectivosTable shiftColectivos = $ShiftColectivosTable(
+    this,
+  );
+  late final $EncargadosTable encargados = $EncargadosTable(this);
+  late final $RecorridoSubscriptionsTable recorridoSubscriptions =
+      $RecorridoSubscriptionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2698,10 +4897,16 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     choferes,
     colectivos,
+    recorridos,
     events,
     stops,
     eventChoferes,
     eventColectivos,
+    recorridoShifts,
+    shiftChoferes,
+    shiftColectivos,
+    encargados,
+    recorridoSubscriptions,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2739,6 +4944,55 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('event_colectivos', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'recorridos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('recorrido_shifts', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'recorrido_shifts',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('shift_choferes', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'choferes',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('shift_choferes', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'recorrido_shifts',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('shift_colectivos', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'colectivos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('shift_colectivos', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'recorridos',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('recorrido_subscriptions', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'encargados',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('recorrido_subscriptions', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2787,6 +5041,24 @@ final class $$ChoferesTableReferences
     ).filter((f) => f.choferId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_eventChoferesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ShiftChoferesTable, List<ShiftChofere>>
+  _shiftChoferesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.shiftChoferes,
+    aliasName: $_aliasNameGenerator(db.choferes.id, db.shiftChoferes.choferId),
+  );
+
+  $$ShiftChoferesTableProcessedTableManager get shiftChoferesRefs {
+    final manager = $$ShiftChoferesTableTableManager(
+      $_db,
+      $_db.shiftChoferes,
+    ).filter((f) => f.choferId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_shiftChoferesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2863,6 +5135,31 @@ class $$ChoferesTableFilterComposer
           }) => $$EventChoferesTableFilterComposer(
             $db: $db,
             $table: $db.eventChoferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> shiftChoferesRefs(
+    Expression<bool> Function($$ShiftChoferesTableFilterComposer f) f,
+  ) {
+    final $$ShiftChoferesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftChoferes,
+      getReferencedColumn: (t) => t.choferId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftChoferesTableFilterComposer(
+            $db: $db,
+            $table: $db.shiftChoferes,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2992,6 +5289,31 @@ class $$ChoferesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> shiftChoferesRefs<T extends Object>(
+    Expression<T> Function($$ShiftChoferesTableAnnotationComposer a) f,
+  ) {
+    final $$ShiftChoferesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftChoferes,
+      getReferencedColumn: (t) => t.choferId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftChoferesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.shiftChoferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ChoferesTableTableManager
@@ -3007,7 +5329,10 @@ class $$ChoferesTableTableManager
           $$ChoferesTableUpdateCompanionBuilder,
           (Chofere, $$ChoferesTableReferences),
           Chofere,
-          PrefetchHooks Function({bool eventChoferesRefs})
+          PrefetchHooks Function({
+            bool eventChoferesRefs,
+            bool shiftChoferesRefs,
+          })
         > {
   $$ChoferesTableTableManager(_$AppDatabase db, $ChoferesTable table)
     : super(
@@ -3076,37 +5401,63 @@ class $$ChoferesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({eventChoferesRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (eventChoferesRefs) db.eventChoferes,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (eventChoferesRefs)
-                    await $_getPrefetchedData<
-                      Chofere,
-                      $ChoferesTable,
-                      EventChofere
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ChoferesTableReferences
-                          ._eventChoferesRefsTable(db),
-                      managerFromTypedResult: (p0) => $$ChoferesTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).eventChoferesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.choferId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({eventChoferesRefs = false, shiftChoferesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (eventChoferesRefs) db.eventChoferes,
+                    if (shiftChoferesRefs) db.shiftChoferes,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (eventChoferesRefs)
+                        await $_getPrefetchedData<
+                          Chofere,
+                          $ChoferesTable,
+                          EventChofere
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ChoferesTableReferences
+                              ._eventChoferesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ChoferesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).eventChoferesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.choferId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (shiftChoferesRefs)
+                        await $_getPrefetchedData<
+                          Chofere,
+                          $ChoferesTable,
+                          ShiftChofere
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ChoferesTableReferences
+                              ._shiftChoferesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ChoferesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).shiftChoferesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.choferId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -3123,7 +5474,7 @@ typedef $$ChoferesTableProcessedTableManager =
       $$ChoferesTableUpdateCompanionBuilder,
       (Chofere, $$ChoferesTableReferences),
       Chofere,
-      PrefetchHooks Function({bool eventChoferesRefs})
+      PrefetchHooks Function({bool eventChoferesRefs, bool shiftChoferesRefs})
     >;
 typedef $$ColectivosTableCreateCompanionBuilder =
     ColectivosCompanion Function({
@@ -3171,6 +5522,29 @@ final class $$ColectivosTableReferences
 
     final cache = $_typedResult.readTableOrNull(
       _eventColectivosRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ShiftColectivosTable, List<ShiftColectivo>>
+  _shiftColectivosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.shiftColectivos,
+    aliasName: $_aliasNameGenerator(
+      db.colectivos.id,
+      db.shiftColectivos.colectivoId,
+    ),
+  );
+
+  $$ShiftColectivosTableProcessedTableManager get shiftColectivosRefs {
+    final manager = $$ShiftColectivosTableTableManager(
+      $_db,
+      $_db.shiftColectivos,
+    ).filter((f) => f.colectivoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _shiftColectivosRefsTable($_db),
     );
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
@@ -3243,6 +5617,31 @@ class $$ColectivosTableFilterComposer
           }) => $$EventColectivosTableFilterComposer(
             $db: $db,
             $table: $db.eventColectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> shiftColectivosRefs(
+    Expression<bool> Function($$ShiftColectivosTableFilterComposer f) f,
+  ) {
+    final $$ShiftColectivosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftColectivos,
+      getReferencedColumn: (t) => t.colectivoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftColectivosTableFilterComposer(
+            $db: $db,
+            $table: $db.shiftColectivos,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -3362,6 +5761,31 @@ class $$ColectivosTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> shiftColectivosRefs<T extends Object>(
+    Expression<T> Function($$ShiftColectivosTableAnnotationComposer a) f,
+  ) {
+    final $$ShiftColectivosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftColectivos,
+      getReferencedColumn: (t) => t.colectivoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftColectivosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.shiftColectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ColectivosTableTableManager
@@ -3377,7 +5801,10 @@ class $$ColectivosTableTableManager
           $$ColectivosTableUpdateCompanionBuilder,
           (Colectivo, $$ColectivosTableReferences),
           Colectivo,
-          PrefetchHooks Function({bool eventColectivosRefs})
+          PrefetchHooks Function({
+            bool eventColectivosRefs,
+            bool shiftColectivosRefs,
+          })
         > {
   $$ColectivosTableTableManager(_$AppDatabase db, $ColectivosTable table)
     : super(
@@ -3442,40 +5869,63 @@ class $$ColectivosTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({eventColectivosRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (eventColectivosRefs) db.eventColectivos,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (eventColectivosRefs)
-                    await $_getPrefetchedData<
-                      Colectivo,
-                      $ColectivosTable,
-                      EventColectivo
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ColectivosTableReferences
-                          ._eventColectivosRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$ColectivosTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).eventColectivosRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where(
-                            (e) => e.colectivoId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({eventColectivosRefs = false, shiftColectivosRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (eventColectivosRefs) db.eventColectivos,
+                    if (shiftColectivosRefs) db.shiftColectivos,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (eventColectivosRefs)
+                        await $_getPrefetchedData<
+                          Colectivo,
+                          $ColectivosTable,
+                          EventColectivo
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ColectivosTableReferences
+                              ._eventColectivosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ColectivosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).eventColectivosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.colectivoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (shiftColectivosRefs)
+                        await $_getPrefetchedData<
+                          Colectivo,
+                          $ColectivosTable,
+                          ShiftColectivo
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ColectivosTableReferences
+                              ._shiftColectivosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ColectivosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).shiftColectivosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.colectivoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -3492,7 +5942,545 @@ typedef $$ColectivosTableProcessedTableManager =
       $$ColectivosTableUpdateCompanionBuilder,
       (Colectivo, $$ColectivosTableReferences),
       Colectivo,
-      PrefetchHooks Function({bool eventColectivosRefs})
+      PrefetchHooks Function({
+        bool eventColectivosRefs,
+        bool shiftColectivosRefs,
+      })
+    >;
+typedef $$RecorridosTableCreateCompanionBuilder =
+    RecorridosCompanion Function({
+      required String id,
+      required String name,
+      Value<bool> pinned,
+      Value<int> basePrice,
+      Value<bool> isActive,
+      Value<bool> isSynced,
+      Value<int> rowid,
+    });
+typedef $$RecorridosTableUpdateCompanionBuilder =
+    RecorridosCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<bool> pinned,
+      Value<int> basePrice,
+      Value<bool> isActive,
+      Value<bool> isSynced,
+      Value<int> rowid,
+    });
+
+final class $$RecorridosTableReferences
+    extends BaseReferences<_$AppDatabase, $RecorridosTable, Recorrido> {
+  $$RecorridosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$EventsTable, List<Event>> _eventsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.events,
+    aliasName: $_aliasNameGenerator(db.recorridos.id, db.events.recorridoId),
+  );
+
+  $$EventsTableProcessedTableManager get eventsRefs {
+    final manager = $$EventsTableTableManager(
+      $_db,
+      $_db.events,
+    ).filter((f) => f.recorridoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_eventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$RecorridoShiftsTable, List<RecorridoShift>>
+  _recorridoShiftsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.recorridoShifts,
+    aliasName: $_aliasNameGenerator(
+      db.recorridos.id,
+      db.recorridoShifts.recorridoId,
+    ),
+  );
+
+  $$RecorridoShiftsTableProcessedTableManager get recorridoShiftsRefs {
+    final manager = $$RecorridoShiftsTableTableManager(
+      $_db,
+      $_db.recorridoShifts,
+    ).filter((f) => f.recorridoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recorridoShiftsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<
+    $RecorridoSubscriptionsTable,
+    List<RecorridoSubscription>
+  >
+  _recorridoSubscriptionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.recorridoSubscriptions,
+        aliasName: $_aliasNameGenerator(
+          db.recorridos.id,
+          db.recorridoSubscriptions.recorridoId,
+        ),
+      );
+
+  $$RecorridoSubscriptionsTableProcessedTableManager
+  get recorridoSubscriptionsRefs {
+    final manager = $$RecorridoSubscriptionsTableTableManager(
+      $_db,
+      $_db.recorridoSubscriptions,
+    ).filter((f) => f.recorridoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recorridoSubscriptionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$RecorridosTableFilterComposer
+    extends Composer<_$AppDatabase, $RecorridosTable> {
+  $$RecorridosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get pinned => $composableBuilder(
+    column: $table.pinned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get basePrice => $composableBuilder(
+    column: $table.basePrice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> eventsRefs(
+    Expression<bool> Function($$EventsTableFilterComposer f) f,
+  ) {
+    final $$EventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.recorridoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableFilterComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> recorridoShiftsRefs(
+    Expression<bool> Function($$RecorridoShiftsTableFilterComposer f) f,
+  ) {
+    final $$RecorridoShiftsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.recorridoShifts,
+      getReferencedColumn: (t) => t.recorridoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridoShiftsTableFilterComposer(
+            $db: $db,
+            $table: $db.recorridoShifts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> recorridoSubscriptionsRefs(
+    Expression<bool> Function($$RecorridoSubscriptionsTableFilterComposer f) f,
+  ) {
+    final $$RecorridoSubscriptionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recorridoSubscriptions,
+          getReferencedColumn: (t) => t.recorridoId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecorridoSubscriptionsTableFilterComposer(
+                $db: $db,
+                $table: $db.recorridoSubscriptions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$RecorridosTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecorridosTable> {
+  $$RecorridosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get pinned => $composableBuilder(
+    column: $table.pinned,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get basePrice => $composableBuilder(
+    column: $table.basePrice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$RecorridosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecorridosTable> {
+  $$RecorridosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<bool> get pinned =>
+      $composableBuilder(column: $table.pinned, builder: (column) => column);
+
+  GeneratedColumn<int> get basePrice =>
+      $composableBuilder(column: $table.basePrice, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  Expression<T> eventsRefs<T extends Object>(
+    Expression<T> Function($$EventsTableAnnotationComposer a) f,
+  ) {
+    final $$EventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.recorridoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> recorridoShiftsRefs<T extends Object>(
+    Expression<T> Function($$RecorridoShiftsTableAnnotationComposer a) f,
+  ) {
+    final $$RecorridoShiftsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.recorridoShifts,
+      getReferencedColumn: (t) => t.recorridoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridoShiftsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.recorridoShifts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> recorridoSubscriptionsRefs<T extends Object>(
+    Expression<T> Function($$RecorridoSubscriptionsTableAnnotationComposer a) f,
+  ) {
+    final $$RecorridoSubscriptionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recorridoSubscriptions,
+          getReferencedColumn: (t) => t.recorridoId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecorridoSubscriptionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.recorridoSubscriptions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$RecorridosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecorridosTable,
+          Recorrido,
+          $$RecorridosTableFilterComposer,
+          $$RecorridosTableOrderingComposer,
+          $$RecorridosTableAnnotationComposer,
+          $$RecorridosTableCreateCompanionBuilder,
+          $$RecorridosTableUpdateCompanionBuilder,
+          (Recorrido, $$RecorridosTableReferences),
+          Recorrido,
+          PrefetchHooks Function({
+            bool eventsRefs,
+            bool recorridoShiftsRefs,
+            bool recorridoSubscriptionsRefs,
+          })
+        > {
+  $$RecorridosTableTableManager(_$AppDatabase db, $RecorridosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecorridosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RecorridosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RecorridosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<bool> pinned = const Value.absent(),
+                Value<int> basePrice = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecorridosCompanion(
+                id: id,
+                name: name,
+                pinned: pinned,
+                basePrice: basePrice,
+                isActive: isActive,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<bool> pinned = const Value.absent(),
+                Value<int> basePrice = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecorridosCompanion.insert(
+                id: id,
+                name: name,
+                pinned: pinned,
+                basePrice: basePrice,
+                isActive: isActive,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RecorridosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                eventsRefs = false,
+                recorridoShiftsRefs = false,
+                recorridoSubscriptionsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (eventsRefs) db.events,
+                    if (recorridoShiftsRefs) db.recorridoShifts,
+                    if (recorridoSubscriptionsRefs) db.recorridoSubscriptions,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (eventsRefs)
+                        await $_getPrefetchedData<
+                          Recorrido,
+                          $RecorridosTable,
+                          Event
+                        >(
+                          currentTable: table,
+                          referencedTable: $$RecorridosTableReferences
+                              ._eventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$RecorridosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).eventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.recorridoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (recorridoShiftsRefs)
+                        await $_getPrefetchedData<
+                          Recorrido,
+                          $RecorridosTable,
+                          RecorridoShift
+                        >(
+                          currentTable: table,
+                          referencedTable: $$RecorridosTableReferences
+                              ._recorridoShiftsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$RecorridosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recorridoShiftsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.recorridoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (recorridoSubscriptionsRefs)
+                        await $_getPrefetchedData<
+                          Recorrido,
+                          $RecorridosTable,
+                          RecorridoSubscription
+                        >(
+                          currentTable: table,
+                          referencedTable: $$RecorridosTableReferences
+                              ._recorridoSubscriptionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$RecorridosTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).recorridoSubscriptionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.recorridoId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$RecorridosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecorridosTable,
+      Recorrido,
+      $$RecorridosTableFilterComposer,
+      $$RecorridosTableOrderingComposer,
+      $$RecorridosTableAnnotationComposer,
+      $$RecorridosTableCreateCompanionBuilder,
+      $$RecorridosTableUpdateCompanionBuilder,
+      (Recorrido, $$RecorridosTableReferences),
+      Recorrido,
+      PrefetchHooks Function({
+        bool eventsRefs,
+        bool recorridoShiftsRefs,
+        bool recorridoSubscriptionsRefs,
+      })
     >;
 typedef $$EventsTableCreateCompanionBuilder =
     EventsCompanion Function({
@@ -3509,6 +6497,7 @@ typedef $$EventsTableCreateCompanionBuilder =
       required EventTypes type,
       required bool isTrip,
       Value<bool> isSynced,
+      Value<String?> recorridoId,
       Value<int> rowid,
     });
 typedef $$EventsTableUpdateCompanionBuilder =
@@ -3526,12 +6515,32 @@ typedef $$EventsTableUpdateCompanionBuilder =
       Value<EventTypes> type,
       Value<bool> isTrip,
       Value<bool> isSynced,
+      Value<String?> recorridoId,
       Value<int> rowid,
     });
 
 final class $$EventsTableReferences
     extends BaseReferences<_$AppDatabase, $EventsTable, Event> {
   $$EventsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $RecorridosTable _recorridoIdTable(_$AppDatabase db) =>
+      db.recorridos.createAlias(
+        $_aliasNameGenerator(db.events.recorridoId, db.recorridos.id),
+      );
+
+  $$RecorridosTableProcessedTableManager? get recorridoId {
+    final $_column = $_itemColumn<String>('recorrido_id');
+    if ($_column == null) return null;
+    final manager = $$RecorridosTableTableManager(
+      $_db,
+      $_db.recorridos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_recorridoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
 
   static MultiTypedResultKey<$StopsTable, List<Stop>> _stopsRefsTable(
     _$AppDatabase db,
@@ -3667,6 +6676,29 @@ class $$EventsTableFilterComposer
     column: $table.isSynced,
     builder: (column) => ColumnFilters(column),
   );
+
+  $$RecorridosTableFilterComposer get recorridoId {
+    final $$RecorridosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableFilterComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<bool> stopsRefs(
     Expression<bool> Function($$StopsTableFilterComposer f) f,
@@ -3817,6 +6849,29 @@ class $$EventsTableOrderingComposer
     column: $table.isSynced,
     builder: (column) => ColumnOrderings(column),
   );
+
+  $$RecorridosTableOrderingComposer get recorridoId {
+    final $$RecorridosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableOrderingComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$EventsTableAnnotationComposer
@@ -3874,6 +6929,29 @@ class $$EventsTableAnnotationComposer
 
   GeneratedColumn<bool> get isSynced =>
       $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  $$RecorridosTableAnnotationComposer get recorridoId {
+    final $$RecorridosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 
   Expression<T> stopsRefs<T extends Object>(
     Expression<T> Function($$StopsTableAnnotationComposer a) f,
@@ -3965,6 +7043,7 @@ class $$EventsTableTableManager
           (Event, $$EventsTableReferences),
           Event,
           PrefetchHooks Function({
+            bool recorridoId,
             bool stopsRefs,
             bool eventChoferesRefs,
             bool eventColectivosRefs,
@@ -3996,6 +7075,7 @@ class $$EventsTableTableManager
                 Value<EventTypes> type = const Value.absent(),
                 Value<bool> isTrip = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
+                Value<String?> recorridoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => EventsCompanion(
                 id: id,
@@ -4011,6 +7091,7 @@ class $$EventsTableTableManager
                 type: type,
                 isTrip: isTrip,
                 isSynced: isSynced,
+                recorridoId: recorridoId,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4028,6 +7109,7 @@ class $$EventsTableTableManager
                 required EventTypes type,
                 required bool isTrip,
                 Value<bool> isSynced = const Value.absent(),
+                Value<String?> recorridoId = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => EventsCompanion.insert(
                 id: id,
@@ -4043,6 +7125,7 @@ class $$EventsTableTableManager
                 type: type,
                 isTrip: isTrip,
                 isSynced: isSynced,
+                recorridoId: recorridoId,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4053,6 +7136,7 @@ class $$EventsTableTableManager
               .toList(),
           prefetchHooksCallback:
               ({
+                recorridoId = false,
                 stopsRefs = false,
                 eventChoferesRefs = false,
                 eventColectivosRefs = false,
@@ -4064,7 +7148,38 @@ class $$EventsTableTableManager
                     if (eventChoferesRefs) db.eventChoferes,
                     if (eventColectivosRefs) db.eventColectivos,
                   ],
-                  addJoins: null,
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (recorridoId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.recorridoId,
+                                    referencedTable: $$EventsTableReferences
+                                        ._recorridoIdTable(db),
+                                    referencedColumn: $$EventsTableReferences
+                                        ._recorridoIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
                   getPrefetchedDataCallback: (items) async {
                     return [
                       if (stopsRefs)
@@ -4143,6 +7258,7 @@ typedef $$EventsTableProcessedTableManager =
       (Event, $$EventsTableReferences),
       Event,
       PrefetchHooks Function({
+        bool recorridoId,
         bool stopsRefs,
         bool eventChoferesRefs,
         bool eventColectivosRefs,
@@ -5178,6 +8294,2068 @@ typedef $$EventColectivosTableProcessedTableManager =
       EventColectivo,
       PrefetchHooks Function({bool eventId, bool colectivoId})
     >;
+typedef $$RecorridoShiftsTableCreateCompanionBuilder =
+    RecorridoShiftsCompanion Function({
+      required String id,
+      required String recorridoId,
+      required WeekDays weekDay,
+      required int startTime,
+      required int endTime,
+      required String shiftName,
+      Value<int> rowid,
+    });
+typedef $$RecorridoShiftsTableUpdateCompanionBuilder =
+    RecorridoShiftsCompanion Function({
+      Value<String> id,
+      Value<String> recorridoId,
+      Value<WeekDays> weekDay,
+      Value<int> startTime,
+      Value<int> endTime,
+      Value<String> shiftName,
+      Value<int> rowid,
+    });
+
+final class $$RecorridoShiftsTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $RecorridoShiftsTable, RecorridoShift> {
+  $$RecorridoShiftsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $RecorridosTable _recorridoIdTable(_$AppDatabase db) =>
+      db.recorridos.createAlias(
+        $_aliasNameGenerator(db.recorridoShifts.recorridoId, db.recorridos.id),
+      );
+
+  $$RecorridosTableProcessedTableManager get recorridoId {
+    final $_column = $_itemColumn<String>('recorrido_id')!;
+
+    final manager = $$RecorridosTableTableManager(
+      $_db,
+      $_db.recorridos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_recorridoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$ShiftChoferesTable, List<ShiftChofere>>
+  _shiftChoferesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.shiftChoferes,
+    aliasName: $_aliasNameGenerator(
+      db.recorridoShifts.id,
+      db.shiftChoferes.shiftId,
+    ),
+  );
+
+  $$ShiftChoferesTableProcessedTableManager get shiftChoferesRefs {
+    final manager = $$ShiftChoferesTableTableManager(
+      $_db,
+      $_db.shiftChoferes,
+    ).filter((f) => f.shiftId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_shiftChoferesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ShiftColectivosTable, List<ShiftColectivo>>
+  _shiftColectivosRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.shiftColectivos,
+    aliasName: $_aliasNameGenerator(
+      db.recorridoShifts.id,
+      db.shiftColectivos.shiftId,
+    ),
+  );
+
+  $$ShiftColectivosTableProcessedTableManager get shiftColectivosRefs {
+    final manager = $$ShiftColectivosTableTableManager(
+      $_db,
+      $_db.shiftColectivos,
+    ).filter((f) => f.shiftId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _shiftColectivosRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$RecorridoShiftsTableFilterComposer
+    extends Composer<_$AppDatabase, $RecorridoShiftsTable> {
+  $$RecorridoShiftsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<WeekDays, WeekDays, int> get weekDay =>
+      $composableBuilder(
+        column: $table.weekDay,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<int> get startTime => $composableBuilder(
+    column: $table.startTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get endTime => $composableBuilder(
+    column: $table.endTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get shiftName => $composableBuilder(
+    column: $table.shiftName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$RecorridosTableFilterComposer get recorridoId {
+    final $$RecorridosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableFilterComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> shiftChoferesRefs(
+    Expression<bool> Function($$ShiftChoferesTableFilterComposer f) f,
+  ) {
+    final $$ShiftChoferesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftChoferes,
+      getReferencedColumn: (t) => t.shiftId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftChoferesTableFilterComposer(
+            $db: $db,
+            $table: $db.shiftChoferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> shiftColectivosRefs(
+    Expression<bool> Function($$ShiftColectivosTableFilterComposer f) f,
+  ) {
+    final $$ShiftColectivosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftColectivos,
+      getReferencedColumn: (t) => t.shiftId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftColectivosTableFilterComposer(
+            $db: $db,
+            $table: $db.shiftColectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$RecorridoShiftsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecorridoShiftsTable> {
+  $$RecorridoShiftsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get weekDay => $composableBuilder(
+    column: $table.weekDay,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get startTime => $composableBuilder(
+    column: $table.startTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get endTime => $composableBuilder(
+    column: $table.endTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get shiftName => $composableBuilder(
+    column: $table.shiftName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$RecorridosTableOrderingComposer get recorridoId {
+    final $$RecorridosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableOrderingComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecorridoShiftsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecorridoShiftsTable> {
+  $$RecorridoShiftsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<WeekDays, int> get weekDay =>
+      $composableBuilder(column: $table.weekDay, builder: (column) => column);
+
+  GeneratedColumn<int> get startTime =>
+      $composableBuilder(column: $table.startTime, builder: (column) => column);
+
+  GeneratedColumn<int> get endTime =>
+      $composableBuilder(column: $table.endTime, builder: (column) => column);
+
+  GeneratedColumn<String> get shiftName =>
+      $composableBuilder(column: $table.shiftName, builder: (column) => column);
+
+  $$RecorridosTableAnnotationComposer get recorridoId {
+    final $$RecorridosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> shiftChoferesRefs<T extends Object>(
+    Expression<T> Function($$ShiftChoferesTableAnnotationComposer a) f,
+  ) {
+    final $$ShiftChoferesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftChoferes,
+      getReferencedColumn: (t) => t.shiftId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftChoferesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.shiftChoferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> shiftColectivosRefs<T extends Object>(
+    Expression<T> Function($$ShiftColectivosTableAnnotationComposer a) f,
+  ) {
+    final $$ShiftColectivosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.shiftColectivos,
+      getReferencedColumn: (t) => t.shiftId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ShiftColectivosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.shiftColectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$RecorridoShiftsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecorridoShiftsTable,
+          RecorridoShift,
+          $$RecorridoShiftsTableFilterComposer,
+          $$RecorridoShiftsTableOrderingComposer,
+          $$RecorridoShiftsTableAnnotationComposer,
+          $$RecorridoShiftsTableCreateCompanionBuilder,
+          $$RecorridoShiftsTableUpdateCompanionBuilder,
+          (RecorridoShift, $$RecorridoShiftsTableReferences),
+          RecorridoShift,
+          PrefetchHooks Function({
+            bool recorridoId,
+            bool shiftChoferesRefs,
+            bool shiftColectivosRefs,
+          })
+        > {
+  $$RecorridoShiftsTableTableManager(
+    _$AppDatabase db,
+    $RecorridoShiftsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecorridoShiftsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$RecorridoShiftsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$RecorridoShiftsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> recorridoId = const Value.absent(),
+                Value<WeekDays> weekDay = const Value.absent(),
+                Value<int> startTime = const Value.absent(),
+                Value<int> endTime = const Value.absent(),
+                Value<String> shiftName = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecorridoShiftsCompanion(
+                id: id,
+                recorridoId: recorridoId,
+                weekDay: weekDay,
+                startTime: startTime,
+                endTime: endTime,
+                shiftName: shiftName,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String recorridoId,
+                required WeekDays weekDay,
+                required int startTime,
+                required int endTime,
+                required String shiftName,
+                Value<int> rowid = const Value.absent(),
+              }) => RecorridoShiftsCompanion.insert(
+                id: id,
+                recorridoId: recorridoId,
+                weekDay: weekDay,
+                startTime: startTime,
+                endTime: endTime,
+                shiftName: shiftName,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RecorridoShiftsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                recorridoId = false,
+                shiftChoferesRefs = false,
+                shiftColectivosRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (shiftChoferesRefs) db.shiftChoferes,
+                    if (shiftColectivosRefs) db.shiftColectivos,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (recorridoId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.recorridoId,
+                                    referencedTable:
+                                        $$RecorridoShiftsTableReferences
+                                            ._recorridoIdTable(db),
+                                    referencedColumn:
+                                        $$RecorridoShiftsTableReferences
+                                            ._recorridoIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (shiftChoferesRefs)
+                        await $_getPrefetchedData<
+                          RecorridoShift,
+                          $RecorridoShiftsTable,
+                          ShiftChofere
+                        >(
+                          currentTable: table,
+                          referencedTable: $$RecorridoShiftsTableReferences
+                              ._shiftChoferesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$RecorridoShiftsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).shiftChoferesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.shiftId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (shiftColectivosRefs)
+                        await $_getPrefetchedData<
+                          RecorridoShift,
+                          $RecorridoShiftsTable,
+                          ShiftColectivo
+                        >(
+                          currentTable: table,
+                          referencedTable: $$RecorridoShiftsTableReferences
+                              ._shiftColectivosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$RecorridoShiftsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).shiftColectivosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.shiftId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$RecorridoShiftsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecorridoShiftsTable,
+      RecorridoShift,
+      $$RecorridoShiftsTableFilterComposer,
+      $$RecorridoShiftsTableOrderingComposer,
+      $$RecorridoShiftsTableAnnotationComposer,
+      $$RecorridoShiftsTableCreateCompanionBuilder,
+      $$RecorridoShiftsTableUpdateCompanionBuilder,
+      (RecorridoShift, $$RecorridoShiftsTableReferences),
+      RecorridoShift,
+      PrefetchHooks Function({
+        bool recorridoId,
+        bool shiftChoferesRefs,
+        bool shiftColectivosRefs,
+      })
+    >;
+typedef $$ShiftChoferesTableCreateCompanionBuilder =
+    ShiftChoferesCompanion Function({
+      required String shiftId,
+      required String choferId,
+      Value<int> rowid,
+    });
+typedef $$ShiftChoferesTableUpdateCompanionBuilder =
+    ShiftChoferesCompanion Function({
+      Value<String> shiftId,
+      Value<String> choferId,
+      Value<int> rowid,
+    });
+
+final class $$ShiftChoferesTableReferences
+    extends BaseReferences<_$AppDatabase, $ShiftChoferesTable, ShiftChofere> {
+  $$ShiftChoferesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $RecorridoShiftsTable _shiftIdTable(_$AppDatabase db) =>
+      db.recorridoShifts.createAlias(
+        $_aliasNameGenerator(db.shiftChoferes.shiftId, db.recorridoShifts.id),
+      );
+
+  $$RecorridoShiftsTableProcessedTableManager get shiftId {
+    final $_column = $_itemColumn<String>('shift_id')!;
+
+    final manager = $$RecorridoShiftsTableTableManager(
+      $_db,
+      $_db.recorridoShifts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_shiftIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ChoferesTable _choferIdTable(_$AppDatabase db) =>
+      db.choferes.createAlias(
+        $_aliasNameGenerator(db.shiftChoferes.choferId, db.choferes.id),
+      );
+
+  $$ChoferesTableProcessedTableManager get choferId {
+    final $_column = $_itemColumn<String>('chofer_id')!;
+
+    final manager = $$ChoferesTableTableManager(
+      $_db,
+      $_db.choferes,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_choferIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ShiftChoferesTableFilterComposer
+    extends Composer<_$AppDatabase, $ShiftChoferesTable> {
+  $$ShiftChoferesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$RecorridoShiftsTableFilterComposer get shiftId {
+    final $$RecorridoShiftsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.shiftId,
+      referencedTable: $db.recorridoShifts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridoShiftsTableFilterComposer(
+            $db: $db,
+            $table: $db.recorridoShifts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ChoferesTableFilterComposer get choferId {
+    final $$ChoferesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.choferId,
+      referencedTable: $db.choferes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChoferesTableFilterComposer(
+            $db: $db,
+            $table: $db.choferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ShiftChoferesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ShiftChoferesTable> {
+  $$ShiftChoferesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$RecorridoShiftsTableOrderingComposer get shiftId {
+    final $$RecorridoShiftsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.shiftId,
+      referencedTable: $db.recorridoShifts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridoShiftsTableOrderingComposer(
+            $db: $db,
+            $table: $db.recorridoShifts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ChoferesTableOrderingComposer get choferId {
+    final $$ChoferesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.choferId,
+      referencedTable: $db.choferes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChoferesTableOrderingComposer(
+            $db: $db,
+            $table: $db.choferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ShiftChoferesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ShiftChoferesTable> {
+  $$ShiftChoferesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$RecorridoShiftsTableAnnotationComposer get shiftId {
+    final $$RecorridoShiftsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.shiftId,
+      referencedTable: $db.recorridoShifts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridoShiftsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.recorridoShifts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ChoferesTableAnnotationComposer get choferId {
+    final $$ChoferesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.choferId,
+      referencedTable: $db.choferes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChoferesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.choferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ShiftChoferesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ShiftChoferesTable,
+          ShiftChofere,
+          $$ShiftChoferesTableFilterComposer,
+          $$ShiftChoferesTableOrderingComposer,
+          $$ShiftChoferesTableAnnotationComposer,
+          $$ShiftChoferesTableCreateCompanionBuilder,
+          $$ShiftChoferesTableUpdateCompanionBuilder,
+          (ShiftChofere, $$ShiftChoferesTableReferences),
+          ShiftChofere,
+          PrefetchHooks Function({bool shiftId, bool choferId})
+        > {
+  $$ShiftChoferesTableTableManager(_$AppDatabase db, $ShiftChoferesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ShiftChoferesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ShiftChoferesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ShiftChoferesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> shiftId = const Value.absent(),
+                Value<String> choferId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ShiftChoferesCompanion(
+                shiftId: shiftId,
+                choferId: choferId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String shiftId,
+                required String choferId,
+                Value<int> rowid = const Value.absent(),
+              }) => ShiftChoferesCompanion.insert(
+                shiftId: shiftId,
+                choferId: choferId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ShiftChoferesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({shiftId = false, choferId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (shiftId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.shiftId,
+                                referencedTable: $$ShiftChoferesTableReferences
+                                    ._shiftIdTable(db),
+                                referencedColumn: $$ShiftChoferesTableReferences
+                                    ._shiftIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (choferId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.choferId,
+                                referencedTable: $$ShiftChoferesTableReferences
+                                    ._choferIdTable(db),
+                                referencedColumn: $$ShiftChoferesTableReferences
+                                    ._choferIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ShiftChoferesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ShiftChoferesTable,
+      ShiftChofere,
+      $$ShiftChoferesTableFilterComposer,
+      $$ShiftChoferesTableOrderingComposer,
+      $$ShiftChoferesTableAnnotationComposer,
+      $$ShiftChoferesTableCreateCompanionBuilder,
+      $$ShiftChoferesTableUpdateCompanionBuilder,
+      (ShiftChofere, $$ShiftChoferesTableReferences),
+      ShiftChofere,
+      PrefetchHooks Function({bool shiftId, bool choferId})
+    >;
+typedef $$ShiftColectivosTableCreateCompanionBuilder =
+    ShiftColectivosCompanion Function({
+      required String shiftId,
+      required String colectivoId,
+      Value<int> rowid,
+    });
+typedef $$ShiftColectivosTableUpdateCompanionBuilder =
+    ShiftColectivosCompanion Function({
+      Value<String> shiftId,
+      Value<String> colectivoId,
+      Value<int> rowid,
+    });
+
+final class $$ShiftColectivosTableReferences
+    extends
+        BaseReferences<_$AppDatabase, $ShiftColectivosTable, ShiftColectivo> {
+  $$ShiftColectivosTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $RecorridoShiftsTable _shiftIdTable(_$AppDatabase db) =>
+      db.recorridoShifts.createAlias(
+        $_aliasNameGenerator(db.shiftColectivos.shiftId, db.recorridoShifts.id),
+      );
+
+  $$RecorridoShiftsTableProcessedTableManager get shiftId {
+    final $_column = $_itemColumn<String>('shift_id')!;
+
+    final manager = $$RecorridoShiftsTableTableManager(
+      $_db,
+      $_db.recorridoShifts,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_shiftIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ColectivosTable _colectivoIdTable(_$AppDatabase db) =>
+      db.colectivos.createAlias(
+        $_aliasNameGenerator(db.shiftColectivos.colectivoId, db.colectivos.id),
+      );
+
+  $$ColectivosTableProcessedTableManager get colectivoId {
+    final $_column = $_itemColumn<String>('colectivo_id')!;
+
+    final manager = $$ColectivosTableTableManager(
+      $_db,
+      $_db.colectivos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_colectivoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ShiftColectivosTableFilterComposer
+    extends Composer<_$AppDatabase, $ShiftColectivosTable> {
+  $$ShiftColectivosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$RecorridoShiftsTableFilterComposer get shiftId {
+    final $$RecorridoShiftsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.shiftId,
+      referencedTable: $db.recorridoShifts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridoShiftsTableFilterComposer(
+            $db: $db,
+            $table: $db.recorridoShifts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ColectivosTableFilterComposer get colectivoId {
+    final $$ColectivosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.colectivoId,
+      referencedTable: $db.colectivos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ColectivosTableFilterComposer(
+            $db: $db,
+            $table: $db.colectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ShiftColectivosTableOrderingComposer
+    extends Composer<_$AppDatabase, $ShiftColectivosTable> {
+  $$ShiftColectivosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$RecorridoShiftsTableOrderingComposer get shiftId {
+    final $$RecorridoShiftsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.shiftId,
+      referencedTable: $db.recorridoShifts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridoShiftsTableOrderingComposer(
+            $db: $db,
+            $table: $db.recorridoShifts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ColectivosTableOrderingComposer get colectivoId {
+    final $$ColectivosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.colectivoId,
+      referencedTable: $db.colectivos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ColectivosTableOrderingComposer(
+            $db: $db,
+            $table: $db.colectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ShiftColectivosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ShiftColectivosTable> {
+  $$ShiftColectivosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  $$RecorridoShiftsTableAnnotationComposer get shiftId {
+    final $$RecorridoShiftsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.shiftId,
+      referencedTable: $db.recorridoShifts,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridoShiftsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.recorridoShifts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ColectivosTableAnnotationComposer get colectivoId {
+    final $$ColectivosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.colectivoId,
+      referencedTable: $db.colectivos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ColectivosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.colectivos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ShiftColectivosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ShiftColectivosTable,
+          ShiftColectivo,
+          $$ShiftColectivosTableFilterComposer,
+          $$ShiftColectivosTableOrderingComposer,
+          $$ShiftColectivosTableAnnotationComposer,
+          $$ShiftColectivosTableCreateCompanionBuilder,
+          $$ShiftColectivosTableUpdateCompanionBuilder,
+          (ShiftColectivo, $$ShiftColectivosTableReferences),
+          ShiftColectivo,
+          PrefetchHooks Function({bool shiftId, bool colectivoId})
+        > {
+  $$ShiftColectivosTableTableManager(
+    _$AppDatabase db,
+    $ShiftColectivosTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ShiftColectivosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ShiftColectivosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ShiftColectivosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> shiftId = const Value.absent(),
+                Value<String> colectivoId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => ShiftColectivosCompanion(
+                shiftId: shiftId,
+                colectivoId: colectivoId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String shiftId,
+                required String colectivoId,
+                Value<int> rowid = const Value.absent(),
+              }) => ShiftColectivosCompanion.insert(
+                shiftId: shiftId,
+                colectivoId: colectivoId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$ShiftColectivosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({shiftId = false, colectivoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (shiftId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.shiftId,
+                                referencedTable:
+                                    $$ShiftColectivosTableReferences
+                                        ._shiftIdTable(db),
+                                referencedColumn:
+                                    $$ShiftColectivosTableReferences
+                                        ._shiftIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (colectivoId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.colectivoId,
+                                referencedTable:
+                                    $$ShiftColectivosTableReferences
+                                        ._colectivoIdTable(db),
+                                referencedColumn:
+                                    $$ShiftColectivosTableReferences
+                                        ._colectivoIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ShiftColectivosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ShiftColectivosTable,
+      ShiftColectivo,
+      $$ShiftColectivosTableFilterComposer,
+      $$ShiftColectivosTableOrderingComposer,
+      $$ShiftColectivosTableAnnotationComposer,
+      $$ShiftColectivosTableCreateCompanionBuilder,
+      $$ShiftColectivosTableUpdateCompanionBuilder,
+      (ShiftColectivo, $$ShiftColectivosTableReferences),
+      ShiftColectivo,
+      PrefetchHooks Function({bool shiftId, bool colectivoId})
+    >;
+typedef $$EncargadosTableCreateCompanionBuilder =
+    EncargadosCompanion Function({
+      required String id,
+      Value<String?> name,
+      Value<String?> phone,
+      Value<double> balance,
+      Value<bool> isSynced,
+      Value<int> rowid,
+    });
+typedef $$EncargadosTableUpdateCompanionBuilder =
+    EncargadosCompanion Function({
+      Value<String> id,
+      Value<String?> name,
+      Value<String?> phone,
+      Value<double> balance,
+      Value<bool> isSynced,
+      Value<int> rowid,
+    });
+
+final class $$EncargadosTableReferences
+    extends BaseReferences<_$AppDatabase, $EncargadosTable, Encargado> {
+  $$EncargadosTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<
+    $RecorridoSubscriptionsTable,
+    List<RecorridoSubscription>
+  >
+  _recorridoSubscriptionsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.recorridoSubscriptions,
+        aliasName: $_aliasNameGenerator(
+          db.encargados.id,
+          db.recorridoSubscriptions.encargadoId,
+        ),
+      );
+
+  $$RecorridoSubscriptionsTableProcessedTableManager
+  get recorridoSubscriptionsRefs {
+    final manager = $$RecorridoSubscriptionsTableTableManager(
+      $_db,
+      $_db.recorridoSubscriptions,
+    ).filter((f) => f.encargadoId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _recorridoSubscriptionsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$EncargadosTableFilterComposer
+    extends Composer<_$AppDatabase, $EncargadosTable> {
+  $$EncargadosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get balance => $composableBuilder(
+    column: $table.balance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> recorridoSubscriptionsRefs(
+    Expression<bool> Function($$RecorridoSubscriptionsTableFilterComposer f) f,
+  ) {
+    final $$RecorridoSubscriptionsTableFilterComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recorridoSubscriptions,
+          getReferencedColumn: (t) => t.encargadoId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecorridoSubscriptionsTableFilterComposer(
+                $db: $db,
+                $table: $db.recorridoSubscriptions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$EncargadosTableOrderingComposer
+    extends Composer<_$AppDatabase, $EncargadosTable> {
+  $$EncargadosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get phone => $composableBuilder(
+    column: $table.phone,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get balance => $composableBuilder(
+    column: $table.balance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EncargadosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EncargadosTable> {
+  $$EncargadosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get phone =>
+      $composableBuilder(column: $table.phone, builder: (column) => column);
+
+  GeneratedColumn<double> get balance =>
+      $composableBuilder(column: $table.balance, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  Expression<T> recorridoSubscriptionsRefs<T extends Object>(
+    Expression<T> Function($$RecorridoSubscriptionsTableAnnotationComposer a) f,
+  ) {
+    final $$RecorridoSubscriptionsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.recorridoSubscriptions,
+          getReferencedColumn: (t) => t.encargadoId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$RecorridoSubscriptionsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.recorridoSubscriptions,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+}
+
+class $$EncargadosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EncargadosTable,
+          Encargado,
+          $$EncargadosTableFilterComposer,
+          $$EncargadosTableOrderingComposer,
+          $$EncargadosTableAnnotationComposer,
+          $$EncargadosTableCreateCompanionBuilder,
+          $$EncargadosTableUpdateCompanionBuilder,
+          (Encargado, $$EncargadosTableReferences),
+          Encargado,
+          PrefetchHooks Function({bool recorridoSubscriptionsRefs})
+        > {
+  $$EncargadosTableTableManager(_$AppDatabase db, $EncargadosTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EncargadosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EncargadosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EncargadosTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String?> name = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                Value<double> balance = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EncargadosCompanion(
+                id: id,
+                name: name,
+                phone: phone,
+                balance: balance,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                Value<String?> name = const Value.absent(),
+                Value<String?> phone = const Value.absent(),
+                Value<double> balance = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => EncargadosCompanion.insert(
+                id: id,
+                name: name,
+                phone: phone,
+                balance: balance,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$EncargadosTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({recorridoSubscriptionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [
+                if (recorridoSubscriptionsRefs) db.recorridoSubscriptions,
+              ],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (recorridoSubscriptionsRefs)
+                    await $_getPrefetchedData<
+                      Encargado,
+                      $EncargadosTable,
+                      RecorridoSubscription
+                    >(
+                      currentTable: table,
+                      referencedTable: $$EncargadosTableReferences
+                          ._recorridoSubscriptionsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$EncargadosTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).recorridoSubscriptionsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where(
+                            (e) => e.encargadoId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$EncargadosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EncargadosTable,
+      Encargado,
+      $$EncargadosTableFilterComposer,
+      $$EncargadosTableOrderingComposer,
+      $$EncargadosTableAnnotationComposer,
+      $$EncargadosTableCreateCompanionBuilder,
+      $$EncargadosTableUpdateCompanionBuilder,
+      (Encargado, $$EncargadosTableReferences),
+      Encargado,
+      PrefetchHooks Function({bool recorridoSubscriptionsRefs})
+    >;
+typedef $$RecorridoSubscriptionsTableCreateCompanionBuilder =
+    RecorridoSubscriptionsCompanion Function({
+      required String id,
+      required String recorridoId,
+      required String encargadoId,
+      Value<String?> studentName,
+      Value<String?> address,
+      Value<double?> customPrice,
+      Value<bool> isActive,
+      Value<int> rowid,
+    });
+typedef $$RecorridoSubscriptionsTableUpdateCompanionBuilder =
+    RecorridoSubscriptionsCompanion Function({
+      Value<String> id,
+      Value<String> recorridoId,
+      Value<String> encargadoId,
+      Value<String?> studentName,
+      Value<String?> address,
+      Value<double?> customPrice,
+      Value<bool> isActive,
+      Value<int> rowid,
+    });
+
+final class $$RecorridoSubscriptionsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $RecorridoSubscriptionsTable,
+          RecorridoSubscription
+        > {
+  $$RecorridoSubscriptionsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $RecorridosTable _recorridoIdTable(_$AppDatabase db) =>
+      db.recorridos.createAlias(
+        $_aliasNameGenerator(
+          db.recorridoSubscriptions.recorridoId,
+          db.recorridos.id,
+        ),
+      );
+
+  $$RecorridosTableProcessedTableManager get recorridoId {
+    final $_column = $_itemColumn<String>('recorrido_id')!;
+
+    final manager = $$RecorridosTableTableManager(
+      $_db,
+      $_db.recorridos,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_recorridoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $EncargadosTable _encargadoIdTable(_$AppDatabase db) =>
+      db.encargados.createAlias(
+        $_aliasNameGenerator(
+          db.recorridoSubscriptions.encargadoId,
+          db.encargados.id,
+        ),
+      );
+
+  $$EncargadosTableProcessedTableManager get encargadoId {
+    final $_column = $_itemColumn<String>('encargado_id')!;
+
+    final manager = $$EncargadosTableTableManager(
+      $_db,
+      $_db.encargados,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_encargadoIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$RecorridoSubscriptionsTableFilterComposer
+    extends Composer<_$AppDatabase, $RecorridoSubscriptionsTable> {
+  $$RecorridoSubscriptionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get studentName => $composableBuilder(
+    column: $table.studentName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get customPrice => $composableBuilder(
+    column: $table.customPrice,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$RecorridosTableFilterComposer get recorridoId {
+    final $$RecorridosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableFilterComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$EncargadosTableFilterComposer get encargadoId {
+    final $$EncargadosTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.encargadoId,
+      referencedTable: $db.encargados,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EncargadosTableFilterComposer(
+            $db: $db,
+            $table: $db.encargados,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecorridoSubscriptionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $RecorridoSubscriptionsTable> {
+  $$RecorridoSubscriptionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get studentName => $composableBuilder(
+    column: $table.studentName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get address => $composableBuilder(
+    column: $table.address,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get customPrice => $composableBuilder(
+    column: $table.customPrice,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$RecorridosTableOrderingComposer get recorridoId {
+    final $$RecorridosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableOrderingComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$EncargadosTableOrderingComposer get encargadoId {
+    final $$EncargadosTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.encargadoId,
+      referencedTable: $db.encargados,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EncargadosTableOrderingComposer(
+            $db: $db,
+            $table: $db.encargados,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecorridoSubscriptionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $RecorridoSubscriptionsTable> {
+  $$RecorridoSubscriptionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get studentName => $composableBuilder(
+    column: $table.studentName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get address =>
+      $composableBuilder(column: $table.address, builder: (column) => column);
+
+  GeneratedColumn<double> get customPrice => $composableBuilder(
+    column: $table.customPrice,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  $$RecorridosTableAnnotationComposer get recorridoId {
+    final $$RecorridosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.recorridoId,
+      referencedTable: $db.recorridos,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$RecorridosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.recorridos,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$EncargadosTableAnnotationComposer get encargadoId {
+    final $$EncargadosTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.encargadoId,
+      referencedTable: $db.encargados,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EncargadosTableAnnotationComposer(
+            $db: $db,
+            $table: $db.encargados,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$RecorridoSubscriptionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $RecorridoSubscriptionsTable,
+          RecorridoSubscription,
+          $$RecorridoSubscriptionsTableFilterComposer,
+          $$RecorridoSubscriptionsTableOrderingComposer,
+          $$RecorridoSubscriptionsTableAnnotationComposer,
+          $$RecorridoSubscriptionsTableCreateCompanionBuilder,
+          $$RecorridoSubscriptionsTableUpdateCompanionBuilder,
+          (RecorridoSubscription, $$RecorridoSubscriptionsTableReferences),
+          RecorridoSubscription,
+          PrefetchHooks Function({bool recorridoId, bool encargadoId})
+        > {
+  $$RecorridoSubscriptionsTableTableManager(
+    _$AppDatabase db,
+    $RecorridoSubscriptionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$RecorridoSubscriptionsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$RecorridoSubscriptionsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$RecorridoSubscriptionsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> recorridoId = const Value.absent(),
+                Value<String> encargadoId = const Value.absent(),
+                Value<String?> studentName = const Value.absent(),
+                Value<String?> address = const Value.absent(),
+                Value<double?> customPrice = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecorridoSubscriptionsCompanion(
+                id: id,
+                recorridoId: recorridoId,
+                encargadoId: encargadoId,
+                studentName: studentName,
+                address: address,
+                customPrice: customPrice,
+                isActive: isActive,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String recorridoId,
+                required String encargadoId,
+                Value<String?> studentName = const Value.absent(),
+                Value<String?> address = const Value.absent(),
+                Value<double?> customPrice = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => RecorridoSubscriptionsCompanion.insert(
+                id: id,
+                recorridoId: recorridoId,
+                encargadoId: encargadoId,
+                studentName: studentName,
+                address: address,
+                customPrice: customPrice,
+                isActive: isActive,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$RecorridoSubscriptionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({recorridoId = false, encargadoId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (recorridoId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.recorridoId,
+                                referencedTable:
+                                    $$RecorridoSubscriptionsTableReferences
+                                        ._recorridoIdTable(db),
+                                referencedColumn:
+                                    $$RecorridoSubscriptionsTableReferences
+                                        ._recorridoIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+                    if (encargadoId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.encargadoId,
+                                referencedTable:
+                                    $$RecorridoSubscriptionsTableReferences
+                                        ._encargadoIdTable(db),
+                                referencedColumn:
+                                    $$RecorridoSubscriptionsTableReferences
+                                        ._encargadoIdTable(db)
+                                        .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$RecorridoSubscriptionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $RecorridoSubscriptionsTable,
+      RecorridoSubscription,
+      $$RecorridoSubscriptionsTableFilterComposer,
+      $$RecorridoSubscriptionsTableOrderingComposer,
+      $$RecorridoSubscriptionsTableAnnotationComposer,
+      $$RecorridoSubscriptionsTableCreateCompanionBuilder,
+      $$RecorridoSubscriptionsTableUpdateCompanionBuilder,
+      (RecorridoSubscription, $$RecorridoSubscriptionsTableReferences),
+      RecorridoSubscription,
+      PrefetchHooks Function({bool recorridoId, bool encargadoId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5186,6 +10364,8 @@ class $AppDatabaseManager {
       $$ChoferesTableTableManager(_db, _db.choferes);
   $$ColectivosTableTableManager get colectivos =>
       $$ColectivosTableTableManager(_db, _db.colectivos);
+  $$RecorridosTableTableManager get recorridos =>
+      $$RecorridosTableTableManager(_db, _db.recorridos);
   $$EventsTableTableManager get events =>
       $$EventsTableTableManager(_db, _db.events);
   $$StopsTableTableManager get stops =>
@@ -5194,4 +10374,17 @@ class $AppDatabaseManager {
       $$EventChoferesTableTableManager(_db, _db.eventChoferes);
   $$EventColectivosTableTableManager get eventColectivos =>
       $$EventColectivosTableTableManager(_db, _db.eventColectivos);
+  $$RecorridoShiftsTableTableManager get recorridoShifts =>
+      $$RecorridoShiftsTableTableManager(_db, _db.recorridoShifts);
+  $$ShiftChoferesTableTableManager get shiftChoferes =>
+      $$ShiftChoferesTableTableManager(_db, _db.shiftChoferes);
+  $$ShiftColectivosTableTableManager get shiftColectivos =>
+      $$ShiftColectivosTableTableManager(_db, _db.shiftColectivos);
+  $$EncargadosTableTableManager get encargados =>
+      $$EncargadosTableTableManager(_db, _db.encargados);
+  $$RecorridoSubscriptionsTableTableManager get recorridoSubscriptions =>
+      $$RecorridoSubscriptionsTableTableManager(
+        _db,
+        _db.recorridoSubscriptions,
+      );
 }

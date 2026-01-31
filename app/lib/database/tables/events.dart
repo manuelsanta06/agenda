@@ -1,45 +1,5 @@
-import 'package:agenda/pages/calendar.dart';
 import 'package:drift/drift.dart';
-
-//Tabla de CHOFERES
-class Choferes extends Table {
-  TextColumn get id => text()(); 
-  
-  TextColumn get dni => text().nullable()();
-  
-  TextColumn get name => text().nullable()();
-  TextColumn get surname => text().nullable()();
-  TextColumn get alias => text().nullable()();
-  TextColumn get mobileNumber => text().nullable()();
-  TextColumn get picturePath => text().nullable()();
-
-  BoolColumn get is_active => boolean().withDefault(const Constant(true))();
-
-  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-//Tabla de COLECTIVOS
-class Colectivos extends Table {
-  TextColumn get id => text()();
-  
-  TextColumn get plate => text().unique()();
-  
-  TextColumn get name => text().nullable()();
-  IntColumn get number => integer().nullable()();
-  
-  TextColumn get fuelAmount => text().nullable()();
-  DateTimeColumn get fuelDate => dateTime().nullable()();
-
-  BoolColumn get is_active => boolean().withDefault(const Constant(true))();
-
-  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
+import 'recorridos.dart';
 
 //Tabla de EVENTOS (Viajes)
 
@@ -116,7 +76,7 @@ String eventStateToString(EventStates type){
     case EventStates.PENDING:     return "Pendiente";
     case EventStates.REPEATING:   return "Repitiendose";
     case EventStates.INCOMPLETE:  return "Icompleto";
-    case EventStates.HAPPENING:  return "Ahora";
+    case EventStates.HAPPENING:   return "Ahora";
   }
 }
 
@@ -139,43 +99,9 @@ class Events extends Table {
 
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
-//Tabla de PARADAS 
-// Un evento tiene muchas paradas.
-class Stops extends Table {
-  TextColumn get id => text()();
-  TextColumn get name => text()();
-  DateTimeColumn get start => dateTime().nullable()();
-  
-  // Relación: A qué evento pertenece esta parada
-  TextColumn get eventId => text().references(Events, #id,onDelete: KeyAction.cascade)();
-  
-  // Para saber el orden de las paradas
-  IntColumn get orderIndex => integer()();
+  TextColumn get recorridoId => text().nullable().references(Recorridos, #id)();
 
   @override
   Set<Column> get primaryKey => {id};
 }
 
-//Tablas Intermedias 
-
-// Un Evento tiene muchos Choferes, y un Chofer muchos Eventos
-class EventChoferes extends Table {
-  TextColumn get eventId => text().references(Events, #id,onDelete: KeyAction.cascade)();
-  TextColumn get choferId => text().references(Choferes, #id,onDelete: KeyAction.cascade)();
-  
-  @override
-  Set<Column> get primaryKey => {eventId, choferId};
-}
-
-// Un Evento tiene muchos Colectivos
-class EventColectivos extends Table {
-  TextColumn get eventId => text().references(Events, #id,onDelete: KeyAction.cascade)();
-  TextColumn get colectivoId => text().references(Colectivos, #id,onDelete: KeyAction.cascade)();
-  
-  @override
-  Set<Column> get primaryKey => {eventId, colectivoId};
-}

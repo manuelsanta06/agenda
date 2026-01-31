@@ -4,8 +4,11 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'tables.dart'; 
-export 'tables.dart'; 
+import 'tables/users.dart';
+import 'tables/events.dart';
+import 'tables/recorridos.dart';
+
+export 'tables/events.dart';
 
 part 'app_database.g.dart';
 
@@ -22,7 +25,13 @@ class EventWithStops {
   Events, 
   Stops, 
   EventChoferes, 
-  EventColectivos
+  EventColectivos,
+  Recorridos,
+  RecorridoShifts,
+  ShiftChoferes,
+  ShiftColectivos,
+  Encargados,
+  RecorridoSubscriptions
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -48,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
 
     final allColectivos = await (select(colectivos)
       ..where((u) => u.is_active.equals(true))
-      ..orderBy([(t) => OrderingTerm(expression: t.name)])
+      ..orderBy([(t) => OrderingTerm(expression: ((t.name.toString()).isEmpty)?t.plate:t.name)])
     ).get();
 
     final List<(Colectivo, bool)> result = allColectivos.map((c) {
@@ -80,7 +89,7 @@ class AppDatabase extends _$AppDatabase {
 
     final allChoferes = await (select(choferes)
       ..where((u) => u.is_active.equals(true))
-      ..orderBy([(t) => OrderingTerm(expression: t.name)])
+      ..orderBy([(t) => OrderingTerm(expression: ((t.alias.toString()).isEmpty)?t.name:t.alias)])
     ).get();
 
     final List<(Chofere, bool)> result = allChoferes.map((c) {
