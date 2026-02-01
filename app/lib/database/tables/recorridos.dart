@@ -50,7 +50,7 @@ class ShiftColectivos extends Table {
 //ENCARGADOS (Quien paga/El Padre)
 class Encargados extends Table {
   TextColumn get id => text()();
-  TextColumn get name => text().nullable()();
+  TextColumn get name => text()();
   TextColumn get phone => text().nullable()();
   
   RealColumn get balance => real().withDefault(const Constant(0.0))();
@@ -67,10 +67,10 @@ class RecorridoSubscriptions extends Table {
   TextColumn get recorridoId => text().references(Recorridos, #id, onDelete: KeyAction.cascade)();
   TextColumn get encargadoId => text().references(Encargados, #id, onDelete: KeyAction.cascade)();
   
-  TextColumn get studentName => text().nullable()();
+  TextColumn get subscriptionName => text()();
   TextColumn get address => text().nullable()();
 
-  RealColumn get customPrice => real().nullable()();
+  IntColumn get customPrice => integer().nullable()();
   
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 

@@ -1,14 +1,15 @@
+import 'package:agenda/database/tables/recorridos.dart';
 import 'package:flutter/material.dart';
 import 'package:agenda/widgets/cards.dart';
 import 'package:agenda/database/app_database.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
-import 'package:intl/intl.dart';
+import '../utilities/parsers.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-final oCcy = new NumberFormat("#,##0", "es_ES");
 
-Widget recorridoToCard(BuildContext context,Color mainColor,Recorrido reco){
+Widget recorridoToCard(BuildContext context,Color mainColor,Recorrido reco,VoidCallback onPressed){
   return BasicCard(
     actionIcon: PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert),
@@ -20,7 +21,9 @@ Widget recorridoToCard(BuildContext context,Color mainColor,Recorrido reco){
         }else if(result=='delete'){
           final deafDb=Provider.of<AppDatabase>(context, listen: false);
           await (deafDb.update(deafDb.recorridos)..where((s)=>s.id.equals(reco.id)))
-            .write(RecorridosCompanion(isActive:drift.Value(!reco.isActive),isSynced:drift.Value(false)));
+            .write(RecorridosCompanion(
+              isActive:drift.Value(!reco.isActive),pinned:drift.Value(false),isSynced:drift.Value(false)
+            ));
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -40,7 +43,7 @@ Widget recorridoToCard(BuildContext context,Color mainColor,Recorrido reco){
             ]):([
               Icon(Icons.restore_from_trash,color: Colors.green),
               SizedBox(width: 8), 
-              Text('Recuperar',style:TextStyle(color:Colors.green))
+              Text('Restaurar',style:TextStyle(color:Colors.green))
             ]),
           ),
         ),
@@ -48,6 +51,7 @@ Widget recorridoToCard(BuildContext context,Color mainColor,Recorrido reco){
     ),
     margin: const EdgeInsets.symmetric(vertical:8, horizontal:10),
     padding: const EdgeInsets.all(24),
+    onPressed:onPressed,
     tonality:(!reco.isActive?
       Color(0xffff0000):
       reco.pinned?
@@ -57,7 +61,7 @@ Widget recorridoToCard(BuildContext context,Color mainColor,Recorrido reco){
     child:Column(crossAxisAlignment: CrossAxisAlignment.start,children:[
       Text(reco.name),
       const Text("Valor base",style:TextStyle(color:Colors.grey,fontSize:12)),
-      Text("\$${oCcy.format(reco.basePrice)}" ,style:TextStyle(color:mainColor))
+      Text("\$${numberParser(reco.basePrice)}" ,style:TextStyle(color:mainColor))
     ]),
   );
 }

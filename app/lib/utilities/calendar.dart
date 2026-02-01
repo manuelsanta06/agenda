@@ -1,4 +1,4 @@
-import 'package:agenda/utilities/phoneParser.dart';
+import '../utilities/parsers.dart';
 import 'package:flutter/material.dart';
 import 'package:agenda/database/app_database.dart';
 import 'package:drift/drift.dart' as drift; 
@@ -154,6 +154,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
         repeat: drift.Value(repeat),
         isTrip: drift.Value(widget.isTrip),
         state: drift.Value(EventStates.INCOMPLETE),
+        isSynced: drift.Value(false),
         type: drift.Value(widget.isTrip?EventTypes.EVENT:EventTypes.REMINDER),
       );
 

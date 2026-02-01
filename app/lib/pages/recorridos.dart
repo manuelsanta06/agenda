@@ -5,6 +5,7 @@ import 'package:agenda/database/app_database.dart';
 import 'package:agenda/utilities/recorridos.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
+import 'recorridoInfo.dart';
 
 
 class recorridosPage extends StatefulWidget {
@@ -18,6 +19,7 @@ class _recorridosPage extends State<recorridosPage>{
   String searchQuery = "";
 
 
+  @override
   Widget build(BuildContext context) {
     final db = Provider.of<AppDatabase>(context);
     final deafDb=Provider.of<AppDatabase>(context, listen: false);
@@ -50,7 +52,11 @@ class _recorridosPage extends State<recorridosPage>{
             final inactivos=recorridos.where((r)=>!r.isActive).toList();
 
             return ListView( children:[
-              ...activos.map((s)=>recorridoToCard(context,recorridosPage.mainColor,s)),
+              ...activos.map((s)=>recorridoToCard(context,recorridosPage.mainColor,s,(){
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder:(Context)=>recorridoInfo(reco:s,maincolor:recorridosPage.mainColor)
+                ));
+              })),
 
               if(inactivos.isNotEmpty)...[
                 const SizedBox(height: 20),
@@ -59,19 +65,19 @@ class _recorridosPage extends State<recorridosPage>{
                 )),
                 const SizedBox(height: 10),
                 
-                ...inactivos.map((s)=>recorridoToCard(context,recorridosPage.mainColor,s)),
+                ...inactivos.map((s)=>recorridoToCard(context,recorridosPage.mainColor,s,(){})),
               ],
             ]);
           }
         )),
       ])),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton:FloatingActionButton(
         onPressed:()async{
           final newRecorrido=await showCreateRecorridoSheet(context,recorridosPage.mainColor);
           if(newRecorrido==null)return;
           await deafDb.into(deafDb.recorridos).insert(newRecorrido);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Recorrido '${newRecorrido.name.value}' creado")),
+            SnackBar(backgroundColor:Colors.green,content: Text("Recorrido '${newRecorrido.name.value}' creado")),
           );
         },
         //()=>generateMockRecorridos(deafDb),

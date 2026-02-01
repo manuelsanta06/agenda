@@ -10,7 +10,7 @@ import 'package:intl/intl.dart';
 import '../widgets/eventDetails.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../utilities/phoneParser.dart';
+import '../utilities/parsers.dart';
 
 
 class eventInfo extends StatelessWidget{
@@ -45,7 +45,7 @@ class eventInfo extends StatelessWidget{
         //TOP card
         BasicCard(
           padding: const EdgeInsets.all(24),
-          child:Column(crossAxisAlignment: CrossAxisAlignment.start,children:[
+          child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
             const SizedBox(height:10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

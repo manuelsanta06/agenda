@@ -4039,9 +4039,9 @@ class $EncargadosTable extends Encargados
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _phoneMeta = const VerificationMeta('phone');
   @override
@@ -4103,6 +4103,8 @@ class $EncargadosTable extends Encargados
         _nameMeta,
         name.isAcceptableOrUnknown(data['name']!, _nameMeta),
       );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
     }
     if (data.containsKey('phone')) {
       context.handle(
@@ -4138,7 +4140,7 @@ class $EncargadosTable extends Encargados
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
-      ),
+      )!,
       phone: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}phone'],
@@ -4162,13 +4164,13 @@ class $EncargadosTable extends Encargados
 
 class Encargado extends DataClass implements Insertable<Encargado> {
   final String id;
-  final String? name;
+  final String name;
   final String? phone;
   final double balance;
   final bool isSynced;
   const Encargado({
     required this.id,
-    this.name,
+    required this.name,
     this.phone,
     required this.balance,
     required this.isSynced,
@@ -4177,9 +4179,7 @@ class Encargado extends DataClass implements Insertable<Encargado> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
-    if (!nullToAbsent || name != null) {
-      map['name'] = Variable<String>(name);
-    }
+    map['name'] = Variable<String>(name);
     if (!nullToAbsent || phone != null) {
       map['phone'] = Variable<String>(phone);
     }
@@ -4191,7 +4191,7 @@ class Encargado extends DataClass implements Insertable<Encargado> {
   EncargadosCompanion toCompanion(bool nullToAbsent) {
     return EncargadosCompanion(
       id: Value(id),
-      name: name == null && nullToAbsent ? const Value.absent() : Value(name),
+      name: Value(name),
       phone: phone == null && nullToAbsent
           ? const Value.absent()
           : Value(phone),
@@ -4207,7 +4207,7 @@ class Encargado extends DataClass implements Insertable<Encargado> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Encargado(
       id: serializer.fromJson<String>(json['id']),
-      name: serializer.fromJson<String?>(json['name']),
+      name: serializer.fromJson<String>(json['name']),
       phone: serializer.fromJson<String?>(json['phone']),
       balance: serializer.fromJson<double>(json['balance']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
@@ -4218,7 +4218,7 @@ class Encargado extends DataClass implements Insertable<Encargado> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'name': serializer.toJson<String?>(name),
+      'name': serializer.toJson<String>(name),
       'phone': serializer.toJson<String?>(phone),
       'balance': serializer.toJson<double>(balance),
       'isSynced': serializer.toJson<bool>(isSynced),
@@ -4227,13 +4227,13 @@ class Encargado extends DataClass implements Insertable<Encargado> {
 
   Encargado copyWith({
     String? id,
-    Value<String?> name = const Value.absent(),
+    String? name,
     Value<String?> phone = const Value.absent(),
     double? balance,
     bool? isSynced,
   }) => Encargado(
     id: id ?? this.id,
-    name: name.present ? name.value : this.name,
+    name: name ?? this.name,
     phone: phone.present ? phone.value : this.phone,
     balance: balance ?? this.balance,
     isSynced: isSynced ?? this.isSynced,
@@ -4275,7 +4275,7 @@ class Encargado extends DataClass implements Insertable<Encargado> {
 
 class EncargadosCompanion extends UpdateCompanion<Encargado> {
   final Value<String> id;
-  final Value<String?> name;
+  final Value<String> name;
   final Value<String?> phone;
   final Value<double> balance;
   final Value<bool> isSynced;
@@ -4290,12 +4290,13 @@ class EncargadosCompanion extends UpdateCompanion<Encargado> {
   });
   EncargadosCompanion.insert({
     required String id,
-    this.name = const Value.absent(),
+    required String name,
     this.phone = const Value.absent(),
     this.balance = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
-  }) : id = Value(id);
+  }) : id = Value(id),
+       name = Value(name);
   static Insertable<Encargado> custom({
     Expression<String>? id,
     Expression<String>? name,
@@ -4316,7 +4317,7 @@ class EncargadosCompanion extends UpdateCompanion<Encargado> {
 
   EncargadosCompanion copyWith({
     Value<String>? id,
-    Value<String?>? name,
+    Value<String>? name,
     Value<String?>? phone,
     Value<double>? balance,
     Value<bool>? isSynced,
@@ -4413,16 +4414,16 @@ class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
       'REFERENCES encargados (id) ON DELETE CASCADE',
     ),
   );
-  static const VerificationMeta _studentNameMeta = const VerificationMeta(
-    'studentName',
+  static const VerificationMeta _subscriptionNameMeta = const VerificationMeta(
+    'subscriptionName',
   );
   @override
-  late final GeneratedColumn<String> studentName = GeneratedColumn<String>(
-    'student_name',
+  late final GeneratedColumn<String> subscriptionName = GeneratedColumn<String>(
+    'subscription_name',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _addressMeta = const VerificationMeta(
     'address',
@@ -4439,11 +4440,11 @@ class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
     'customPrice',
   );
   @override
-  late final GeneratedColumn<double> customPrice = GeneratedColumn<double>(
+  late final GeneratedColumn<int> customPrice = GeneratedColumn<int>(
     'custom_price',
     aliasedName,
     true,
-    type: DriftSqlType.double,
+    type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
   static const VerificationMeta _isActiveMeta = const VerificationMeta(
@@ -4466,7 +4467,7 @@ class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
     id,
     recorridoId,
     encargadoId,
-    studentName,
+    subscriptionName,
     address,
     customPrice,
     isActive,
@@ -4510,14 +4511,16 @@ class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
     } else if (isInserting) {
       context.missing(_encargadoIdMeta);
     }
-    if (data.containsKey('student_name')) {
+    if (data.containsKey('subscription_name')) {
       context.handle(
-        _studentNameMeta,
-        studentName.isAcceptableOrUnknown(
-          data['student_name']!,
-          _studentNameMeta,
+        _subscriptionNameMeta,
+        subscriptionName.isAcceptableOrUnknown(
+          data['subscription_name']!,
+          _subscriptionNameMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_subscriptionNameMeta);
     }
     if (data.containsKey('address')) {
       context.handle(
@@ -4561,16 +4564,16 @@ class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
         DriftSqlType.string,
         data['${effectivePrefix}encargado_id'],
       )!,
-      studentName: attachedDatabase.typeMapping.read(
+      subscriptionName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}student_name'],
-      ),
+        data['${effectivePrefix}subscription_name'],
+      )!,
       address: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}address'],
       ),
       customPrice: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
+        DriftSqlType.int,
         data['${effectivePrefix}custom_price'],
       ),
       isActive: attachedDatabase.typeMapping.read(
@@ -4591,15 +4594,15 @@ class RecorridoSubscription extends DataClass
   final String id;
   final String recorridoId;
   final String encargadoId;
-  final String? studentName;
+  final String subscriptionName;
   final String? address;
-  final double? customPrice;
+  final int? customPrice;
   final bool isActive;
   const RecorridoSubscription({
     required this.id,
     required this.recorridoId,
     required this.encargadoId,
-    this.studentName,
+    required this.subscriptionName,
     this.address,
     this.customPrice,
     required this.isActive,
@@ -4610,14 +4613,12 @@ class RecorridoSubscription extends DataClass
     map['id'] = Variable<String>(id);
     map['recorrido_id'] = Variable<String>(recorridoId);
     map['encargado_id'] = Variable<String>(encargadoId);
-    if (!nullToAbsent || studentName != null) {
-      map['student_name'] = Variable<String>(studentName);
-    }
+    map['subscription_name'] = Variable<String>(subscriptionName);
     if (!nullToAbsent || address != null) {
       map['address'] = Variable<String>(address);
     }
     if (!nullToAbsent || customPrice != null) {
-      map['custom_price'] = Variable<double>(customPrice);
+      map['custom_price'] = Variable<int>(customPrice);
     }
     map['is_active'] = Variable<bool>(isActive);
     return map;
@@ -4628,9 +4629,7 @@ class RecorridoSubscription extends DataClass
       id: Value(id),
       recorridoId: Value(recorridoId),
       encargadoId: Value(encargadoId),
-      studentName: studentName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(studentName),
+      subscriptionName: Value(subscriptionName),
       address: address == null && nullToAbsent
           ? const Value.absent()
           : Value(address),
@@ -4650,9 +4649,9 @@ class RecorridoSubscription extends DataClass
       id: serializer.fromJson<String>(json['id']),
       recorridoId: serializer.fromJson<String>(json['recorridoId']),
       encargadoId: serializer.fromJson<String>(json['encargadoId']),
-      studentName: serializer.fromJson<String?>(json['studentName']),
+      subscriptionName: serializer.fromJson<String>(json['subscriptionName']),
       address: serializer.fromJson<String?>(json['address']),
-      customPrice: serializer.fromJson<double?>(json['customPrice']),
+      customPrice: serializer.fromJson<int?>(json['customPrice']),
       isActive: serializer.fromJson<bool>(json['isActive']),
     );
   }
@@ -4663,9 +4662,9 @@ class RecorridoSubscription extends DataClass
       'id': serializer.toJson<String>(id),
       'recorridoId': serializer.toJson<String>(recorridoId),
       'encargadoId': serializer.toJson<String>(encargadoId),
-      'studentName': serializer.toJson<String?>(studentName),
+      'subscriptionName': serializer.toJson<String>(subscriptionName),
       'address': serializer.toJson<String?>(address),
-      'customPrice': serializer.toJson<double?>(customPrice),
+      'customPrice': serializer.toJson<int?>(customPrice),
       'isActive': serializer.toJson<bool>(isActive),
     };
   }
@@ -4674,15 +4673,15 @@ class RecorridoSubscription extends DataClass
     String? id,
     String? recorridoId,
     String? encargadoId,
-    Value<String?> studentName = const Value.absent(),
+    String? subscriptionName,
     Value<String?> address = const Value.absent(),
-    Value<double?> customPrice = const Value.absent(),
+    Value<int?> customPrice = const Value.absent(),
     bool? isActive,
   }) => RecorridoSubscription(
     id: id ?? this.id,
     recorridoId: recorridoId ?? this.recorridoId,
     encargadoId: encargadoId ?? this.encargadoId,
-    studentName: studentName.present ? studentName.value : this.studentName,
+    subscriptionName: subscriptionName ?? this.subscriptionName,
     address: address.present ? address.value : this.address,
     customPrice: customPrice.present ? customPrice.value : this.customPrice,
     isActive: isActive ?? this.isActive,
@@ -4698,9 +4697,9 @@ class RecorridoSubscription extends DataClass
       encargadoId: data.encargadoId.present
           ? data.encargadoId.value
           : this.encargadoId,
-      studentName: data.studentName.present
-          ? data.studentName.value
-          : this.studentName,
+      subscriptionName: data.subscriptionName.present
+          ? data.subscriptionName.value
+          : this.subscriptionName,
       address: data.address.present ? data.address.value : this.address,
       customPrice: data.customPrice.present
           ? data.customPrice.value
@@ -4715,7 +4714,7 @@ class RecorridoSubscription extends DataClass
           ..write('id: $id, ')
           ..write('recorridoId: $recorridoId, ')
           ..write('encargadoId: $encargadoId, ')
-          ..write('studentName: $studentName, ')
+          ..write('subscriptionName: $subscriptionName, ')
           ..write('address: $address, ')
           ..write('customPrice: $customPrice, ')
           ..write('isActive: $isActive')
@@ -4728,7 +4727,7 @@ class RecorridoSubscription extends DataClass
     id,
     recorridoId,
     encargadoId,
-    studentName,
+    subscriptionName,
     address,
     customPrice,
     isActive,
@@ -4740,7 +4739,7 @@ class RecorridoSubscription extends DataClass
           other.id == this.id &&
           other.recorridoId == this.recorridoId &&
           other.encargadoId == this.encargadoId &&
-          other.studentName == this.studentName &&
+          other.subscriptionName == this.subscriptionName &&
           other.address == this.address &&
           other.customPrice == this.customPrice &&
           other.isActive == this.isActive);
@@ -4751,16 +4750,16 @@ class RecorridoSubscriptionsCompanion
   final Value<String> id;
   final Value<String> recorridoId;
   final Value<String> encargadoId;
-  final Value<String?> studentName;
+  final Value<String> subscriptionName;
   final Value<String?> address;
-  final Value<double?> customPrice;
+  final Value<int?> customPrice;
   final Value<bool> isActive;
   final Value<int> rowid;
   const RecorridoSubscriptionsCompanion({
     this.id = const Value.absent(),
     this.recorridoId = const Value.absent(),
     this.encargadoId = const Value.absent(),
-    this.studentName = const Value.absent(),
+    this.subscriptionName = const Value.absent(),
     this.address = const Value.absent(),
     this.customPrice = const Value.absent(),
     this.isActive = const Value.absent(),
@@ -4770,21 +4769,22 @@ class RecorridoSubscriptionsCompanion
     required String id,
     required String recorridoId,
     required String encargadoId,
-    this.studentName = const Value.absent(),
+    required String subscriptionName,
     this.address = const Value.absent(),
     this.customPrice = const Value.absent(),
     this.isActive = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        recorridoId = Value(recorridoId),
-       encargadoId = Value(encargadoId);
+       encargadoId = Value(encargadoId),
+       subscriptionName = Value(subscriptionName);
   static Insertable<RecorridoSubscription> custom({
     Expression<String>? id,
     Expression<String>? recorridoId,
     Expression<String>? encargadoId,
-    Expression<String>? studentName,
+    Expression<String>? subscriptionName,
     Expression<String>? address,
-    Expression<double>? customPrice,
+    Expression<int>? customPrice,
     Expression<bool>? isActive,
     Expression<int>? rowid,
   }) {
@@ -4792,7 +4792,7 @@ class RecorridoSubscriptionsCompanion
       if (id != null) 'id': id,
       if (recorridoId != null) 'recorrido_id': recorridoId,
       if (encargadoId != null) 'encargado_id': encargadoId,
-      if (studentName != null) 'student_name': studentName,
+      if (subscriptionName != null) 'subscription_name': subscriptionName,
       if (address != null) 'address': address,
       if (customPrice != null) 'custom_price': customPrice,
       if (isActive != null) 'is_active': isActive,
@@ -4804,9 +4804,9 @@ class RecorridoSubscriptionsCompanion
     Value<String>? id,
     Value<String>? recorridoId,
     Value<String>? encargadoId,
-    Value<String?>? studentName,
+    Value<String>? subscriptionName,
     Value<String?>? address,
-    Value<double?>? customPrice,
+    Value<int?>? customPrice,
     Value<bool>? isActive,
     Value<int>? rowid,
   }) {
@@ -4814,7 +4814,7 @@ class RecorridoSubscriptionsCompanion
       id: id ?? this.id,
       recorridoId: recorridoId ?? this.recorridoId,
       encargadoId: encargadoId ?? this.encargadoId,
-      studentName: studentName ?? this.studentName,
+      subscriptionName: subscriptionName ?? this.subscriptionName,
       address: address ?? this.address,
       customPrice: customPrice ?? this.customPrice,
       isActive: isActive ?? this.isActive,
@@ -4834,14 +4834,14 @@ class RecorridoSubscriptionsCompanion
     if (encargadoId.present) {
       map['encargado_id'] = Variable<String>(encargadoId.value);
     }
-    if (studentName.present) {
-      map['student_name'] = Variable<String>(studentName.value);
+    if (subscriptionName.present) {
+      map['subscription_name'] = Variable<String>(subscriptionName.value);
     }
     if (address.present) {
       map['address'] = Variable<String>(address.value);
     }
     if (customPrice.present) {
-      map['custom_price'] = Variable<double>(customPrice.value);
+      map['custom_price'] = Variable<int>(customPrice.value);
     }
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
@@ -4858,7 +4858,7 @@ class RecorridoSubscriptionsCompanion
           ..write('id: $id, ')
           ..write('recorridoId: $recorridoId, ')
           ..write('encargadoId: $encargadoId, ')
-          ..write('studentName: $studentName, ')
+          ..write('subscriptionName: $subscriptionName, ')
           ..write('address: $address, ')
           ..write('customPrice: $customPrice, ')
           ..write('isActive: $isActive, ')
@@ -9563,7 +9563,7 @@ typedef $$ShiftColectivosTableProcessedTableManager =
 typedef $$EncargadosTableCreateCompanionBuilder =
     EncargadosCompanion Function({
       required String id,
-      Value<String?> name,
+      required String name,
       Value<String?> phone,
       Value<double> balance,
       Value<bool> isSynced,
@@ -9572,7 +9572,7 @@ typedef $$EncargadosTableCreateCompanionBuilder =
 typedef $$EncargadosTableUpdateCompanionBuilder =
     EncargadosCompanion Function({
       Value<String> id,
-      Value<String?> name,
+      Value<String> name,
       Value<String?> phone,
       Value<double> balance,
       Value<bool> isSynced,
@@ -9788,7 +9788,7 @@ class $$EncargadosTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
-                Value<String?> name = const Value.absent(),
+                Value<String> name = const Value.absent(),
                 Value<String?> phone = const Value.absent(),
                 Value<double> balance = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
@@ -9804,7 +9804,7 @@ class $$EncargadosTableTableManager
           createCompanionCallback:
               ({
                 required String id,
-                Value<String?> name = const Value.absent(),
+                required String name,
                 Value<String?> phone = const Value.absent(),
                 Value<double> balance = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
@@ -9882,9 +9882,9 @@ typedef $$RecorridoSubscriptionsTableCreateCompanionBuilder =
       required String id,
       required String recorridoId,
       required String encargadoId,
-      Value<String?> studentName,
+      required String subscriptionName,
       Value<String?> address,
-      Value<double?> customPrice,
+      Value<int?> customPrice,
       Value<bool> isActive,
       Value<int> rowid,
     });
@@ -9893,9 +9893,9 @@ typedef $$RecorridoSubscriptionsTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> recorridoId,
       Value<String> encargadoId,
-      Value<String?> studentName,
+      Value<String> subscriptionName,
       Value<String?> address,
-      Value<double?> customPrice,
+      Value<int?> customPrice,
       Value<bool> isActive,
       Value<int> rowid,
     });
@@ -9972,8 +9972,8 @@ class $$RecorridoSubscriptionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get studentName => $composableBuilder(
-    column: $table.studentName,
+  ColumnFilters<String> get subscriptionName => $composableBuilder(
+    column: $table.subscriptionName,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9982,7 +9982,7 @@ class $$RecorridoSubscriptionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get customPrice => $composableBuilder(
+  ColumnFilters<int> get customPrice => $composableBuilder(
     column: $table.customPrice,
     builder: (column) => ColumnFilters(column),
   );
@@ -10053,8 +10053,8 @@ class $$RecorridoSubscriptionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get studentName => $composableBuilder(
-    column: $table.studentName,
+  ColumnOrderings<String> get subscriptionName => $composableBuilder(
+    column: $table.subscriptionName,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -10063,7 +10063,7 @@ class $$RecorridoSubscriptionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get customPrice => $composableBuilder(
+  ColumnOrderings<int> get customPrice => $composableBuilder(
     column: $table.customPrice,
     builder: (column) => ColumnOrderings(column),
   );
@@ -10132,15 +10132,15 @@ class $$RecorridoSubscriptionsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<String> get studentName => $composableBuilder(
-    column: $table.studentName,
+  GeneratedColumn<String> get subscriptionName => $composableBuilder(
+    column: $table.subscriptionName,
     builder: (column) => column,
   );
 
   GeneratedColumn<String> get address =>
       $composableBuilder(column: $table.address, builder: (column) => column);
 
-  GeneratedColumn<double> get customPrice => $composableBuilder(
+  GeneratedColumn<int> get customPrice => $composableBuilder(
     column: $table.customPrice,
     builder: (column) => column,
   );
@@ -10237,16 +10237,16 @@ class $$RecorridoSubscriptionsTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> recorridoId = const Value.absent(),
                 Value<String> encargadoId = const Value.absent(),
-                Value<String?> studentName = const Value.absent(),
+                Value<String> subscriptionName = const Value.absent(),
                 Value<String?> address = const Value.absent(),
-                Value<double?> customPrice = const Value.absent(),
+                Value<int?> customPrice = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecorridoSubscriptionsCompanion(
                 id: id,
                 recorridoId: recorridoId,
                 encargadoId: encargadoId,
-                studentName: studentName,
+                subscriptionName: subscriptionName,
                 address: address,
                 customPrice: customPrice,
                 isActive: isActive,
@@ -10257,16 +10257,16 @@ class $$RecorridoSubscriptionsTableTableManager
                 required String id,
                 required String recorridoId,
                 required String encargadoId,
-                Value<String?> studentName = const Value.absent(),
+                required String subscriptionName,
                 Value<String?> address = const Value.absent(),
-                Value<double?> customPrice = const Value.absent(),
+                Value<int?> customPrice = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecorridoSubscriptionsCompanion.insert(
                 id: id,
                 recorridoId: recorridoId,
                 encargadoId: encargadoId,
-                studentName: studentName,
+                subscriptionName: subscriptionName,
                 address: address,
                 customPrice: customPrice,
                 isActive: isActive,

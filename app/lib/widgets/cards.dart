@@ -61,18 +61,12 @@ class BasicCard extends StatelessWidget {
       InkWell(
         onTap: onPressed,
         onLongPress: onLongPressed,
-        child:child,
+        child:Padding(padding:padding??const EdgeInsets.all(16),child:child),
       ):
-      child;
+      Padding(padding:padding??const EdgeInsets.all(16),child:child);
     return Container(
       margin: margin,
-      padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color:tonality==null?
-          Theme.of(context).cardColor:
-          Color.alphaBlend(tonality!.withAlpha(50),Theme.of(context).cardColor),
-        borderRadius: BorderRadius.circular(16),
-        border: BoxBorder.all(color:borderColor??Colors.black,width:borderColor==null?0:2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -81,14 +75,24 @@ class BasicCard extends StatelessWidget {
           ),
         ],
       ),
-      child:actionIcon == null
-        ?content
-        :Stack(
-          children: [
-            content,
+      child:Material(
+        color:tonality==null?
+          Theme.of(context).cardColor:
+          Color.alphaBlend(tonality!.withAlpha(50),Theme.of(context).cardColor),
+        clipBehavior: Clip.hardEdge,
+        shape:RoundedRectangleBorder(
+          borderRadius:BorderRadius.circular(16),
+          side:borderColor==null?
+            BorderSide.none 
+            :BorderSide(color:borderColor!,width: 2),
+        ),
+        child:actionIcon == null
+          ?content
+          :Stack(children:[
+            SizedBox(width: double.infinity, child: content),
             Positioned.fill(
-              child: Align(
-                alignment: actionPosition,
+              child:Align(
+                alignment:actionPosition,
                 child:onActionPressed != null
                   ?InkWell(
                     borderRadius: BorderRadius.circular(20),
@@ -98,8 +102,8 @@ class BasicCard extends StatelessWidget {
                   : actionIcon,
               ),
             ),
-          ],
-        ),
+          ],)
+      ),
     );
   }
 }

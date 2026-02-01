@@ -2,8 +2,8 @@ import 'package:agenda/database/app_database.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../widgets/imageImput.dart';
 import '../widgets/searchBar.dart';
-import 'phoneParser.dart';
 import 'package:flutter/material.dart';
+import '../utilities/parsers.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart' as drift; 
@@ -21,8 +21,7 @@ Widget dataLine(String text, Color mainColor) {
     child: Row(
       children: [
         Container(
-          width: 6,
-          height: 6,
+          width:6,height:6,
           margin: const EdgeInsets.only(right: 8),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
