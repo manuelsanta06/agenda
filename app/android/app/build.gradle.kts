@@ -50,3 +50,7 @@ configurations.all {
 flutter {
     source = "../.."
 }
+dependencies {
+    implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    implementation("com.squareup.okio:okio:2.8.0")
+}

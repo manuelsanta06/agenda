@@ -160,7 +160,7 @@ class _calendarPageState extends State<calendarPage>{
 
             Expanded(
               child:StreamBuilder<List<EventWithStops>>(
-                stream: db.watchEventsWithStops(_selectedDay),
+                stream: db.watchEventsWithStops(_selectedDay,recorridos),
                 builder:(context, snapshot){
                   if(snapshot.hasError){
                     return Center(

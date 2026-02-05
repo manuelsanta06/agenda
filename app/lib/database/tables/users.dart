@@ -14,6 +14,8 @@ class Choferes extends Table {
   TextColumn get mobileNumber => text().nullable()();
   TextColumn get picturePath => text().nullable()();
 
+  RealColumn get balance => real().withDefault(const Constant(0.0))();
+
   BoolColumn get is_active => boolean().withDefault(const Constant(true))();
 
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
@@ -33,6 +35,7 @@ class Colectivos extends Table {
   
   TextColumn get fuelAmount => text().nullable()();
   DateTimeColumn get fuelDate => dateTime().nullable()();
+  DateTimeColumn get felDate => dateTime().nullable()();
 
   BoolColumn get is_active => boolean().withDefault(const Constant(true))();
 

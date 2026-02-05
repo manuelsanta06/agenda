@@ -104,7 +104,7 @@ class AppDatabase extends _$AppDatabase {
     return result;
   }
 
-  Stream<List<EventWithStops>> watchEventsWithStops(DateTime day) {
+  Stream<List<EventWithStops>> watchEventsWithStops(DateTime day,bool school) {
     final startOfDay = DateTime(day.year, day.month, day.day);
     final endOfDay = startOfDay.add(const Duration(days: 1)).subtract(const Duration(milliseconds: 1));
     final weekdayIndex = day.weekday.toString();
@@ -114,6 +114,7 @@ class AppDatabase extends _$AppDatabase {
     ]);
 
     query.where(
+      (school?events.type.equalsValue(EventTypes.SCHOOL):events.type.equalsValue(EventTypes.SCHOOL).not())&
       (events.repeat.equals(false)&events.startDateTime.isBetweenValues(startOfDay, endOfDay)) |
       (events.repeat.equals(true)&events.startDateTime.isSmallerOrEqualValue(endOfDay)&events.days.cast<String>().like('%$weekdayIndex%'))
     );

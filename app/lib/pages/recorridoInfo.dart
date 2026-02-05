@@ -1,8 +1,6 @@
-//import 'package:agenda/utilities/colectivos.dart';
-//import 'package:agenda/utilities/people.dart';
-//import 'package:agenda/utilities/events.dart';
 import 'package:agenda/pages/recorridos.dart';
 import 'package:agenda/utilities/encargados.dart';
+import 'package:agenda/utilities/shifts.dart';
 
 import '../widgets/searchBar.dart';
 import 'package:flutter/material.dart';
@@ -23,8 +21,8 @@ class recorridoInfo extends StatelessWidget{
     required this.maincolor
   });
 
-  void _onEncargadoAdd(BuildContext context)async{
-    if((await showCreateModifiEncargadoSheet(context,maincolor,reco.id,searchQuery))??false){
+  void snack(BuildContext context,bool succes){
+    if(succes){
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(backgroundColor:Colors.green,duration:Duration(seconds:2),content: Text('Agregado')),
       );
@@ -118,11 +116,36 @@ class recorridoInfo extends StatelessWidget{
         }
         if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
         final shifts=snapshot.data!;
-        if(shifts.isEmpty)return const Center(child:Text("..."));
+        //if(shifts.isEmpty)return const Center(child:Text("..."));
         return ListView(
           padding: const EdgeInsets.all(16),
-          children: [
-            Center(child: Text("Lista de Turnos (Lunes 7:00, etc)")),
+          children:[
+            ...List.generate(shifts.length,(index)=>shiftToCard(
+              context,maincolor,shifts[index],
+              ()async{await showCreateModifiShiftSheet(context,maincolor,reco.id,shiftEdit:shifts[index]);},
+              ()async{
+                //TODO: shift removing
+              }
+            )),
+            Material(
+              color: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side:const BorderSide(color:Color(0xFF94A3B8),width:2,),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap:()async=>snack(context,(await showCreateModifiShiftSheet(context,maincolor,reco.id))??false),
+                child: Container(
+                  width:double.infinity,
+                  padding:const EdgeInsets.symmetric(vertical:7,horizontal:5),
+                  alignment:Alignment.center,
+                  child:const Text( "Agregar",
+                    style: TextStyle(color: Color(0xFF94A3B8)),
+                  ),
+                ),
+              ),
+            )
           ],
         );
       },
@@ -220,7 +243,7 @@ class recorridoInfo extends StatelessWidget{
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    onTap:()=>_onEncargadoAdd(context),
+                    onTap:()async=>snack(context,(await showCreateModifiEncargadoSheet(context,maincolor,reco.id,searchQuery))??false),
                     child: Container(
                       width:double.infinity,
                       padding:const EdgeInsets.symmetric(vertical:7,horizontal:5),
@@ -236,7 +259,12 @@ class recorridoInfo extends StatelessWidget{
                   recorridosPage.mainColor,
                   filtered[index].$1,
                   filtered[index].$2,
-                  null,
+                  ()=>_editBalanceDialog(context,filtered[index].$1,filtered[index].$2),
+                  ()=>showCreateModifiEncargadoSheet(
+                    context,maincolor,reco.id,null,
+                    encargadoEdit:filtered[index].$1,
+                    subsEdit:filtered[index].$2
+                  ),
                 );
               },
             );
@@ -244,5 +272,79 @@ class recorridoInfo extends StatelessWidget{
         ))
       ]),
     );
+  }
+
+  void _editBalanceDialog(BuildContext context,Encargado enca,List<RecorridoSubscription> subs)async{
+    final controller = TextEditingController();
+    int monthlyCost=0;
+    for(final tmp in subs)if(tmp.isActive)monthlyCost+=(tmp.customPrice??reco.basePrice);
+    await showDialog<String?>(
+      context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: Text("Modificar Deuda"),
+          content:Column(mainAxisSize:MainAxisSize.min,children:[
+            BasicCard(
+              tonality: enca.balance < 0 ? Colors.red : Colors.green,
+              borderColor:enca.balance < 0 ? Colors.red : Colors.green,
+              child:Column(children:[
+                Text('SALDO ACTUAL',style:TextStyle(fontSize:12)),
+                Text('\$'+numberParser(enca.balance.toInt()),style:TextStyle(
+                  color:enca.balance<0?Colors.red:Colors.green, fontSize:20,
+                )),
+              ]),
+            ),
+            SizedBox(height:10),
+            TextField(
+              controller: controller,
+              keyboardType:const TextInputType.numberWithOptions(decimal:true),
+              decoration: InputDecoration(
+                labelText:"Monto",
+                prefixIcon:Icon(Icons.attach_money),
+                border:OutlineInputBorder(borderRadius:BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Colors.grey.withOpacity(0.05),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius:BorderRadius.circular(12),
+                  borderSide:BorderSide(color:maincolor,width:2),
+                ),
+              ),
+            ),
+            SizedBox(height:10),
+            ElevatedButton(
+              onPressed:()async{
+                await _updateBalance(context,enca,monthlyCost);
+                Navigator.of(context).pop();
+              },
+              style:ButtonStyle(
+                backgroundColor:MaterialStateProperty.all(Colors.green.withAlpha(50)),
+              ),
+              child:Text("Pago total (\$+$monthlyCost)",style:TextStyle(color:Colors.green)),
+            )
+          ]),
+          actions:[
+            TextButton(
+              child: const Text("Cancelar",style:TextStyle(color:Colors.red)),
+              onPressed:()=>Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text("Aceptar",style:TextStyle(color:Colors.green)),
+              onPressed:()async{
+                await _updateBalance(context,enca,int.tryParse(controller.value.text)??0);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      }
+    );
+  }
+
+  Future<void> _updateBalance(BuildContext context,Encargado enca,int amount)async{
+    if(amount==0)return;
+    final deafDb=Provider.of<AppDatabase>(context,listen:false);
+    await (deafDb.update(deafDb.encargados)
+      ..where((tbl)=>tbl.id.equals(enca.id)))
+      .write(EncargadosCompanion(balance:drift.Value(enca.balance+amount),isSynced:drift.Value(false)));
   }
 }

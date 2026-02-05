@@ -1,7 +1,6 @@
 import 'package:agenda/widgets/cards.dart';
 import 'package:flutter/material.dart';
 import 'package:agenda/database/app_database.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
@@ -11,18 +10,20 @@ Widget encargadoToCard(BuildContext context,
   Color mainColor,
   Encargado enca,
   List<RecorridoSubscription> subs,
-  VoidCallback? onPressed
+  VoidCallback? onPressed,
+  VoidCallback? onLongPressed
 ){
   return BasicCard(
     margin:const EdgeInsets.symmetric(vertical:10,horizontal:8),
     onPressed:onPressed,
+    onLongPressed:onLongPressed,
     child:Column(crossAxisAlignment: CrossAxisAlignment.start,children:[
       Row(children:[
         Expanded(child:Text(enca.name)),
-        Text(numberParser(enca.balance.toInt()),style:TextStyle(color:enca.balance>=0?mainColor:Colors.red)),
+        Text("\$${numberParser(enca.balance.toInt())}",style:TextStyle(color:enca.balance>=0?mainColor:Colors.red)),
       ]),
       Text(
-        subs.map((s){return s.subscriptionName;}).join('\n'),
+        subs.map((s){return s.subscriptionName+(s.customPrice!=null?" \$${s.customPrice}":"");}).join("\n"),
         style:TextStyle(color:Colors.grey,fontSize:12),
       ),
     ])
@@ -81,25 +82,29 @@ class _CreateRecorridoFormState extends State<_EncargadoForm>{
   final TextEditingController nameC=TextEditingController();
   final TextEditingController phoneC=TextEditingController();
   late List<TempSubscription> children;
-  late List<TempSubscription> toDelete=[];
+  late List<TempSubscription> toDelete;
   final _formKey=GlobalKey<FormState>();
   
   @override
-  void initState() {
+  void initState(){
+    children=[];
+    toDelete=[];
     super.initState();
     if(widget.encargadoEdit!=null){
       nameC.text = widget.encargadoEdit?.name ?? "";
       phoneC.text = widget.encargadoEdit?.phone ?? "";
       if(widget.subsEdit!=null&&widget.subsEdit!.isNotEmpty){
-        children = widget.subsEdit!.map((sub) {
+        for (var sub in widget.subsEdit!) {
           final temp = TempSubscription(originalId: sub.id);
-          temp.nameC.text = sub.subscriptionName??"";
-          temp.addressC.text = sub.address??"";
+          temp.nameC.text = sub.subscriptionName ?? "";
+          temp.addressC.text = sub.address ?? "";
           temp.priceC.text = sub.customPrice?.toString() ?? "";
-          return temp;
-        }).toList();
+
+          if(sub.isActive)children.add(temp);
+          else toDelete.add(temp);
+        }
       }else{
-        children=[TempSubscription()];
+        children.add(TempSubscription());
       }
     }else{
       children=[TempSubscription()];
@@ -109,20 +114,17 @@ class _CreateRecorridoFormState extends State<_EncargadoForm>{
     }
   }
 
-  void _returnSubscription(){
-    if(toDelete.isNotEmpty){
-      setState((){children.add(toDelete.removeLast());});
-      return;
-    }
-    _addSubscription();
+  void _returnSubscription(int index){
+    setState((){children.add(toDelete.removeAt(index));});
   }
   void _addSubscription(){
     setState((){children.add(TempSubscription());});
   }
   void _removeSubscription(int index){
-    if(children[index].originalId!=null)toDelete.add(children[index]);
-    setState((){children.removeAt(index);});
-    return;
+    setState((){
+      final item=children.removeAt(index);
+      if(item.originalId!=null)toDelete.add(item);
+    });
   }
 
   void _onSave(BuildContext context)async{
@@ -157,6 +159,7 @@ class _CreateRecorridoFormState extends State<_EncargadoForm>{
           customPrice:drift.Value(int.tryParse(temp.priceC.text)),
           recorridoId:drift.Value(widget.recoId),
           encargadoId:drift.Value(encargadoId),
+          isActive:drift.Value(true)
         );
         if (temp.originalId == null) {
           await db.into(db.recorridoSubscriptions).insert(companion);
@@ -165,6 +168,11 @@ class _CreateRecorridoFormState extends State<_EncargadoForm>{
             ..where((t) => t.id.equals(temp.originalId!)))
             .write(companion);
         }
+      }
+      for(final temp in toDelete){
+        await (db.update(db.recorridoSubscriptions)
+          ..where((t) => t.id.equals(temp.originalId!)))
+          .write(RecorridoSubscriptionsCompanion(isActive:drift.Value(false)));
       }
     });
     Navigator.pop(context,true);
@@ -223,6 +231,19 @@ class _CreateRecorridoFormState extends State<_EncargadoForm>{
               ...List.generate(children.length,(index){return _buildStudentCard(index);}),
 
               const SizedBox(height: 20),
+              if (toDelete.isNotEmpty) ...[
+                const SizedBox(height: 30),
+                const Divider(thickness: 1),
+                Center(child: Text(
+                  "Inactivos / Eliminados", 
+                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)
+                )),
+                const SizedBox(height: 10),
+
+                ...List.generate(toDelete.length, (index) {
+                  return _buildStudentCard(index,active:false);
+                }),
+              ],
               
               // Boton Agregar otra subscripcion
               Row(mainAxisAlignment:MainAxisAlignment.spaceEvenly,children:[
@@ -235,16 +256,6 @@ class _CreateRecorridoFormState extends State<_EncargadoForm>{
                     side: BorderSide(color: Theme.of(context).primaryColor),
                   ),
                 )),
-                if(toDelete.isNotEmpty)
-                Expanded(child:OutlinedButton.icon(
-                  onPressed:()=>_returnSubscription(),
-                  icon: const Icon(Icons.restore_from_trash),
-                  label: const Text("Restaurar"),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: BorderSide(color: Theme.of(context).primaryColor),
-                  ),
-                ))
               ]),
               const SizedBox(height:200),
             ],
@@ -272,15 +283,18 @@ class _CreateRecorridoFormState extends State<_EncargadoForm>{
     );
   }
 
-  Widget _buildStudentCard(int index) {
+  Widget _buildStudentCard(int index,{bool active=true}) {
     final sub = children[index];
     return BasicCard(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
+      tonality:active?null:Colors.red,
       borderColor:Colors.grey.shade300,
-      actionIcon:children.length<=1?null:const Icon(Icons.delete,color:Colors.red),
+      actionIcon:active?
+        const Icon(Icons.delete,color:Colors.red)
+        :const Icon(Icons.restore_from_trash,color:Colors.green),
       actionPosition: Alignment(0.9,-0.9),
-      onActionPressed:()=>_removeSubscription(index),
+      onActionPressed:active?()=>_removeSubscription(index):()=>_returnSubscription(index),
       child: Column(
         children: [
           Text("Pasajero #${index + 1}",style:const TextStyle(fontWeight:FontWeight.bold,color:Colors.grey)),

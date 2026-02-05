@@ -77,6 +77,18 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _balanceMeta = const VerificationMeta(
+    'balance',
+  );
+  @override
+  late final GeneratedColumn<double> balance = GeneratedColumn<double>(
+    'balance',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   static const VerificationMeta _is_activeMeta = const VerificationMeta(
     'is_active',
   );
@@ -116,6 +128,7 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
     alias,
     mobileNumber,
     picturePath,
+    balance,
     is_active,
     isSynced,
   ];
@@ -178,6 +191,12 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
         ),
       );
     }
+    if (data.containsKey('balance')) {
+      context.handle(
+        _balanceMeta,
+        balance.isAcceptableOrUnknown(data['balance']!, _balanceMeta),
+      );
+    }
     if (data.containsKey('is_active')) {
       context.handle(
         _is_activeMeta,
@@ -227,6 +246,10 @@ class $ChoferesTable extends Choferes with TableInfo<$ChoferesTable, Chofere> {
         DriftSqlType.string,
         data['${effectivePrefix}picture_path'],
       ),
+      balance: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}balance'],
+      )!,
       is_active: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
@@ -252,6 +275,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
   final String? alias;
   final String? mobileNumber;
   final String? picturePath;
+  final double balance;
   final bool is_active;
   final bool isSynced;
   const Chofere({
@@ -262,6 +286,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     this.alias,
     this.mobileNumber,
     this.picturePath,
+    required this.balance,
     required this.is_active,
     required this.isSynced,
   });
@@ -287,6 +312,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     if (!nullToAbsent || picturePath != null) {
       map['picture_path'] = Variable<String>(picturePath);
     }
+    map['balance'] = Variable<double>(balance);
     map['is_active'] = Variable<bool>(is_active);
     map['is_synced'] = Variable<bool>(isSynced);
     return map;
@@ -309,6 +335,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
       picturePath: picturePath == null && nullToAbsent
           ? const Value.absent()
           : Value(picturePath),
+      balance: Value(balance),
       is_active: Value(is_active),
       isSynced: Value(isSynced),
     );
@@ -327,6 +354,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
       alias: serializer.fromJson<String?>(json['alias']),
       mobileNumber: serializer.fromJson<String?>(json['mobileNumber']),
       picturePath: serializer.fromJson<String?>(json['picturePath']),
+      balance: serializer.fromJson<double>(json['balance']),
       is_active: serializer.fromJson<bool>(json['is_active']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
@@ -342,6 +370,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
       'alias': serializer.toJson<String?>(alias),
       'mobileNumber': serializer.toJson<String?>(mobileNumber),
       'picturePath': serializer.toJson<String?>(picturePath),
+      'balance': serializer.toJson<double>(balance),
       'is_active': serializer.toJson<bool>(is_active),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
@@ -355,6 +384,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     Value<String?> alias = const Value.absent(),
     Value<String?> mobileNumber = const Value.absent(),
     Value<String?> picturePath = const Value.absent(),
+    double? balance,
     bool? is_active,
     bool? isSynced,
   }) => Chofere(
@@ -365,6 +395,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     alias: alias.present ? alias.value : this.alias,
     mobileNumber: mobileNumber.present ? mobileNumber.value : this.mobileNumber,
     picturePath: picturePath.present ? picturePath.value : this.picturePath,
+    balance: balance ?? this.balance,
     is_active: is_active ?? this.is_active,
     isSynced: isSynced ?? this.isSynced,
   );
@@ -381,6 +412,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
       picturePath: data.picturePath.present
           ? data.picturePath.value
           : this.picturePath,
+      balance: data.balance.present ? data.balance.value : this.balance,
       is_active: data.is_active.present ? data.is_active.value : this.is_active,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
@@ -396,6 +428,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
           ..write('alias: $alias, ')
           ..write('mobileNumber: $mobileNumber, ')
           ..write('picturePath: $picturePath, ')
+          ..write('balance: $balance, ')
           ..write('is_active: $is_active, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
@@ -411,6 +444,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
     alias,
     mobileNumber,
     picturePath,
+    balance,
     is_active,
     isSynced,
   );
@@ -425,6 +459,7 @@ class Chofere extends DataClass implements Insertable<Chofere> {
           other.alias == this.alias &&
           other.mobileNumber == this.mobileNumber &&
           other.picturePath == this.picturePath &&
+          other.balance == this.balance &&
           other.is_active == this.is_active &&
           other.isSynced == this.isSynced);
 }
@@ -437,6 +472,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
   final Value<String?> alias;
   final Value<String?> mobileNumber;
   final Value<String?> picturePath;
+  final Value<double> balance;
   final Value<bool> is_active;
   final Value<bool> isSynced;
   final Value<int> rowid;
@@ -448,6 +484,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     this.alias = const Value.absent(),
     this.mobileNumber = const Value.absent(),
     this.picturePath = const Value.absent(),
+    this.balance = const Value.absent(),
     this.is_active = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -460,6 +497,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     this.alias = const Value.absent(),
     this.mobileNumber = const Value.absent(),
     this.picturePath = const Value.absent(),
+    this.balance = const Value.absent(),
     this.is_active = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -472,6 +510,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     Expression<String>? alias,
     Expression<String>? mobileNumber,
     Expression<String>? picturePath,
+    Expression<double>? balance,
     Expression<bool>? is_active,
     Expression<bool>? isSynced,
     Expression<int>? rowid,
@@ -484,6 +523,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
       if (alias != null) 'alias': alias,
       if (mobileNumber != null) 'mobile_number': mobileNumber,
       if (picturePath != null) 'picture_path': picturePath,
+      if (balance != null) 'balance': balance,
       if (is_active != null) 'is_active': is_active,
       if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
@@ -498,6 +538,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     Value<String?>? alias,
     Value<String?>? mobileNumber,
     Value<String?>? picturePath,
+    Value<double>? balance,
     Value<bool>? is_active,
     Value<bool>? isSynced,
     Value<int>? rowid,
@@ -510,6 +551,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
       alias: alias ?? this.alias,
       mobileNumber: mobileNumber ?? this.mobileNumber,
       picturePath: picturePath ?? this.picturePath,
+      balance: balance ?? this.balance,
       is_active: is_active ?? this.is_active,
       isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
@@ -540,6 +582,9 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
     if (picturePath.present) {
       map['picture_path'] = Variable<String>(picturePath.value);
     }
+    if (balance.present) {
+      map['balance'] = Variable<double>(balance.value);
+    }
     if (is_active.present) {
       map['is_active'] = Variable<bool>(is_active.value);
     }
@@ -562,6 +607,7 @@ class ChoferesCompanion extends UpdateCompanion<Chofere> {
           ..write('alias: $alias, ')
           ..write('mobileNumber: $mobileNumber, ')
           ..write('picturePath: $picturePath, ')
+          ..write('balance: $balance, ')
           ..write('is_active: $is_active, ')
           ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
@@ -635,6 +681,17 @@ class $ColectivosTable extends Colectivos
     type: DriftSqlType.dateTime,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _felDateMeta = const VerificationMeta(
+    'felDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> felDate = GeneratedColumn<DateTime>(
+    'fel_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _is_activeMeta = const VerificationMeta(
     'is_active',
   );
@@ -673,6 +730,7 @@ class $ColectivosTable extends Colectivos
     number,
     fuelAmount,
     fuelDate,
+    felDate,
     is_active,
     isSynced,
   ];
@@ -725,6 +783,12 @@ class $ColectivosTable extends Colectivos
         fuelDate.isAcceptableOrUnknown(data['fuel_date']!, _fuelDateMeta),
       );
     }
+    if (data.containsKey('fel_date')) {
+      context.handle(
+        _felDateMeta,
+        felDate.isAcceptableOrUnknown(data['fel_date']!, _felDateMeta),
+      );
+    }
     if (data.containsKey('is_active')) {
       context.handle(
         _is_activeMeta,
@@ -770,6 +834,10 @@ class $ColectivosTable extends Colectivos
         DriftSqlType.dateTime,
         data['${effectivePrefix}fuel_date'],
       ),
+      felDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fel_date'],
+      ),
       is_active: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
@@ -794,6 +862,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
   final int? number;
   final String? fuelAmount;
   final DateTime? fuelDate;
+  final DateTime? felDate;
   final bool is_active;
   final bool isSynced;
   const Colectivo({
@@ -803,6 +872,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     this.number,
     this.fuelAmount,
     this.fuelDate,
+    this.felDate,
     required this.is_active,
     required this.isSynced,
   });
@@ -823,6 +893,9 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     if (!nullToAbsent || fuelDate != null) {
       map['fuel_date'] = Variable<DateTime>(fuelDate);
     }
+    if (!nullToAbsent || felDate != null) {
+      map['fel_date'] = Variable<DateTime>(felDate);
+    }
     map['is_active'] = Variable<bool>(is_active);
     map['is_synced'] = Variable<bool>(isSynced);
     return map;
@@ -842,6 +915,9 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       fuelDate: fuelDate == null && nullToAbsent
           ? const Value.absent()
           : Value(fuelDate),
+      felDate: felDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(felDate),
       is_active: Value(is_active),
       isSynced: Value(isSynced),
     );
@@ -859,6 +935,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       number: serializer.fromJson<int?>(json['number']),
       fuelAmount: serializer.fromJson<String?>(json['fuelAmount']),
       fuelDate: serializer.fromJson<DateTime?>(json['fuelDate']),
+      felDate: serializer.fromJson<DateTime?>(json['felDate']),
       is_active: serializer.fromJson<bool>(json['is_active']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
@@ -873,6 +950,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       'number': serializer.toJson<int?>(number),
       'fuelAmount': serializer.toJson<String?>(fuelAmount),
       'fuelDate': serializer.toJson<DateTime?>(fuelDate),
+      'felDate': serializer.toJson<DateTime?>(felDate),
       'is_active': serializer.toJson<bool>(is_active),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
@@ -885,6 +963,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     Value<int?> number = const Value.absent(),
     Value<String?> fuelAmount = const Value.absent(),
     Value<DateTime?> fuelDate = const Value.absent(),
+    Value<DateTime?> felDate = const Value.absent(),
     bool? is_active,
     bool? isSynced,
   }) => Colectivo(
@@ -894,6 +973,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     number: number.present ? number.value : this.number,
     fuelAmount: fuelAmount.present ? fuelAmount.value : this.fuelAmount,
     fuelDate: fuelDate.present ? fuelDate.value : this.fuelDate,
+    felDate: felDate.present ? felDate.value : this.felDate,
     is_active: is_active ?? this.is_active,
     isSynced: isSynced ?? this.isSynced,
   );
@@ -907,6 +987,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           ? data.fuelAmount.value
           : this.fuelAmount,
       fuelDate: data.fuelDate.present ? data.fuelDate.value : this.fuelDate,
+      felDate: data.felDate.present ? data.felDate.value : this.felDate,
       is_active: data.is_active.present ? data.is_active.value : this.is_active,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
@@ -921,6 +1002,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           ..write('number: $number, ')
           ..write('fuelAmount: $fuelAmount, ')
           ..write('fuelDate: $fuelDate, ')
+          ..write('felDate: $felDate, ')
           ..write('is_active: $is_active, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
@@ -935,6 +1017,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     number,
     fuelAmount,
     fuelDate,
+    felDate,
     is_active,
     isSynced,
   );
@@ -948,6 +1031,7 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           other.number == this.number &&
           other.fuelAmount == this.fuelAmount &&
           other.fuelDate == this.fuelDate &&
+          other.felDate == this.felDate &&
           other.is_active == this.is_active &&
           other.isSynced == this.isSynced);
 }
@@ -959,6 +1043,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
   final Value<int?> number;
   final Value<String?> fuelAmount;
   final Value<DateTime?> fuelDate;
+  final Value<DateTime?> felDate;
   final Value<bool> is_active;
   final Value<bool> isSynced;
   final Value<int> rowid;
@@ -969,6 +1054,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     this.number = const Value.absent(),
     this.fuelAmount = const Value.absent(),
     this.fuelDate = const Value.absent(),
+    this.felDate = const Value.absent(),
     this.is_active = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -980,6 +1066,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     this.number = const Value.absent(),
     this.fuelAmount = const Value.absent(),
     this.fuelDate = const Value.absent(),
+    this.felDate = const Value.absent(),
     this.is_active = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -992,6 +1079,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     Expression<int>? number,
     Expression<String>? fuelAmount,
     Expression<DateTime>? fuelDate,
+    Expression<DateTime>? felDate,
     Expression<bool>? is_active,
     Expression<bool>? isSynced,
     Expression<int>? rowid,
@@ -1003,6 +1091,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
       if (number != null) 'number': number,
       if (fuelAmount != null) 'fuel_amount': fuelAmount,
       if (fuelDate != null) 'fuel_date': fuelDate,
+      if (felDate != null) 'fel_date': felDate,
       if (is_active != null) 'is_active': is_active,
       if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
@@ -1016,6 +1105,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     Value<int?>? number,
     Value<String?>? fuelAmount,
     Value<DateTime?>? fuelDate,
+    Value<DateTime?>? felDate,
     Value<bool>? is_active,
     Value<bool>? isSynced,
     Value<int>? rowid,
@@ -1027,6 +1117,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
       number: number ?? this.number,
       fuelAmount: fuelAmount ?? this.fuelAmount,
       fuelDate: fuelDate ?? this.fuelDate,
+      felDate: felDate ?? this.felDate,
       is_active: is_active ?? this.is_active,
       isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
@@ -1054,6 +1145,9 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     if (fuelDate.present) {
       map['fuel_date'] = Variable<DateTime>(fuelDate.value);
     }
+    if (felDate.present) {
+      map['fel_date'] = Variable<DateTime>(felDate.value);
+    }
     if (is_active.present) {
       map['is_active'] = Variable<bool>(is_active.value);
     }
@@ -1075,6 +1169,7 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
           ..write('number: $number, ')
           ..write('fuelAmount: $fuelAmount, ')
           ..write('fuelDate: $fuelDate, ')
+          ..write('felDate: $felDate, ')
           ..write('is_active: $is_active, ')
           ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
@@ -3174,34 +3269,34 @@ class $RecorridoShiftsTable extends RecorridoShifts
     ),
   );
   @override
-  late final GeneratedColumnWithTypeConverter<WeekDays, int> weekDay =
-      GeneratedColumn<int>(
+  late final GeneratedColumnWithTypeConverter<List<WeekDays>, String> weekDay =
+      GeneratedColumn<String>(
         'week_day',
         aliasedName,
         false,
-        type: DriftSqlType.int,
+        type: DriftSqlType.string,
         requiredDuringInsert: true,
-      ).withConverter<WeekDays>($RecorridoShiftsTable.$converterweekDay);
+      ).withConverter<List<WeekDays>>($RecorridoShiftsTable.$converterweekDay);
   static const VerificationMeta _startTimeMeta = const VerificationMeta(
     'startTime',
   );
   @override
-  late final GeneratedColumn<int> startTime = GeneratedColumn<int>(
+  late final GeneratedColumn<DateTime> startTime = GeneratedColumn<DateTime>(
     'start_time',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _endTimeMeta = const VerificationMeta(
     'endTime',
   );
   @override
-  late final GeneratedColumn<int> endTime = GeneratedColumn<int>(
+  late final GeneratedColumn<DateTime> endTime = GeneratedColumn<DateTime>(
     'end_time',
     aliasedName,
     false,
-    type: DriftSqlType.int,
+    type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
   static const VerificationMeta _shiftNameMeta = const VerificationMeta(
@@ -3215,6 +3310,21 @@ class $RecorridoShiftsTable extends RecorridoShifts
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3223,6 +3333,7 @@ class $RecorridoShiftsTable extends RecorridoShifts
     startTime,
     endTime,
     shiftName,
+    isActive,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3276,6 +3387,12 @@ class $RecorridoShiftsTable extends RecorridoShifts
     } else if (isInserting) {
       context.missing(_shiftNameMeta);
     }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    }
     return context;
   }
 
@@ -3295,21 +3412,25 @@ class $RecorridoShiftsTable extends RecorridoShifts
       )!,
       weekDay: $RecorridoShiftsTable.$converterweekDay.fromSql(
         attachedDatabase.typeMapping.read(
-          DriftSqlType.int,
+          DriftSqlType.string,
           data['${effectivePrefix}week_day'],
         )!,
       ),
       startTime: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.dateTime,
         data['${effectivePrefix}start_time'],
       )!,
       endTime: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
+        DriftSqlType.dateTime,
         data['${effectivePrefix}end_time'],
       )!,
       shiftName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}shift_name'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
       )!,
     );
   }
@@ -3319,17 +3440,18 @@ class $RecorridoShiftsTable extends RecorridoShifts
     return $RecorridoShiftsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<WeekDays, int, int> $converterweekDay =
-      const EnumIndexConverter<WeekDays>(WeekDays.values);
+  static TypeConverter<List<WeekDays>, String> $converterweekDay =
+      const WeekDaysConverter();
 }
 
 class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
   final String id;
   final String recorridoId;
-  final WeekDays weekDay;
-  final int startTime;
-  final int endTime;
+  final List<WeekDays> weekDay;
+  final DateTime startTime;
+  final DateTime endTime;
   final String shiftName;
+  final bool isActive;
   const RecorridoShift({
     required this.id,
     required this.recorridoId,
@@ -3337,6 +3459,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     required this.startTime,
     required this.endTime,
     required this.shiftName,
+    required this.isActive,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3344,13 +3467,14 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     map['id'] = Variable<String>(id);
     map['recorrido_id'] = Variable<String>(recorridoId);
     {
-      map['week_day'] = Variable<int>(
+      map['week_day'] = Variable<String>(
         $RecorridoShiftsTable.$converterweekDay.toSql(weekDay),
       );
     }
-    map['start_time'] = Variable<int>(startTime);
-    map['end_time'] = Variable<int>(endTime);
+    map['start_time'] = Variable<DateTime>(startTime);
+    map['end_time'] = Variable<DateTime>(endTime);
     map['shift_name'] = Variable<String>(shiftName);
+    map['is_active'] = Variable<bool>(isActive);
     return map;
   }
 
@@ -3362,6 +3486,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
       startTime: Value(startTime),
       endTime: Value(endTime),
       shiftName: Value(shiftName),
+      isActive: Value(isActive),
     );
   }
 
@@ -3373,12 +3498,11 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     return RecorridoShift(
       id: serializer.fromJson<String>(json['id']),
       recorridoId: serializer.fromJson<String>(json['recorridoId']),
-      weekDay: $RecorridoShiftsTable.$converterweekDay.fromJson(
-        serializer.fromJson<int>(json['weekDay']),
-      ),
-      startTime: serializer.fromJson<int>(json['startTime']),
-      endTime: serializer.fromJson<int>(json['endTime']),
+      weekDay: serializer.fromJson<List<WeekDays>>(json['weekDay']),
+      startTime: serializer.fromJson<DateTime>(json['startTime']),
+      endTime: serializer.fromJson<DateTime>(json['endTime']),
       shiftName: serializer.fromJson<String>(json['shiftName']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
     );
   }
   @override
@@ -3387,22 +3511,22 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'recorridoId': serializer.toJson<String>(recorridoId),
-      'weekDay': serializer.toJson<int>(
-        $RecorridoShiftsTable.$converterweekDay.toJson(weekDay),
-      ),
-      'startTime': serializer.toJson<int>(startTime),
-      'endTime': serializer.toJson<int>(endTime),
+      'weekDay': serializer.toJson<List<WeekDays>>(weekDay),
+      'startTime': serializer.toJson<DateTime>(startTime),
+      'endTime': serializer.toJson<DateTime>(endTime),
       'shiftName': serializer.toJson<String>(shiftName),
+      'isActive': serializer.toJson<bool>(isActive),
     };
   }
 
   RecorridoShift copyWith({
     String? id,
     String? recorridoId,
-    WeekDays? weekDay,
-    int? startTime,
-    int? endTime,
+    List<WeekDays>? weekDay,
+    DateTime? startTime,
+    DateTime? endTime,
     String? shiftName,
+    bool? isActive,
   }) => RecorridoShift(
     id: id ?? this.id,
     recorridoId: recorridoId ?? this.recorridoId,
@@ -3410,6 +3534,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     startTime: startTime ?? this.startTime,
     endTime: endTime ?? this.endTime,
     shiftName: shiftName ?? this.shiftName,
+    isActive: isActive ?? this.isActive,
   );
   RecorridoShift copyWithCompanion(RecorridoShiftsCompanion data) {
     return RecorridoShift(
@@ -3421,6 +3546,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
       startTime: data.startTime.present ? data.startTime.value : this.startTime,
       endTime: data.endTime.present ? data.endTime.value : this.endTime,
       shiftName: data.shiftName.present ? data.shiftName.value : this.shiftName,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
     );
   }
 
@@ -3432,14 +3558,22 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
           ..write('weekDay: $weekDay, ')
           ..write('startTime: $startTime, ')
           ..write('endTime: $endTime, ')
-          ..write('shiftName: $shiftName')
+          ..write('shiftName: $shiftName, ')
+          ..write('isActive: $isActive')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, recorridoId, weekDay, startTime, endTime, shiftName);
+  int get hashCode => Object.hash(
+    id,
+    recorridoId,
+    weekDay,
+    startTime,
+    endTime,
+    shiftName,
+    isActive,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3449,16 +3583,18 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
           other.weekDay == this.weekDay &&
           other.startTime == this.startTime &&
           other.endTime == this.endTime &&
-          other.shiftName == this.shiftName);
+          other.shiftName == this.shiftName &&
+          other.isActive == this.isActive);
 }
 
 class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
   final Value<String> id;
   final Value<String> recorridoId;
-  final Value<WeekDays> weekDay;
-  final Value<int> startTime;
-  final Value<int> endTime;
+  final Value<List<WeekDays>> weekDay;
+  final Value<DateTime> startTime;
+  final Value<DateTime> endTime;
   final Value<String> shiftName;
+  final Value<bool> isActive;
   final Value<int> rowid;
   const RecorridoShiftsCompanion({
     this.id = const Value.absent(),
@@ -3467,15 +3603,17 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
     this.startTime = const Value.absent(),
     this.endTime = const Value.absent(),
     this.shiftName = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RecorridoShiftsCompanion.insert({
     required String id,
     required String recorridoId,
-    required WeekDays weekDay,
-    required int startTime,
-    required int endTime,
+    required List<WeekDays> weekDay,
+    required DateTime startTime,
+    required DateTime endTime,
     required String shiftName,
+    this.isActive = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        recorridoId = Value(recorridoId),
@@ -3486,10 +3624,11 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
   static Insertable<RecorridoShift> custom({
     Expression<String>? id,
     Expression<String>? recorridoId,
-    Expression<int>? weekDay,
-    Expression<int>? startTime,
-    Expression<int>? endTime,
+    Expression<String>? weekDay,
+    Expression<DateTime>? startTime,
+    Expression<DateTime>? endTime,
     Expression<String>? shiftName,
+    Expression<bool>? isActive,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3499,6 +3638,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
       if (startTime != null) 'start_time': startTime,
       if (endTime != null) 'end_time': endTime,
       if (shiftName != null) 'shift_name': shiftName,
+      if (isActive != null) 'is_active': isActive,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3506,10 +3646,11 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
   RecorridoShiftsCompanion copyWith({
     Value<String>? id,
     Value<String>? recorridoId,
-    Value<WeekDays>? weekDay,
-    Value<int>? startTime,
-    Value<int>? endTime,
+    Value<List<WeekDays>>? weekDay,
+    Value<DateTime>? startTime,
+    Value<DateTime>? endTime,
     Value<String>? shiftName,
+    Value<bool>? isActive,
     Value<int>? rowid,
   }) {
     return RecorridoShiftsCompanion(
@@ -3519,6 +3660,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
       shiftName: shiftName ?? this.shiftName,
+      isActive: isActive ?? this.isActive,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3533,18 +3675,21 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
       map['recorrido_id'] = Variable<String>(recorridoId.value);
     }
     if (weekDay.present) {
-      map['week_day'] = Variable<int>(
+      map['week_day'] = Variable<String>(
         $RecorridoShiftsTable.$converterweekDay.toSql(weekDay.value),
       );
     }
     if (startTime.present) {
-      map['start_time'] = Variable<int>(startTime.value);
+      map['start_time'] = Variable<DateTime>(startTime.value);
     }
     if (endTime.present) {
-      map['end_time'] = Variable<int>(endTime.value);
+      map['end_time'] = Variable<DateTime>(endTime.value);
     }
     if (shiftName.present) {
       map['shift_name'] = Variable<String>(shiftName.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -3561,6 +3706,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
           ..write('startTime: $startTime, ')
           ..write('endTime: $endTime, ')
           ..write('shiftName: $shiftName, ')
+          ..write('isActive: $isActive, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -5006,6 +5152,7 @@ typedef $$ChoferesTableCreateCompanionBuilder =
       Value<String?> alias,
       Value<String?> mobileNumber,
       Value<String?> picturePath,
+      Value<double> balance,
       Value<bool> is_active,
       Value<bool> isSynced,
       Value<int> rowid,
@@ -5019,6 +5166,7 @@ typedef $$ChoferesTableUpdateCompanionBuilder =
       Value<String?> alias,
       Value<String?> mobileNumber,
       Value<String?> picturePath,
+      Value<double> balance,
       Value<bool> is_active,
       Value<bool> isSynced,
       Value<int> rowid,
@@ -5106,6 +5254,11 @@ class $$ChoferesTableFilterComposer
 
   ColumnFilters<String> get picturePath => $composableBuilder(
     column: $table.picturePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get balance => $composableBuilder(
+    column: $table.balance,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5214,6 +5367,11 @@ class $$ChoferesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get balance => $composableBuilder(
+    column: $table.balance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get is_active => $composableBuilder(
     column: $table.is_active,
     builder: (column) => ColumnOrderings(column),
@@ -5258,6 +5416,9 @@ class $$ChoferesTableAnnotationComposer
     column: $table.picturePath,
     builder: (column) => column,
   );
+
+  GeneratedColumn<double> get balance =>
+      $composableBuilder(column: $table.balance, builder: (column) => column);
 
   GeneratedColumn<bool> get is_active =>
       $composableBuilder(column: $table.is_active, builder: (column) => column);
@@ -5354,6 +5515,7 @@ class $$ChoferesTableTableManager
                 Value<String?> alias = const Value.absent(),
                 Value<String?> mobileNumber = const Value.absent(),
                 Value<String?> picturePath = const Value.absent(),
+                Value<double> balance = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -5365,6 +5527,7 @@ class $$ChoferesTableTableManager
                 alias: alias,
                 mobileNumber: mobileNumber,
                 picturePath: picturePath,
+                balance: balance,
                 is_active: is_active,
                 isSynced: isSynced,
                 rowid: rowid,
@@ -5378,6 +5541,7 @@ class $$ChoferesTableTableManager
                 Value<String?> alias = const Value.absent(),
                 Value<String?> mobileNumber = const Value.absent(),
                 Value<String?> picturePath = const Value.absent(),
+                Value<double> balance = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -5389,6 +5553,7 @@ class $$ChoferesTableTableManager
                 alias: alias,
                 mobileNumber: mobileNumber,
                 picturePath: picturePath,
+                balance: balance,
                 is_active: is_active,
                 isSynced: isSynced,
                 rowid: rowid,
@@ -5484,6 +5649,7 @@ typedef $$ColectivosTableCreateCompanionBuilder =
       Value<int?> number,
       Value<String?> fuelAmount,
       Value<DateTime?> fuelDate,
+      Value<DateTime?> felDate,
       Value<bool> is_active,
       Value<bool> isSynced,
       Value<int> rowid,
@@ -5496,6 +5662,7 @@ typedef $$ColectivosTableUpdateCompanionBuilder =
       Value<int?> number,
       Value<String?> fuelAmount,
       Value<DateTime?> fuelDate,
+      Value<DateTime?> felDate,
       Value<bool> is_active,
       Value<bool> isSynced,
       Value<int> rowid,
@@ -5588,6 +5755,11 @@ class $$ColectivosTableFilterComposer
 
   ColumnFilters<DateTime> get fuelDate => $composableBuilder(
     column: $table.fuelDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get felDate => $composableBuilder(
+    column: $table.felDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5691,6 +5863,11 @@ class $$ColectivosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get felDate => $composableBuilder(
+    column: $table.felDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get is_active => $composableBuilder(
     column: $table.is_active,
     builder: (column) => ColumnOrderings(column),
@@ -5730,6 +5907,9 @@ class $$ColectivosTableAnnotationComposer
 
   GeneratedColumn<DateTime> get fuelDate =>
       $composableBuilder(column: $table.fuelDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get felDate =>
+      $composableBuilder(column: $table.felDate, builder: (column) => column);
 
   GeneratedColumn<bool> get is_active =>
       $composableBuilder(column: $table.is_active, builder: (column) => column);
@@ -5825,6 +6005,7 @@ class $$ColectivosTableTableManager
                 Value<int?> number = const Value.absent(),
                 Value<String?> fuelAmount = const Value.absent(),
                 Value<DateTime?> fuelDate = const Value.absent(),
+                Value<DateTime?> felDate = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -5835,6 +6016,7 @@ class $$ColectivosTableTableManager
                 number: number,
                 fuelAmount: fuelAmount,
                 fuelDate: fuelDate,
+                felDate: felDate,
                 is_active: is_active,
                 isSynced: isSynced,
                 rowid: rowid,
@@ -5847,6 +6029,7 @@ class $$ColectivosTableTableManager
                 Value<int?> number = const Value.absent(),
                 Value<String?> fuelAmount = const Value.absent(),
                 Value<DateTime?> fuelDate = const Value.absent(),
+                Value<DateTime?> felDate = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -5857,6 +6040,7 @@ class $$ColectivosTableTableManager
                 number: number,
                 fuelAmount: fuelAmount,
                 fuelDate: fuelDate,
+                felDate: felDate,
                 is_active: is_active,
                 isSynced: isSynced,
                 rowid: rowid,
@@ -8298,20 +8482,22 @@ typedef $$RecorridoShiftsTableCreateCompanionBuilder =
     RecorridoShiftsCompanion Function({
       required String id,
       required String recorridoId,
-      required WeekDays weekDay,
-      required int startTime,
-      required int endTime,
+      required List<WeekDays> weekDay,
+      required DateTime startTime,
+      required DateTime endTime,
       required String shiftName,
+      Value<bool> isActive,
       Value<int> rowid,
     });
 typedef $$RecorridoShiftsTableUpdateCompanionBuilder =
     RecorridoShiftsCompanion Function({
       Value<String> id,
       Value<String> recorridoId,
-      Value<WeekDays> weekDay,
-      Value<int> startTime,
-      Value<int> endTime,
+      Value<List<WeekDays>> weekDay,
+      Value<DateTime> startTime,
+      Value<DateTime> endTime,
       Value<String> shiftName,
+      Value<bool> isActive,
       Value<int> rowid,
     });
 
@@ -8402,24 +8588,29 @@ class $$RecorridoShiftsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnWithTypeConverterFilters<WeekDays, WeekDays, int> get weekDay =>
-      $composableBuilder(
-        column: $table.weekDay,
-        builder: (column) => ColumnWithTypeConverterFilters(column),
-      );
+  ColumnWithTypeConverterFilters<List<WeekDays>, List<WeekDays>, String>
+  get weekDay => $composableBuilder(
+    column: $table.weekDay,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 
-  ColumnFilters<int> get startTime => $composableBuilder(
+  ColumnFilters<DateTime> get startTime => $composableBuilder(
     column: $table.startTime,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<int> get endTime => $composableBuilder(
+  ColumnFilters<DateTime> get endTime => $composableBuilder(
     column: $table.endTime,
     builder: (column) => ColumnFilters(column),
   );
 
   ColumnFilters<String> get shiftName => $composableBuilder(
     column: $table.shiftName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8511,23 +8702,28 @@ class $$RecorridoShiftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get weekDay => $composableBuilder(
+  ColumnOrderings<String> get weekDay => $composableBuilder(
     column: $table.weekDay,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get startTime => $composableBuilder(
+  ColumnOrderings<DateTime> get startTime => $composableBuilder(
     column: $table.startTime,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<int> get endTime => $composableBuilder(
+  ColumnOrderings<DateTime> get endTime => $composableBuilder(
     column: $table.endTime,
     builder: (column) => ColumnOrderings(column),
   );
 
   ColumnOrderings<String> get shiftName => $composableBuilder(
     column: $table.shiftName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -8567,17 +8763,20 @@ class $$RecorridoShiftsTableAnnotationComposer
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<WeekDays, int> get weekDay =>
+  GeneratedColumnWithTypeConverter<List<WeekDays>, String> get weekDay =>
       $composableBuilder(column: $table.weekDay, builder: (column) => column);
 
-  GeneratedColumn<int> get startTime =>
+  GeneratedColumn<DateTime> get startTime =>
       $composableBuilder(column: $table.startTime, builder: (column) => column);
 
-  GeneratedColumn<int> get endTime =>
+  GeneratedColumn<DateTime> get endTime =>
       $composableBuilder(column: $table.endTime, builder: (column) => column);
 
   GeneratedColumn<String> get shiftName =>
       $composableBuilder(column: $table.shiftName, builder: (column) => column);
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
 
   $$RecorridosTableAnnotationComposer get recorridoId {
     final $$RecorridosTableAnnotationComposer composer = $composerBuilder(
@@ -8689,10 +8888,11 @@ class $$RecorridoShiftsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> recorridoId = const Value.absent(),
-                Value<WeekDays> weekDay = const Value.absent(),
-                Value<int> startTime = const Value.absent(),
-                Value<int> endTime = const Value.absent(),
+                Value<List<WeekDays>> weekDay = const Value.absent(),
+                Value<DateTime> startTime = const Value.absent(),
+                Value<DateTime> endTime = const Value.absent(),
                 Value<String> shiftName = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecorridoShiftsCompanion(
                 id: id,
@@ -8701,16 +8901,18 @@ class $$RecorridoShiftsTableTableManager
                 startTime: startTime,
                 endTime: endTime,
                 shiftName: shiftName,
+                isActive: isActive,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String id,
                 required String recorridoId,
-                required WeekDays weekDay,
-                required int startTime,
-                required int endTime,
+                required List<WeekDays> weekDay,
+                required DateTime startTime,
+                required DateTime endTime,
                 required String shiftName,
+                Value<bool> isActive = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecorridoShiftsCompanion.insert(
                 id: id,
@@ -8719,6 +8921,7 @@ class $$RecorridoShiftsTableTableManager
                 startTime: startTime,
                 endTime: endTime,
                 shiftName: shiftName,
+                isActive: isActive,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

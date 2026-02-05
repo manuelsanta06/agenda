@@ -108,6 +108,8 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
     super.initState();
     _stopDateTime=[DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0)];
     _stopControllers=[TextEditingController()];
+    _addStopField();
+    _addStopField();
   }
 
   void _addStopField() {
@@ -125,9 +127,9 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
   }
 
   void _getDateTime(int index)async{
-     if(!repeat||index==0)
-       _stopDateTime[index]=await getDatetime(context,_stopDateTime[index])??_stopDateTime[index];
-     else{
+    if(!repeat||index==0)
+      _stopDateTime[index]=await getDatetime(context,_stopDateTime[index])??_stopDateTime[index];
+    else{
       final tmp=await getTime(context);
       if(tmp==null)return;
       _stopDateTime[index]=DateTime(
@@ -137,8 +139,8 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
         tmp.hour,   // Usas la hora de TimeOfDay
         tmp.minute, // Usas los minutos de TimeOfDay
       );
-   }
-     setState((){});
+    }
+    setState((){});
   }
 
   void _onSave() {
@@ -268,7 +270,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
               ),
               const SizedBox(height: 5),
 
-              Row(children: [
+              Row(children:[
                 Expanded(child:TextFormField(
                   controller:_contactNameC,
                   textCapitalization: TextCapitalization.words,
@@ -300,30 +302,56 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
               const SizedBox(height: 5),
 
               // STOPS
-              Text(
-                widget.isTrip?"Paradas":"lugar",
+              Text( widget.isTrip?"Paradas":"lugar",
                 style:TextStyle(fontSize:16, fontWeight:FontWeight.bold),
               ),
               Expanded(child:ListView.builder(
                 itemCount:_stopControllers.length,
                 itemBuilder:(context, index) {
+                  bool dated=!(((_stopDateTime[index]?.hour??0)==0)&&((_stopDateTime[index]?.minute??0)==0));
                   return Padding(
                     padding:const EdgeInsets.symmetric(vertical:4.0),
                     child:Row(
                       children:[
                         //TIME PICKER
                         Container(
+                          width: 65,
+                          height: 50,
                           margin: EdgeInsets.only(right:5),
-                          child:CircleAvatar(
-                            backgroundColor:(((_stopDateTime[index]?.hour??0)==0)
-                              &&((_stopDateTime[index]?.minute??0)==0))?
-                              Colors.red:Colors.green,
-                            child:IconButton(
-                              icon: const Icon(Icons.calendar_month),
-                              onPressed:()=>_getDateTime(index),
+                          child: Material(
+                            color:(dated?widget.mainColor:Colors.red).withAlpha(50),
+                            shape:RoundedRectangleBorder(
+                              borderRadius:BorderRadius.circular(12),
+                              side:BorderSide(color:dated?widget.mainColor:Colors.red,width:1.5)
                             ),
-                          ),
+                            child:InkWell(
+                              child:dated?
+                                Column(mainAxisAlignment:MainAxisAlignment.center,children:[
+                                  //TIME
+                                  Text("${_stopDateTime[index].hour.toString().padLeft(2,'0')}:${_stopDateTime[index].minute.toString().padLeft(2,'0')}",
+                                    style: TextStyle(
+                                      color: widget.mainColor, 
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 15,
+                                      height: 1.0,
+                                    ),
+                                  ),
+                                  //DATE
+                                  Text("${_stopDateTime[index].day.toString().padLeft(2, '0')}/${_stopDateTime[index].month.toString().padLeft(2, '0')}", 
+                                    style:TextStyle(
+                                      color:widget.mainColor, 
+                                      fontWeight:FontWeight.bold,
+                                      fontSize:10,
+                                    ),
+                                  ),
+                                ],)
+                                :const Icon(Icons.calendar_month),
+                              onTap:()=>_getDateTime(index),
+                            ),
+                          )
                         ),
+
+                        //STOP NAME INPUT
                         Expanded(child:TextFormField(
                           controller:_stopControllers[index],
                           decoration:InputDecoration(
@@ -363,7 +391,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                   );
                 },
               )),
-              if(widget.isTrip)
+              //if(widget.isTrip||_stopControllers.length<3)
               TextButton.icon(
                 onPressed:_addStopField,
                 icon: Icon(Icons.add, color:widget.mainColor),
