@@ -1,6 +1,7 @@
 import 'package:agenda/pages/recorridos.dart';
 import 'package:agenda/utilities/encargados.dart';
 import 'package:agenda/utilities/shifts.dart';
+import 'package:agenda/widgets/text.dart';
 
 import '../widgets/searchBar.dart';
 import 'package:flutter/material.dart';
@@ -54,22 +55,7 @@ class recorridoInfo extends StatelessWidget{
                   overflow:TextOverflow.ellipsis,
                 ),
               ),
-              Container(
-                padding:const EdgeInsets.symmetric(horizontal:10,vertical:4),
-                decoration:BoxDecoration(
-                  color:maincolor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: maincolor.withOpacity(0.5)),
-                ),
-                child: Text(
-                  "\$${numberParser(reco.basePrice)}",
-                  style: TextStyle(
-                    color: maincolor, 
-                    fontSize: 14, 
-                    fontWeight: FontWeight.bold
-                  ),
-                ),
-              ),
+              pillText("\$${numberParser(reco.basePrice)}",maincolor),
             ],
           ),
 
@@ -122,8 +108,10 @@ class recorridoInfo extends StatelessWidget{
           children:[
             ...List.generate(shifts.length,(index)=>shiftToCard(
               context,maincolor,shifts[index],
-              ()async{await showCreateModifiShiftSheet(context,maincolor,reco.id,shiftEdit:shifts[index]);},
-              ()async{
+              onPressed:()async{await showCreateModifiShiftSheet(
+                context,maincolor,reco.id,shiftEdit:shifts[index]
+              );},
+              onLongPressed:()async{
                 //TODO: shift removing
               }
             )),

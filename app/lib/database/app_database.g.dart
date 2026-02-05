@@ -659,6 +659,18 @@ class $ColectivosTable extends Colectivos
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _capacityMeta = const VerificationMeta(
+    'capacity',
+  );
+  @override
+  late final GeneratedColumn<int> capacity = GeneratedColumn<int>(
+    'capacity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _fuelAmountMeta = const VerificationMeta(
     'fuelAmount',
   );
@@ -666,9 +678,9 @@ class $ColectivosTable extends Colectivos
   late final GeneratedColumn<String> fuelAmount = GeneratedColumn<String>(
     'fuel_amount',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.string,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _fuelDateMeta = const VerificationMeta(
     'fuelDate',
@@ -677,20 +689,20 @@ class $ColectivosTable extends Colectivos
   late final GeneratedColumn<DateTime> fuelDate = GeneratedColumn<DateTime>(
     'fuel_date',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
-  static const VerificationMeta _felDateMeta = const VerificationMeta(
-    'felDate',
+  static const VerificationMeta _oilDateMeta = const VerificationMeta(
+    'oilDate',
   );
   @override
-  late final GeneratedColumn<DateTime> felDate = GeneratedColumn<DateTime>(
-    'fel_date',
+  late final GeneratedColumn<DateTime> oilDate = GeneratedColumn<DateTime>(
+    'oil_date',
     aliasedName,
-    true,
+    false,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _is_activeMeta = const VerificationMeta(
     'is_active',
@@ -728,9 +740,10 @@ class $ColectivosTable extends Colectivos
     plate,
     name,
     number,
+    capacity,
     fuelAmount,
     fuelDate,
-    felDate,
+    oilDate,
     is_active,
     isSynced,
   ];
@@ -771,23 +784,35 @@ class $ColectivosTable extends Colectivos
         number.isAcceptableOrUnknown(data['number']!, _numberMeta),
       );
     }
+    if (data.containsKey('capacity')) {
+      context.handle(
+        _capacityMeta,
+        capacity.isAcceptableOrUnknown(data['capacity']!, _capacityMeta),
+      );
+    }
     if (data.containsKey('fuel_amount')) {
       context.handle(
         _fuelAmountMeta,
         fuelAmount.isAcceptableOrUnknown(data['fuel_amount']!, _fuelAmountMeta),
       );
+    } else if (isInserting) {
+      context.missing(_fuelAmountMeta);
     }
     if (data.containsKey('fuel_date')) {
       context.handle(
         _fuelDateMeta,
         fuelDate.isAcceptableOrUnknown(data['fuel_date']!, _fuelDateMeta),
       );
+    } else if (isInserting) {
+      context.missing(_fuelDateMeta);
     }
-    if (data.containsKey('fel_date')) {
+    if (data.containsKey('oil_date')) {
       context.handle(
-        _felDateMeta,
-        felDate.isAcceptableOrUnknown(data['fel_date']!, _felDateMeta),
+        _oilDateMeta,
+        oilDate.isAcceptableOrUnknown(data['oil_date']!, _oilDateMeta),
       );
+    } else if (isInserting) {
+      context.missing(_oilDateMeta);
     }
     if (data.containsKey('is_active')) {
       context.handle(
@@ -826,18 +851,22 @@ class $ColectivosTable extends Colectivos
         DriftSqlType.int,
         data['${effectivePrefix}number'],
       ),
+      capacity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}capacity'],
+      )!,
       fuelAmount: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}fuel_amount'],
-      ),
+      )!,
       fuelDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}fuel_date'],
-      ),
-      felDate: attachedDatabase.typeMapping.read(
+      )!,
+      oilDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
-        data['${effectivePrefix}fel_date'],
-      ),
+        data['${effectivePrefix}oil_date'],
+      )!,
       is_active: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
@@ -860,9 +889,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
   final String plate;
   final String? name;
   final int? number;
-  final String? fuelAmount;
-  final DateTime? fuelDate;
-  final DateTime? felDate;
+  final int capacity;
+  final String fuelAmount;
+  final DateTime fuelDate;
+  final DateTime oilDate;
   final bool is_active;
   final bool isSynced;
   const Colectivo({
@@ -870,9 +900,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     required this.plate,
     this.name,
     this.number,
-    this.fuelAmount,
-    this.fuelDate,
-    this.felDate,
+    required this.capacity,
+    required this.fuelAmount,
+    required this.fuelDate,
+    required this.oilDate,
     required this.is_active,
     required this.isSynced,
   });
@@ -887,15 +918,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     if (!nullToAbsent || number != null) {
       map['number'] = Variable<int>(number);
     }
-    if (!nullToAbsent || fuelAmount != null) {
-      map['fuel_amount'] = Variable<String>(fuelAmount);
-    }
-    if (!nullToAbsent || fuelDate != null) {
-      map['fuel_date'] = Variable<DateTime>(fuelDate);
-    }
-    if (!nullToAbsent || felDate != null) {
-      map['fel_date'] = Variable<DateTime>(felDate);
-    }
+    map['capacity'] = Variable<int>(capacity);
+    map['fuel_amount'] = Variable<String>(fuelAmount);
+    map['fuel_date'] = Variable<DateTime>(fuelDate);
+    map['oil_date'] = Variable<DateTime>(oilDate);
     map['is_active'] = Variable<bool>(is_active);
     map['is_synced'] = Variable<bool>(isSynced);
     return map;
@@ -909,15 +935,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       number: number == null && nullToAbsent
           ? const Value.absent()
           : Value(number),
-      fuelAmount: fuelAmount == null && nullToAbsent
-          ? const Value.absent()
-          : Value(fuelAmount),
-      fuelDate: fuelDate == null && nullToAbsent
-          ? const Value.absent()
-          : Value(fuelDate),
-      felDate: felDate == null && nullToAbsent
-          ? const Value.absent()
-          : Value(felDate),
+      capacity: Value(capacity),
+      fuelAmount: Value(fuelAmount),
+      fuelDate: Value(fuelDate),
+      oilDate: Value(oilDate),
       is_active: Value(is_active),
       isSynced: Value(isSynced),
     );
@@ -933,9 +954,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       plate: serializer.fromJson<String>(json['plate']),
       name: serializer.fromJson<String?>(json['name']),
       number: serializer.fromJson<int?>(json['number']),
-      fuelAmount: serializer.fromJson<String?>(json['fuelAmount']),
-      fuelDate: serializer.fromJson<DateTime?>(json['fuelDate']),
-      felDate: serializer.fromJson<DateTime?>(json['felDate']),
+      capacity: serializer.fromJson<int>(json['capacity']),
+      fuelAmount: serializer.fromJson<String>(json['fuelAmount']),
+      fuelDate: serializer.fromJson<DateTime>(json['fuelDate']),
+      oilDate: serializer.fromJson<DateTime>(json['oilDate']),
       is_active: serializer.fromJson<bool>(json['is_active']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
@@ -948,9 +970,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       'plate': serializer.toJson<String>(plate),
       'name': serializer.toJson<String?>(name),
       'number': serializer.toJson<int?>(number),
-      'fuelAmount': serializer.toJson<String?>(fuelAmount),
-      'fuelDate': serializer.toJson<DateTime?>(fuelDate),
-      'felDate': serializer.toJson<DateTime?>(felDate),
+      'capacity': serializer.toJson<int>(capacity),
+      'fuelAmount': serializer.toJson<String>(fuelAmount),
+      'fuelDate': serializer.toJson<DateTime>(fuelDate),
+      'oilDate': serializer.toJson<DateTime>(oilDate),
       'is_active': serializer.toJson<bool>(is_active),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
@@ -961,9 +984,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     String? plate,
     Value<String?> name = const Value.absent(),
     Value<int?> number = const Value.absent(),
-    Value<String?> fuelAmount = const Value.absent(),
-    Value<DateTime?> fuelDate = const Value.absent(),
-    Value<DateTime?> felDate = const Value.absent(),
+    int? capacity,
+    String? fuelAmount,
+    DateTime? fuelDate,
+    DateTime? oilDate,
     bool? is_active,
     bool? isSynced,
   }) => Colectivo(
@@ -971,9 +995,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     plate: plate ?? this.plate,
     name: name.present ? name.value : this.name,
     number: number.present ? number.value : this.number,
-    fuelAmount: fuelAmount.present ? fuelAmount.value : this.fuelAmount,
-    fuelDate: fuelDate.present ? fuelDate.value : this.fuelDate,
-    felDate: felDate.present ? felDate.value : this.felDate,
+    capacity: capacity ?? this.capacity,
+    fuelAmount: fuelAmount ?? this.fuelAmount,
+    fuelDate: fuelDate ?? this.fuelDate,
+    oilDate: oilDate ?? this.oilDate,
     is_active: is_active ?? this.is_active,
     isSynced: isSynced ?? this.isSynced,
   );
@@ -983,11 +1008,12 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
       plate: data.plate.present ? data.plate.value : this.plate,
       name: data.name.present ? data.name.value : this.name,
       number: data.number.present ? data.number.value : this.number,
+      capacity: data.capacity.present ? data.capacity.value : this.capacity,
       fuelAmount: data.fuelAmount.present
           ? data.fuelAmount.value
           : this.fuelAmount,
       fuelDate: data.fuelDate.present ? data.fuelDate.value : this.fuelDate,
-      felDate: data.felDate.present ? data.felDate.value : this.felDate,
+      oilDate: data.oilDate.present ? data.oilDate.value : this.oilDate,
       is_active: data.is_active.present ? data.is_active.value : this.is_active,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
@@ -1000,9 +1026,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           ..write('plate: $plate, ')
           ..write('name: $name, ')
           ..write('number: $number, ')
+          ..write('capacity: $capacity, ')
           ..write('fuelAmount: $fuelAmount, ')
           ..write('fuelDate: $fuelDate, ')
-          ..write('felDate: $felDate, ')
+          ..write('oilDate: $oilDate, ')
           ..write('is_active: $is_active, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
@@ -1015,9 +1042,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
     plate,
     name,
     number,
+    capacity,
     fuelAmount,
     fuelDate,
-    felDate,
+    oilDate,
     is_active,
     isSynced,
   );
@@ -1029,9 +1057,10 @@ class Colectivo extends DataClass implements Insertable<Colectivo> {
           other.plate == this.plate &&
           other.name == this.name &&
           other.number == this.number &&
+          other.capacity == this.capacity &&
           other.fuelAmount == this.fuelAmount &&
           other.fuelDate == this.fuelDate &&
-          other.felDate == this.felDate &&
+          other.oilDate == this.oilDate &&
           other.is_active == this.is_active &&
           other.isSynced == this.isSynced);
 }
@@ -1041,9 +1070,10 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
   final Value<String> plate;
   final Value<String?> name;
   final Value<int?> number;
-  final Value<String?> fuelAmount;
-  final Value<DateTime?> fuelDate;
-  final Value<DateTime?> felDate;
+  final Value<int> capacity;
+  final Value<String> fuelAmount;
+  final Value<DateTime> fuelDate;
+  final Value<DateTime> oilDate;
   final Value<bool> is_active;
   final Value<bool> isSynced;
   final Value<int> rowid;
@@ -1052,9 +1082,10 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     this.plate = const Value.absent(),
     this.name = const Value.absent(),
     this.number = const Value.absent(),
+    this.capacity = const Value.absent(),
     this.fuelAmount = const Value.absent(),
     this.fuelDate = const Value.absent(),
-    this.felDate = const Value.absent(),
+    this.oilDate = const Value.absent(),
     this.is_active = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1064,22 +1095,27 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     required String plate,
     this.name = const Value.absent(),
     this.number = const Value.absent(),
-    this.fuelAmount = const Value.absent(),
-    this.fuelDate = const Value.absent(),
-    this.felDate = const Value.absent(),
+    this.capacity = const Value.absent(),
+    required String fuelAmount,
+    required DateTime fuelDate,
+    required DateTime oilDate,
     this.is_active = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       plate = Value(plate);
+       plate = Value(plate),
+       fuelAmount = Value(fuelAmount),
+       fuelDate = Value(fuelDate),
+       oilDate = Value(oilDate);
   static Insertable<Colectivo> custom({
     Expression<String>? id,
     Expression<String>? plate,
     Expression<String>? name,
     Expression<int>? number,
+    Expression<int>? capacity,
     Expression<String>? fuelAmount,
     Expression<DateTime>? fuelDate,
-    Expression<DateTime>? felDate,
+    Expression<DateTime>? oilDate,
     Expression<bool>? is_active,
     Expression<bool>? isSynced,
     Expression<int>? rowid,
@@ -1089,9 +1125,10 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
       if (plate != null) 'plate': plate,
       if (name != null) 'name': name,
       if (number != null) 'number': number,
+      if (capacity != null) 'capacity': capacity,
       if (fuelAmount != null) 'fuel_amount': fuelAmount,
       if (fuelDate != null) 'fuel_date': fuelDate,
-      if (felDate != null) 'fel_date': felDate,
+      if (oilDate != null) 'oil_date': oilDate,
       if (is_active != null) 'is_active': is_active,
       if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
@@ -1103,9 +1140,10 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     Value<String>? plate,
     Value<String?>? name,
     Value<int?>? number,
-    Value<String?>? fuelAmount,
-    Value<DateTime?>? fuelDate,
-    Value<DateTime?>? felDate,
+    Value<int>? capacity,
+    Value<String>? fuelAmount,
+    Value<DateTime>? fuelDate,
+    Value<DateTime>? oilDate,
     Value<bool>? is_active,
     Value<bool>? isSynced,
     Value<int>? rowid,
@@ -1115,9 +1153,10 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
       plate: plate ?? this.plate,
       name: name ?? this.name,
       number: number ?? this.number,
+      capacity: capacity ?? this.capacity,
       fuelAmount: fuelAmount ?? this.fuelAmount,
       fuelDate: fuelDate ?? this.fuelDate,
-      felDate: felDate ?? this.felDate,
+      oilDate: oilDate ?? this.oilDate,
       is_active: is_active ?? this.is_active,
       isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
@@ -1139,14 +1178,17 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
     if (number.present) {
       map['number'] = Variable<int>(number.value);
     }
+    if (capacity.present) {
+      map['capacity'] = Variable<int>(capacity.value);
+    }
     if (fuelAmount.present) {
       map['fuel_amount'] = Variable<String>(fuelAmount.value);
     }
     if (fuelDate.present) {
       map['fuel_date'] = Variable<DateTime>(fuelDate.value);
     }
-    if (felDate.present) {
-      map['fel_date'] = Variable<DateTime>(felDate.value);
+    if (oilDate.present) {
+      map['oil_date'] = Variable<DateTime>(oilDate.value);
     }
     if (is_active.present) {
       map['is_active'] = Variable<bool>(is_active.value);
@@ -1167,9 +1209,10 @@ class ColectivosCompanion extends UpdateCompanion<Colectivo> {
           ..write('plate: $plate, ')
           ..write('name: $name, ')
           ..write('number: $number, ')
+          ..write('capacity: $capacity, ')
           ..write('fuelAmount: $fuelAmount, ')
           ..write('fuelDate: $fuelDate, ')
-          ..write('felDate: $felDate, ')
+          ..write('oilDate: $oilDate, ')
           ..write('is_active: $is_active, ')
           ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
@@ -5647,9 +5690,10 @@ typedef $$ColectivosTableCreateCompanionBuilder =
       required String plate,
       Value<String?> name,
       Value<int?> number,
-      Value<String?> fuelAmount,
-      Value<DateTime?> fuelDate,
-      Value<DateTime?> felDate,
+      Value<int> capacity,
+      required String fuelAmount,
+      required DateTime fuelDate,
+      required DateTime oilDate,
       Value<bool> is_active,
       Value<bool> isSynced,
       Value<int> rowid,
@@ -5660,9 +5704,10 @@ typedef $$ColectivosTableUpdateCompanionBuilder =
       Value<String> plate,
       Value<String?> name,
       Value<int?> number,
-      Value<String?> fuelAmount,
-      Value<DateTime?> fuelDate,
-      Value<DateTime?> felDate,
+      Value<int> capacity,
+      Value<String> fuelAmount,
+      Value<DateTime> fuelDate,
+      Value<DateTime> oilDate,
       Value<bool> is_active,
       Value<bool> isSynced,
       Value<int> rowid,
@@ -5748,6 +5793,11 @@ class $$ColectivosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<int> get capacity => $composableBuilder(
+    column: $table.capacity,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get fuelAmount => $composableBuilder(
     column: $table.fuelAmount,
     builder: (column) => ColumnFilters(column),
@@ -5758,8 +5808,8 @@ class $$ColectivosTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<DateTime> get felDate => $composableBuilder(
-    column: $table.felDate,
+  ColumnFilters<DateTime> get oilDate => $composableBuilder(
+    column: $table.oilDate,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5853,6 +5903,11 @@ class $$ColectivosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get capacity => $composableBuilder(
+    column: $table.capacity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get fuelAmount => $composableBuilder(
     column: $table.fuelAmount,
     builder: (column) => ColumnOrderings(column),
@@ -5863,8 +5918,8 @@ class $$ColectivosTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<DateTime> get felDate => $composableBuilder(
-    column: $table.felDate,
+  ColumnOrderings<DateTime> get oilDate => $composableBuilder(
+    column: $table.oilDate,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -5900,6 +5955,9 @@ class $$ColectivosTableAnnotationComposer
   GeneratedColumn<int> get number =>
       $composableBuilder(column: $table.number, builder: (column) => column);
 
+  GeneratedColumn<int> get capacity =>
+      $composableBuilder(column: $table.capacity, builder: (column) => column);
+
   GeneratedColumn<String> get fuelAmount => $composableBuilder(
     column: $table.fuelAmount,
     builder: (column) => column,
@@ -5908,8 +5966,8 @@ class $$ColectivosTableAnnotationComposer
   GeneratedColumn<DateTime> get fuelDate =>
       $composableBuilder(column: $table.fuelDate, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get felDate =>
-      $composableBuilder(column: $table.felDate, builder: (column) => column);
+  GeneratedColumn<DateTime> get oilDate =>
+      $composableBuilder(column: $table.oilDate, builder: (column) => column);
 
   GeneratedColumn<bool> get is_active =>
       $composableBuilder(column: $table.is_active, builder: (column) => column);
@@ -6003,9 +6061,10 @@ class $$ColectivosTableTableManager
                 Value<String> plate = const Value.absent(),
                 Value<String?> name = const Value.absent(),
                 Value<int?> number = const Value.absent(),
-                Value<String?> fuelAmount = const Value.absent(),
-                Value<DateTime?> fuelDate = const Value.absent(),
-                Value<DateTime?> felDate = const Value.absent(),
+                Value<int> capacity = const Value.absent(),
+                Value<String> fuelAmount = const Value.absent(),
+                Value<DateTime> fuelDate = const Value.absent(),
+                Value<DateTime> oilDate = const Value.absent(),
                 Value<bool> is_active = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6014,9 +6073,10 @@ class $$ColectivosTableTableManager
                 plate: plate,
                 name: name,
                 number: number,
+                capacity: capacity,
                 fuelAmount: fuelAmount,
                 fuelDate: fuelDate,
-                felDate: felDate,
+                oilDate: oilDate,
                 is_active: is_active,
                 isSynced: isSynced,
                 rowid: rowid,
@@ -6027,9 +6087,10 @@ class $$ColectivosTableTableManager
                 required String plate,
                 Value<String?> name = const Value.absent(),
                 Value<int?> number = const Value.absent(),
-                Value<String?> fuelAmount = const Value.absent(),
-                Value<DateTime?> fuelDate = const Value.absent(),
-                Value<DateTime?> felDate = const Value.absent(),
+                Value<int> capacity = const Value.absent(),
+                required String fuelAmount,
+                required DateTime fuelDate,
+                required DateTime oilDate,
                 Value<bool> is_active = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -6038,9 +6099,10 @@ class $$ColectivosTableTableManager
                 plate: plate,
                 name: name,
                 number: number,
+                capacity: capacity,
                 fuelAmount: fuelAmount,
                 fuelDate: fuelDate,
-                felDate: felDate,
+                oilDate: oilDate,
                 is_active: is_active,
                 isSynced: isSynced,
                 rowid: rowid,

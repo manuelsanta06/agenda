@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:agenda/database/app_database.dart';
 import 'package:drift/drift.dart' as drift;
 import '../widgets/cards.dart';
+import 'package:agenda/widgets/text.dart';
 import 'package:intl/intl.dart';
 import '../widgets/eventDetails.dart';
 import 'package:provider/provider.dart';
@@ -83,7 +84,7 @@ class eventInfo extends StatelessWidget{
         
         //CONTACT INFO card
         const SizedBox(height:20),
-        _buildSectionTitle("Contacto"),
+        subtitleLine("Contacto",maincolor),
         BasicCard(child:Column(children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -128,7 +129,7 @@ class eventInfo extends StatelessWidget{
 
         //CHOFERES card
         const SizedBox(height:20),
-        _buildSectionTitle("Choferes"),
+        subtitleLine("Choferes",maincolor),
         BasicCard(child:Column(children: [
           StreamBuilder(
             stream:(db.select(db.choferes).join([drift.innerJoin(
@@ -182,7 +183,7 @@ class eventInfo extends StatelessWidget{
 
         //COLECTIVOS card
         const SizedBox(height:20),
-        _buildSectionTitle("Colectivos"),
+        subtitleLine("Colectivos",maincolor),
         BasicCard(child:Column(children: [
           StreamBuilder(
             stream:(db.select(db.colectivos).join([drift.innerJoin(
@@ -210,6 +211,8 @@ class eventInfo extends StatelessWidget{
               return Column(
                 children:listaColectivos.map((sel){return colectivoToCard(
                   context,sel,maincolor,
+                  fullInfo:false,
+                  hideOptions:true,
                   onLongPress:()async{
                     await (db.delete(db.eventColectivos)
                       ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.colectivoId.equals(sel.id))).go();
@@ -234,7 +237,7 @@ class eventInfo extends StatelessWidget{
 
 
         const SizedBox(height:20),
-        _buildSectionTitle("Ruta"),
+        subtitleLine("Ruta",maincolor),
         if(sto.length>5)
         BasicCard(child:stopsLineVertical(sto,eve.repeat,maincolor))
         else
@@ -244,22 +247,6 @@ class eventInfo extends StatelessWidget{
   }
 
 
-  Widget _buildSectionTitle(String title) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10, left: 4),
-      padding: const EdgeInsets.only(left: 10),
-      decoration: BoxDecoration(
-        border:Border(left:BorderSide(color:maincolor, width:4.0,)),
-      ),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
 
   Widget _buildAddButton(String label, AsyncCallback onPressed){
     return InkWell(

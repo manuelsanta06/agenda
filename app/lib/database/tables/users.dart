@@ -33,9 +33,11 @@ class Colectivos extends Table {
   TextColumn get name => text().nullable()();
   IntColumn get number => integer().nullable()();
   
-  TextColumn get fuelAmount => text().nullable()();
-  DateTimeColumn get fuelDate => dateTime().nullable()();
-  DateTimeColumn get felDate => dateTime().nullable()();
+  IntColumn get capacity => integer().withDefault(const Constant(0))();
+
+  TextColumn get fuelAmount => text()();
+  DateTimeColumn get fuelDate => dateTime()();
+  DateTimeColumn get oilDate => dateTime()();
 
   BoolColumn get is_active => boolean().withDefault(const Constant(true))();
 

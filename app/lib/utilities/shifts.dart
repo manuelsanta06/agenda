@@ -14,10 +14,10 @@ import '../utilities/parsers.dart';
 Widget shiftToCard(
   BuildContext context,
   Color mainColor,
-  RecorridoShift shift,
+  RecorridoShift shift,{
   VoidCallback? onPressed,
   VoidCallback? onLongPressed
-){
+  }){
   return BasicCard(
     margin:const EdgeInsets.symmetric(vertical:10,horizontal:8),
     onPressed:onPressed,
@@ -100,7 +100,7 @@ class _CreateShiftFormState extends State<_ShiftForm>{
 
   Future<void> _onSave()async{
     if(!(_formKey.currentState?.validate()??false))return;
-    if(weekDays.isEmpty||begin==null||end==null)return;
+    if(weekDays.isEmpty||begin==null||end==null||end!.isBefore(begin!))return;
     final db = Provider.of<AppDatabase>(context, listen: false);
     final companion=RecorridoShiftsCompanion(
       id:drift.Value(widget.shiftEdit==null?const Uuid().v4():widget.shiftEdit!.id),

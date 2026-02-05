@@ -74,11 +74,8 @@ class _colectivosPageState extends State<colectivosPage>{
                     itemBuilder:(context, index){
                       return colectivoToCard(
                         context,filtered[index],colectivosPage.mainColor,
-                        onPressed:(!filtered[index].is_active)?
-                          null:()=>inputFuelDialog(context,filtered[index]),
-                        onLongPress:(filtered[index].is_active)?
-                          ()=>removeColectivoDialog(context,filtered[index],false):
-                          ()=>removeColectivoDialog(context,filtered[index],true),
+                        onPressed:null,
+                        onLongPress:null,
                       );
                     },
                   );

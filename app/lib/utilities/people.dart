@@ -1,4 +1,6 @@
 import 'package:agenda/database/app_database.dart';
+import 'package:agenda/widgets/cards.dart';
+import 'package:agenda/widgets/text.dart';
 import 'package:image_cropper/image_cropper.dart';
 import '../widgets/imageImput.dart';
 import '../widgets/searchBar.dart';
@@ -15,42 +17,7 @@ Color rotateColor(Color ete,int rotation){
   return HSLColor.fromAHSL(1.0,(HSLColor.fromColor(ete).hue+rotation)%360,1.0,0.5).toColor();
 }
 
-Widget dataLine(String text, Color mainColor) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 2),
-    child: Row(
-      children: [
-        Container(
-          width:6,height:6,
-          margin: const EdgeInsets.only(right: 8),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: mainColor,
-          ),
-        ),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-//TODO: usar "cachedNetworkImage" cuando haya servidor
-Widget buildAvatar(Chofer chofe, Color mainColor){
-  if(chofe.picturePath?.isNotEmpty??false){
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Image.file(
-        File(chofe.picturePath!),
-        //loadingBuilder:(BuildContext c){return const Center(child: CircularProgressIndicator())},
-        height: 72,
-      ),
-    );
-  }
+Widget initialsImage(Chofer chofe, Color mainColor){
   String letters;
   if(chofe.alias?.isNotEmpty??false)letters=chofe.alias![0];
   else letters=((chofe.name?.isNotEmpty??false)?chofe.name![0]:"")+
@@ -77,6 +44,21 @@ Widget buildAvatar(Chofer chofe, Color mainColor){
       ),
     ),
   );
+}
+
+//TODO: usar "cachedNetworkImage" cuando haya servidor
+Widget buildAvatar(Chofer chofe, Color mainColor){
+  if(chofe.picturePath?.isNotEmpty??false){
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Image.file(
+        File(chofe.picturePath!),
+        //loadingBuilder:(BuildContext c){return const Center(child: CircularProgressIndicator())},
+        height: 72,
+      ),
+    );
+  }
+  return initialsImage(chofe, mainColor);
 }
 
 
@@ -123,46 +105,38 @@ Widget choferToCard(
   VoidCallback? onPressed,
   VoidCallback? onLongPress,
 }){
-  
   return  Container(
     margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-    child: Material(
-      color: chofe.is_active&&!busy?Colors.white12:Colors.red.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(14),
-      clipBehavior: Clip.hardEdge,
+    child:BasicCard(
+      padding:const EdgeInsets.all(14),
+      tonality:chofe.is_active&&!busy?null:Colors.red.withOpacity(0.1),
+      onPressed:onPressed,
+      onLongPressed:onLongPress,
+      //borderRadius: BorderRadius.circular(14),
+      //clipBehavior: Clip.hardEdge,
 
-      child:InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onPressed,
-        onLongPress:onLongPress,
-        child: Padding(padding:const EdgeInsets.all(14),child:Row(
+      child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
+        buildAvatar(chofe, mainColor),
+        const SizedBox(width: 14),
+        Expanded(child:Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildAvatar(chofe, mainColor),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children:[
-                  Text(
-                    (chofe.alias?.isNotEmpty??false)?
-                      chofe.alias!
-                      :'${chofe.name?.split(" ").first??""} ${chofe.surname?.split(" ").first??""}',
-                    style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w600,),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      dataLine("DNI: ${chofe.dni}",mainColor),
-                      dataLine("Tel: ${chofe.mobileNumber}",mainColor),
-                    ],
-                  ),
-                ],
-              ),
+          children:[
+            Text(
+              (chofe.alias?.isNotEmpty??false)?
+                chofe.alias!
+                :'${chofe.name?.split(" ").first??""} ${chofe.surname?.split(" ").first??""}',
+              style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w600,),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                dataLine("DNI: ${chofe.dni}",mainColor),
+                dataLine("Tel: ${chofe.mobileNumber}",mainColor),
+              ],
             ),
           ],
-        )),
-      ),
+        ),),
+      ]),
     ),
   );
 }
