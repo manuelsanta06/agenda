@@ -2,6 +2,7 @@ import 'package:agenda/database/app_database.dart';
 import 'package:agenda/widgets/cards.dart';
 import 'package:agenda/widgets/text.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../widgets/imageImput.dart';
 import '../widgets/searchBar.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ Color rotateColor(Color ete,int rotation){
 
 Widget initialsImage(Chofer chofe, Color mainColor){
   String letters;
-  if(chofe.alias?.isNotEmpty??false)letters=chofe.alias![0];
+  if(chofe.alias?.isNotEmpty??false)letters=chofe.alias!.substring(0,2).toUpperCase();
   else letters=((chofe.name?.isNotEmpty??false)?chofe.name![0]:"")+
         ((chofe.surname?.isNotEmpty??false)?chofe.surname![0].toLowerCase():"");
 
@@ -61,7 +62,6 @@ Widget buildAvatar(Chofer chofe, Color mainColor){
   return initialsImage(chofe, mainColor);
 }
 
-
 Future<void> removeChoferDialog(BuildContext context, Chofer chofe,bool restaurar)async{
   return showDialog<void>(
     context: context,
@@ -102,6 +102,7 @@ Widget choferToCard(
   Chofer chofe,
   Color mainColor, {
   bool busy=false,
+  bool hideOptions=false,
   VoidCallback? onPressed,
   VoidCallback? onLongPress,
 }){
@@ -109,11 +110,60 @@ Widget choferToCard(
     margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
     child:BasicCard(
       padding:const EdgeInsets.all(14),
-      tonality:chofe.is_active&&!busy?null:Colors.red.withOpacity(0.1),
+      tonality:chofe.is_active&&!busy?null:Colors.red,
       onPressed:onPressed,
       onLongPressed:onLongPress,
-      //borderRadius: BorderRadius.circular(14),
-      //clipBehavior: Clip.hardEdge,
+      actionIcon:hideOptions?null:PopupMenuButton(
+        icon:const Icon(Icons.more_vert),
+        onSelected:(String result)async{
+          switch (result){
+            case 'edit':
+              final db = Provider.of<AppDatabase>(context,listen:false);
+              final newVal=await getChofer(context,mainColor,chofe);
+              if(newVal==null)return;
+              await(db.update(db.choferes)..where((s)=>s.id.equals(chofe.id))).write(newVal);
+              break;
+            case 'delete':
+              removeChoferDialog(context,chofe,!chofe.is_active);
+              break;
+            case 'chat':
+            await launchUrl(Uri.parse("https://wa.me/${chofe.mobileNumber}"),mode:LaunchMode.externalApplication);
+              break;
+            default:
+              return;
+          }
+        },
+        itemBuilder:(BuildContext Context)=><PopupMenuEntry<String>>[
+          PopupMenuItem<String>(
+            value:'edit',
+            child:Row(children:[
+              Icon(Icons.edit),
+              SizedBox(width:8),
+              Text('Editar')
+            ]),
+          ),
+          PopupMenuItem<String>(
+            value:'chat',
+            child:Row(children:[
+              Icon(Icons.phone),
+              SizedBox(width:8),
+              Text('Chat')
+            ]),
+          ),
+          PopupMenuItem<String>(
+            value:'delete',
+            child:Row(children:chofe.is_active? ([
+              Icon(Icons.delete, color: Colors.red), 
+              SizedBox(width: 8), 
+              Text('Borrar',style:TextStyle(color:Colors.red)),
+            ]):([
+              Icon(Icons.restore_from_trash,color: Colors.green),
+              SizedBox(width: 8), 
+              Text('Restaurar',style:TextStyle(color:Colors.green))
+            ])),
+          ),
+        ]
+      ),
 
       child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
         buildAvatar(chofe, mainColor),

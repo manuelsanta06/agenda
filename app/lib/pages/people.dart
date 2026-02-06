@@ -62,7 +62,7 @@ class _peoplePageState extends State<peoplePage>{
                 }
                 if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
-                final listaChoferes = snapshot.data!.where((tbl) => tbl.is_active||showInactives).toList();
+                final listaChoferes=snapshot.data!.where((tbl)=>showInactives?!tbl.is_active:tbl.is_active).toList();
 
                 // Aplicar filtro de búsqueda
                 final filtered = searchQuery.isEmpty

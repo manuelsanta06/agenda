@@ -128,7 +128,7 @@ class _CreateShiftFormState extends State<_ShiftForm>{
   @override
   Widget build(BuildContext context){
     final bottomInset=MediaQuery.of(context).viewInsets.bottom;
-    return Container(
+    return SafeArea(child:Container(
       padding:EdgeInsets.fromLTRB(20,20,20,bottomInset+20),
       child:Form(key:_formKey,child:Column(
         mainAxisSize: MainAxisSize.min,
@@ -169,10 +169,15 @@ class _CreateShiftFormState extends State<_ShiftForm>{
           ),
           const SizedBox(height:10),
           Row(children:[
+            Expanded(child:Text('Salida',textAlign:TextAlign.center)),
+            Expanded(child:Text('Llegada',textAlign:TextAlign.center)),
+          ]),
+          Row(children:[
             Expanded(child:_clockButton(begin,(newTime){setState((){begin=newTime;});})),
             Expanded(child:_clockButton(end,(newTime){setState((){end=newTime;});})),
           ]),
           const SizedBox(height:10),
+          Text('Dias',textAlign:TextAlign.center),
           SegmentedButton<WeekDays>(
             segments: const <ButtonSegment<WeekDays>>[
               ButtonSegment<WeekDays>(value: WeekDays.MONDAY,label: Text("LU")),
@@ -211,7 +216,7 @@ class _CreateShiftFormState extends State<_ShiftForm>{
           ),
         ]
       )),
-    );
+    ));
   }
   Widget _clockButton(DateTime? time,Function(DateTime) onSucces){
     return Container(

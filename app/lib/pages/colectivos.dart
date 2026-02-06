@@ -57,7 +57,7 @@ class _colectivosPageState extends State<colectivosPage>{
                   }
                   if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
-                  final listaColectivos = snapshot.data!.where((tbl) => tbl.is_active||showInactives).toList();
+                  final listaColectivos=snapshot.data!.where((tbl)=>showInactives?!tbl.is_active:tbl.is_active).toList();
 
                   // Aplicar filtro de búsqueda
                   final filtered = searchQuery.isEmpty
@@ -68,6 +68,7 @@ class _colectivosPageState extends State<colectivosPage>{
                        (c.number?.toString().contains(searchQuery)?? false);
                         }).toList();
                   if(filtered.isEmpty)return const Center(child:Text("???"));
+                  filtered.sort((a,b)=>a.number?.compareTo(b.number??999)??1);
 
                   return ListView.builder(
                     itemCount: filtered.length,

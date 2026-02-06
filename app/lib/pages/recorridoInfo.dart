@@ -247,12 +247,9 @@ class recorridoInfo extends StatelessWidget{
                   recorridosPage.mainColor,
                   filtered[index].$1,
                   filtered[index].$2,
+                  reco.id,
                   ()=>_editBalanceDialog(context,filtered[index].$1,filtered[index].$2),
-                  ()=>showCreateModifiEncargadoSheet(
-                    context,maincolor,reco.id,null,
-                    encargadoEdit:filtered[index].$1,
-                    subsEdit:filtered[index].$2
-                  ),
+                  null
                 );
               },
             );

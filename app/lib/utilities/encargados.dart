@@ -10,17 +10,58 @@ Widget encargadoToCard(BuildContext context,
   Color mainColor,
   Encargado enca,
   List<RecorridoSubscription> subs,
+  String recoId,
   VoidCallback? onPressed,
   VoidCallback? onLongPressed
 ){
   return BasicCard(
     margin:const EdgeInsets.symmetric(vertical:10,horizontal:8),
+    actionIcon:PopupMenuButton(
+      icon:const Icon(Icons.more_vert),
+      onSelected:(String result)async{
+        switch (result) {
+          case 'edit':
+            showCreateModifiEncargadoSheet(
+              context,mainColor,recoId,null,
+              encargadoEdit:enca,
+              subsEdit:subs
+            );
+            break;
+
+          case 'delete':
+            break;
+
+          default:
+            return;
+        }
+      },
+      itemBuilder:(BuildContext Context)=><PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value:'edit',
+          child:Row(children:[
+            Icon(Icons.edit),
+            SizedBox(width:8),
+            Text('Editar')
+          ]),
+        ),
+        PopupMenuItem<String>(
+          value:'delete',
+          child:Row(children:[
+            Icon(Icons.delete,color:Colors.red),
+            SizedBox(width:8),
+            Text('Eliminar',style:TextStyle(color:Colors.red))
+          ]),
+        ),
+      ]
+    ),
     onPressed:onPressed,
     onLongPressed:onLongPressed,
     child:Column(crossAxisAlignment: CrossAxisAlignment.start,children:[
       Row(children:[
         Expanded(child:Text(enca.name)),
-        Text("\$${numberParser(enca.balance.toInt())}",style:TextStyle(color:enca.balance>=0?mainColor:Colors.red)),
+        Text("\$${numberParser(enca.balance.toInt())}",
+          style:TextStyle(color:enca.balance>=0?mainColor:Colors.red)),
+        SizedBox(width:25),
       ]),
       Text(
         subs.map((s){return s.subscriptionName+(s.customPrice!=null?" \$${s.customPrice}":"");}).join("\n"),
@@ -228,7 +269,7 @@ class _CreateRecorridoFormState extends State<_EncargadoForm>{
               const Center(child:Chip(label:Text("Pasajeros"))),
               const SizedBox(height: 20),
 
-              ...List.generate(children.length,(index){return _buildStudentCard(index);}),
+              if(children.isNotEmpty) ...List.generate(children.length,(index){return _buildStudentCard(index);}),
 
               const SizedBox(height: 20),
               if (toDelete.isNotEmpty) ...[

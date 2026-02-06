@@ -18,7 +18,7 @@ Future<ColectivosCompanion?> showAddColectivoSheet(BuildContext context,{Colecti
     context: context,
     isScrollControlled: true,
     builder:(BuildContext context){
-      return AnimatedPadding(
+      return SafeArea(child:AnimatedPadding(
         duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.only(
           left: 15,right: 15,
@@ -78,7 +78,7 @@ Future<ColectivosCompanion?> showAddColectivoSheet(BuildContext context,{Colecti
             const SizedBox(height: 20),
           ]
         ),
-      );
+      ));
     },
   );
 }
