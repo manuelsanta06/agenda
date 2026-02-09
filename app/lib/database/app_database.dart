@@ -40,8 +40,11 @@ class AppDatabase extends _$AppDatabase {
   int get schemaVersion => 1;
 
   Future<List<(Colectivo, bool)>> getColectivosWithAvailability(
-    DateTime start, DateTime end, String? excludedEventId) async {
-  
+    DateTime start, 
+    DateTime end, 
+    String? excludedEventId,
+    {String? onlyForEventId}
+  )async{
     final busyQuery = select(eventColectivos).join([
       innerJoin(events, events.id.equalsExp(eventColectivos.eventId))
     ]);
@@ -55,24 +58,50 @@ class AppDatabase extends _$AppDatabase {
         .get();
     final busySet = busyIds.toSet();
 
-    final allColectivos = await (select(colectivos)
-      ..where((u) => u.is_active.equals(true))
-      ..orderBy([(t) => OrderingTerm(expression: ((t.name.toString()).isEmpty)?t.plate:t.name)])
-    ).get();
+    List<Colectivo> targetColectivos;
 
-    final List<(Colectivo, bool)> result = allColectivos.map((c) {
+    if (onlyForEventId != null) {
+      final query = select(colectivos).join([
+        innerJoin(eventColectivos, eventColectivos.colectivoId.equalsExp(colectivos.id))
+      ]);
+      query.where(eventColectivos.eventId.equals(onlyForEventId));
+      targetColectivos = await query.map((row) => row.readTable(colectivos)).get();
+    } else {
+      targetColectivos = await (select(colectivos)
+        ..where((u) => u.is_active.equals(true))
+        ..orderBy([(t) => OrderingTerm(expression: ((t.name.toString()).isEmpty) ? t.plate : t.name)])
+      ).get();
+    }
+
+    final List<(Colectivo, bool)> result = targetColectivos.map((c) {
       return (c, busySet.contains(c.id));
     }).toList();
 
-    //sorting
     result.sort((a, b) {
       if (a.$2 == b.$2) return 0;
       return a.$2 ? 1 : -1;
     });
+    
     return result;
   }
+  Stream<List<(Colectivo, bool)>> watchColectivosAvailability(
+    DateTime start, 
+    DateTime end, 
+    String? excludedEventId,
+    {String? onlyForEventId}) {
+    final triggerQuery = select(eventColectivos).join([
+      innerJoin(events, events.id.equalsExp(eventColectivos.eventId)),
+      innerJoin(colectivos, colectivos.id.equalsExp(eventColectivos.colectivoId))
+    ]);
+    return triggerQuery.watch().asyncMap((_) async {
+      return await getColectivosWithAvailability(
+        start,end,excludedEventId,onlyForEventId:onlyForEventId
+      );
+    });
+  }
+
   Future<List<(Chofere, bool)>> getChoferesWithAvailability(
-    DateTime start, DateTime end, String? excludedEventId) async {
+    DateTime start, DateTime end, String? excludedEventId,{String? onlyForEventId}) async {
   
     final busyQuery = select(eventChoferes).join([
       innerJoin(events, events.id.equalsExp(eventChoferes.eventId))
@@ -87,12 +116,22 @@ class AppDatabase extends _$AppDatabase {
         .get();
     final busySet = busyIds.toSet();
 
-    final allChoferes = await (select(choferes)
-      ..where((u) => u.is_active.equals(true))
-      ..orderBy([(t) => OrderingTerm(expression: ((t.alias.toString()).isEmpty)?t.name:t.alias)])
-    ).get();
+    List<Chofere> targetChoferes;
 
-    final List<(Chofere, bool)> result = allChoferes.map((c) {
+    if (onlyForEventId != null) {
+      final query = select(choferes).join([
+        innerJoin(eventChoferes, eventChoferes.choferId.equalsExp(choferes.id))
+      ]);
+      query.where(eventChoferes.eventId.equals(onlyForEventId));
+      targetChoferes = await query.map((row) => row.readTable(choferes)).get();
+    } else {
+      targetChoferes = await (select(choferes)
+        ..where((u) => u.is_active.equals(true))
+        ..orderBy([(t) => OrderingTerm(expression: ((t.alias.toString()).isEmpty)?t.name:t.alias)])
+      ).get();
+    }
+
+    final List<(Chofere, bool)> result = targetChoferes.map((c) {
       return (c, busySet.contains(c.id));
     }).toList();
 
@@ -102,6 +141,21 @@ class AppDatabase extends _$AppDatabase {
       return a.$2 ? 1 : -1;
     });
     return result;
+  }
+  Stream<List<(Chofere, bool)>> watchChoferesAvailability(
+    DateTime start, 
+    DateTime end, 
+    String? excludedEventId, 
+    {String? onlyForEventId}) {
+    final triggerQuery=select(eventChoferes).join([
+      innerJoin(events,events.id.equalsExp(eventChoferes.eventId)),
+      innerJoin(choferes,choferes.id.equalsExp(eventChoferes.choferId))
+    ]);
+    return triggerQuery.watch().asyncMap((_)async{
+      return await getChoferesWithAvailability(
+        start,end,excludedEventId,onlyForEventId:onlyForEventId
+      );
+    });
   }
 
   Stream<List<EventWithStops>> watchEventsWithStops(DateTime day,bool school) {

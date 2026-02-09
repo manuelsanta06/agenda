@@ -1,4 +1,5 @@
 import 'package:agenda/database/app_database.dart';
+import 'package:agenda/widgets/cards.dart';
 import 'package:drift/drift.dart' as drift; 
 import '../utilities/parsers.dart';
 import 'package:flutter/material.dart';
@@ -43,12 +44,14 @@ class EventCard extends StatelessWidget{
   final Event eve;
   final List<Stop> sto;
   final Color maincolor;
+  final VoidCallback? onLongPressed;
 
   const EventCard({
     super.key,
     required this.eve,
     required this.sto,
     required this.maincolor,
+    this.onLongPressed,
   });
 
 
@@ -65,46 +68,41 @@ class EventCard extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
-    Color colo=Theme.of(context).cardColor;
+    Color? colo;
     if(eve.state==EventStates.REMOVED)colo=Colors.red.withValues(alpha:0.3);
     else if(eve.state==EventStates.INCOMPLETE)colo=Color.fromARGB(175,255,92,0);
     else if(eve.state==EventStates.DONE)colo=Color.fromARGB(175,0,255,0);
     return Container(
       margin: const EdgeInsets.symmetric(vertical:8, horizontal:10),
-      child:Material(
-        color: colo,
-        borderRadius: BorderRadius.circular(14),
-        clipBehavior: Clip.hardEdge,
-        child:InkWell(
-          onTap: ()=>_onClick(context),
-          onLongPress:()=>_onLongClick(context),
-          child:Padding(padding:const EdgeInsets.all(14),child:Column(
-            crossAxisAlignment:CrossAxisAlignment.start,
-            children:[
-              Text(
-                eve.name,
-                style:TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16.0,
-                ),
+      child:BasicCard(
+        tonality: colo,
+        padding:const EdgeInsets.all(0),
+        onPressed: ()=>_onClick(context),
+        onLongPressed:()=>onLongPressed,
+        child:Padding(padding:const EdgeInsets.all(14),child:Column(
+          crossAxisAlignment:CrossAxisAlignment.start,
+          children:[
+            Text( eve.name,
+              style:TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16.0,
               ),
-              Text(
-                eventTypeToString(eve.type),
-                style:TextStyle(
-                  color: maincolor,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 10.0,
-                ),
+            ),
+            Text( eventTypeToString(eve.type),
+              style:TextStyle(
+                color: maincolor,
+                fontWeight: FontWeight.w900,
+                fontSize: 10.0,
               ),
-                
-              if(eve.repeat)
-              weekDaysDots(eve.days,maincolor),
-              if(eve.type!=EventTypes.NONE||sto.isNotEmpty)
-              stopsLineHorizontal(sto,eve.repeat,maincolor),
+            ),
+              
+            if(eve.repeat)
+            weekDaysDots(eve.days,maincolor),
+            if(eve.type!=EventTypes.NONE||sto.isNotEmpty)
+            stopsLineHorizontal(sto,eve.repeat,maincolor),
 
-            ]
-          )),
-        )
+          ]
+        )),
       ),
     );
   }

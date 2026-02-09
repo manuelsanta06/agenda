@@ -76,16 +76,16 @@ Widget stopToDot(Stop stop, bool fillDot, Color maincolor,{bool vertical=false})
 
       //stop name
       SizedBox(
-        width: 65, 
-        child: Text(
+        width:65,
+        child:Text(
           stop.name,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            height: 1.1,
+          textAlign:TextAlign.center,
+          //maxLines: 1,
+          overflow:TextOverflow.ellipsis,
+          style:const TextStyle(
+            fontSize:11,
+            fontWeight:FontWeight.bold,
+            height:1.1,
           ),
         ),
       ),

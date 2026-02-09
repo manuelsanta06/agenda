@@ -219,6 +219,7 @@ Future<Chofer?> choferCardSelectionList(BuildContext context,List<(Chofer, bool)
                   child:choferToCard(
                     context,filtered[index].$1,maincolor,
                     busy:filtered[index].$2,
+                    hideOptions:true,
                     onPressed:()=>Navigator.of(context).pop(filtered[index].$1),
                   )
                 );

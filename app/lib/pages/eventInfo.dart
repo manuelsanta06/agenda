@@ -132,10 +132,10 @@ class eventInfo extends StatelessWidget{
         subtitleLine("Choferes",maincolor),
         BasicCard(child:Column(children: [
           StreamBuilder(
-            stream:(db.select(db.choferes).join([drift.innerJoin(
-              db.eventChoferes, db.eventChoferes.choferId.equalsExp(db.choferes.id)
-            )])..where(db.eventChoferes.eventId.equals(eve.id))).watch()
-              .map((rows){return rows.map((row)=>row.readTable(db.choferes)).toList();}),
+            stream:db.watchChoferesAvailability(
+              eve.startDateTime,eve.endDateTime,eve.id,
+              onlyForEventId:eve.id
+            ),
             builder:(context,snapshot){
               if(snapshot.hasError){
                 return Center(
@@ -156,10 +156,12 @@ class eventInfo extends StatelessWidget{
               );}
               return Column(
                 children:listaChoferes.map((sel){return choferToCard(
-                  context,sel,maincolor,
+                  context,sel.$1,maincolor,
+                  busy:sel.$2,
+                  hideOptions:true,
                   onLongPress:()async{
                     await (db.delete(db.eventChoferes)
-                      ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.choferId.equals(sel.id))).go();
+                      ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.choferId.equals(sel.$1.id))).go();
                     await updateFullEventState(deafDb,eve);
                   },
                 );}).toList(),
@@ -186,10 +188,10 @@ class eventInfo extends StatelessWidget{
         subtitleLine("Colectivos",maincolor),
         BasicCard(child:Column(children: [
           StreamBuilder(
-            stream:(db.select(db.colectivos).join([drift.innerJoin(
-              db.eventColectivos, db.eventColectivos.colectivoId.equalsExp(db.colectivos.id)
-            )])..where(db.eventColectivos.eventId.equals(eve.id))).watch()
-              .map((rows){return rows.map((row)=>row.readTable(db.colectivos)).toList();}),
+            stream:db.watchColectivosAvailability(
+              eve.startDateTime,eve.endDateTime,eve.id,
+              onlyForEventId:eve.id
+            ),
             builder:(context,snapshot){
               if(snapshot.hasError){
                 return Center(
@@ -210,12 +212,13 @@ class eventInfo extends StatelessWidget{
               );}
               return Column(
                 children:listaColectivos.map((sel){return colectivoToCard(
-                  context,sel,maincolor,
+                  context,sel.$1,maincolor,
                   fullInfo:false,
+                  busy:sel.$2,
                   hideOptions:true,
                   onLongPress:()async{
                     await (db.delete(db.eventColectivos)
-                      ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.colectivoId.equals(sel.id))).go();
+                      ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.colectivoId.equals(sel.$1.id))).go();
                     await updateFullEventState(deafDb,eve);
                   },
                 );}).toList(),
