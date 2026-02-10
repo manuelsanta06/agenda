@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 /// mini buttons with floatting text next to it
 Widget buildMiniFab(
+  Color mainColor,
   {required IconData icon,
     required String label,
     required VoidCallback onPressed}) {
@@ -30,12 +31,13 @@ Widget buildMiniFab(
         backgroundColor: Colors.white,
         foregroundColor: Colors.grey[700],
         heroTag: null,
-        child: Icon(icon),
+        child: Icon(icon,color:mainColor,),
       ),
     ],
   );
 }
 
+//_fabKey.currentState?.toggleMenu();
 /// a FAB that expands, showing a list of childrens (usually [buildMiniFab]).
 /// Has to be inside a [Stack] for the black background (scrim) to work
 /// and inside a [Positioned.fill] to allow the black background to cover the full screen.

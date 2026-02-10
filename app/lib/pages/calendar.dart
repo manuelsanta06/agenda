@@ -208,7 +208,7 @@ class _calendarPageState extends State<calendarPage>{
               key:_fabKey,
               mainColor: calendarPage.mainColor,
               children: [
-                buildMiniFab(
+                buildMiniFab(calendarPage.mainColor,
                   icon: Icons.school,
                   label: "Recorrido",
                   onPressed:(){
@@ -217,7 +217,7 @@ class _calendarPageState extends State<calendarPage>{
                     Navigator.of(context).push(MaterialPageRoute(builder:(context)=>DriftDbViewer(db)));
                   },//TODO
                 ),
-                buildMiniFab(
+                buildMiniFab(calendarPage.mainColor,
                   icon: Icons.directions_bus,
                   label: "Viaje",
                   onPressed: (){
@@ -225,7 +225,7 @@ class _calendarPageState extends State<calendarPage>{
                     _showCreateTripSheet(true);
                   },
                 ),
-                buildMiniFab(
+                buildMiniFab(calendarPage.mainColor,
                   icon: Icons.task_alt,
                   label: "Recordatorio",
                   onPressed:(){
