@@ -51,11 +51,15 @@ class ExpandableFab extends StatefulWidget {
     this.distance = 8.0,
   });
 
+  //static ExpandableFabState? of(BuildContext context){
+  //  return context.findAncestorStateOfType<ExpandableFabState>();
+  //}
+
   @override
-  State<ExpandableFab> createState() => _ExpandableFabState();
+  State<ExpandableFab> createState() => ExpandableFabState();
 }
 
-class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProviderStateMixin {
+class ExpandableFabState extends State<ExpandableFab> with SingleTickerProviderStateMixin {
   bool _isMenuOpen = false;
 
   late AnimationController _animationController;
@@ -107,7 +111,7 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
     super.dispose();
   }
 
-  void _toggleMenu() {
+  void toggleMenu() {
     setState(() {
       _isMenuOpen = !_isMenuOpen;
       if (_isMenuOpen) {
@@ -150,7 +154,7 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
       animation: _animationController,
       builder: (context, child) {
         return FloatingActionButton(
-          onPressed: _toggleMenu,
+          onPressed: toggleMenu,
           backgroundColor: _fabColorAnimation.value,
           heroTag: "mainExpandableFab",
           child: RotationTransition(
@@ -173,7 +177,7 @@ class _ExpandableFabState extends State<ExpandableFab> with SingleTickerProvider
             child: FadeTransition(
               opacity: _scrimFadeAnimation,
               child: GestureDetector(
-                onTap: _toggleMenu,
+                onTap: toggleMenu,
                 child: Container(
                   color: Colors.black.withOpacity(0.5),
                 ),

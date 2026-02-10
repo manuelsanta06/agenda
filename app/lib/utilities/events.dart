@@ -218,7 +218,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return FractionallySizedBox(
+    return SafeArea(top:false,child:FractionallySizedBox(
       heightFactor:0.9,
       child:Container(
         padding:const EdgeInsets.all(16.0),
@@ -430,6 +430,6 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
           ),
         ),
       ),
-    );
+    ));
   }
 }

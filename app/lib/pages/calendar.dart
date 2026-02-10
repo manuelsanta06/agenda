@@ -33,6 +33,7 @@ class _calendarPageState extends State<calendarPage>{
   String searchQuery = "";
   bool recorridos=false;
 
+  final GlobalKey<ExpandableFabState> _fabKey = GlobalKey<ExpandableFabState>();
   DateTime _focusedDay = DateTime.now(), _selectedDay=DateTime.now();
   CalendarFormat _calendarFormat=CalendarFormat.week;
 
@@ -204,12 +205,14 @@ class _calendarPageState extends State<calendarPage>{
             bottom:16.0,
             right:16.0,
             child:ExpandableFab(
+              key:_fabKey,
               mainColor: calendarPage.mainColor,
               children: [
                 buildMiniFab(
                   icon: Icons.school,
                   label: "Recorrido",
                   onPressed:(){
+                    _fabKey.currentState?.toggleMenu();
                     final db = Provider.of<AppDatabase>(context, listen: false);
                     Navigator.of(context).push(MaterialPageRoute(builder:(context)=>DriftDbViewer(db)));
                   },//TODO
@@ -217,12 +220,18 @@ class _calendarPageState extends State<calendarPage>{
                 buildMiniFab(
                   icon: Icons.directions_bus,
                   label: "Viaje",
-                  onPressed: (){_showCreateTripSheet(true);},
+                  onPressed: (){
+                    _fabKey.currentState?.toggleMenu();
+                    _showCreateTripSheet(true);
+                  },
                 ),
                 buildMiniFab(
                   icon: Icons.task_alt,
                   label: "Recordatorio",
-                  onPressed:(){_showCreateTripSheet(false);},
+                  onPressed:(){
+                    _fabKey.currentState?.toggleMenu();
+                    _showCreateTripSheet(false);
+                  },
                 ),
               ],
             ),

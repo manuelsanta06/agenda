@@ -39,7 +39,7 @@ class eventInfo extends StatelessWidget{
     final db = Provider.of<AppDatabase>(context);
     final deafDb=Provider.of<AppDatabase>(context, listen: false);
 
-    return Scaffold(
+    return SafeArea(top:false,child:Scaffold(
       extendBodyBehindAppBar: true,
       body:ListView(padding:const EdgeInsets.symmetric(horizontal:5),children:[
 
@@ -246,7 +246,7 @@ class eventInfo extends StatelessWidget{
         else
         BasicCard(child:stopsLineHorizontal(sto,eve.repeat,maincolor))
       ],),
-    );
+    ));
   }
 
 
