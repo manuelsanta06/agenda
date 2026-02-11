@@ -1,6 +1,8 @@
 import 'package:agenda/database/app_database.dart';
 import 'package:agenda/widgets/cards.dart';
-import 'package:drift/drift.dart' as drift; 
+import 'package:drift/drift.dart' as drift;
+import 'package:provider/provider.dart';
+import 'package:path/path.dart'; 
 import '../utilities/parsers.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
@@ -108,21 +110,101 @@ class EventCard extends StatelessWidget{
   }
 }
 
+// Recuerda asegurarte de tener importado 'package:provider/provider.dart';
+
+Future<bool> showCreateTripSheet(BuildContext context,{
+  Event? event,
+  List<Stop>? stops,
+  required Color mainColor,
+  required bool isTrip,
+  required DateTime startDate,
+})async{
+  assert(
+    (event==null&&stops==null)||(event!=null&&stops!=null),
+    "Both parameters [event] and [stops] should be used or none"
+  );
+  final result=await showModalBottomSheet<(EventsCompanion,List<StopsCompanion>,List<String>)>(
+    context:context,
+    isScrollControlled:true,
+    builder:(context)=>_CreateTripSheet(
+      mainColor: mainColor,
+      eve: event,
+      sto: stops,
+      isTrip: isTrip,
+      startDate: startDate,
+    ),
+  );
+
+  if(result==null)return false;
+
+  final (eventCompanion,stopsCompanions,toDeleteIds)=result;
+  final db=Provider.of<AppDatabase>(context,listen:false);
+
+  await db.transaction(() async {
+    //GUARDAR O ACTUALIZAR EL EVENTO
+    final existingEvent=await(db.select(db.events)
+      ..where((t)=>t.id.equals(eventCompanion.id.value))
+    ).getSingleOrNull();
+    
+    if(existingEvent!=null){
+      await(db.update(db.events)
+        ..where((t)=>t.id.equals(eventCompanion.id.value))
+      ).write(eventCompanion);
+    }else{
+      await db.into(db.events).insert(eventCompanion);
+    }
+    //BORRAR LAS PARADAS ELIMINADAS
+    if(toDeleteIds.isNotEmpty){
+      await(db.delete(db.stops)
+        ..where((t)=>t.id.isIn(toDeleteIds))
+      ).go();
+    }
+    //GUARDAR O ACTUALIZAR LAS PARADAS
+    for (final stopCompanion in stopsCompanions) {
+       final existingStop=await(db.select(db.stops)
+         ..where((t)=>t.id.equals(stopCompanion.id.value))
+       ).getSingleOrNull();
+       if (existingStop != null) {
+         await(db.update(db.stops)
+           ..where((t)=>t.id.equals(stopCompanion.id.value))
+         ).write(stopCompanion);
+       }else{
+         await db.into(db.stops).insert(stopCompanion);
+       }
+    }
+  });
+  return true; 
+}
+
+class TempStop{
+  String? originalId;
+  TextEditingController nameC=TextEditingController();
+  DateTime stopDate;
+  TempStop({this.originalId, required this.stopDate});
+}
 
 //Return a cuple EventsCompanion/StopsCompanion
-class CreateTripSheet extends StatefulWidget {
+class _CreateTripSheet extends StatefulWidget {
   final bool isTrip;
   final Event? eve;
+  final List<Stop>? sto;
   final Color mainColor;
   DateTime startDate;
 
-  CreateTripSheet({super.key,required this.mainColor ,this.eve, required this.isTrip,required this.startDate});
+  _CreateTripSheet({
+    super.key,
+    required this.mainColor ,
+    this.eve,
+    this.sto,
+    required this.isTrip,
+    required this.startDate
+  });
 
   @override
-  State<CreateTripSheet> createState() => _CreateTripSheetState();
+  State<_CreateTripSheet> createState() => _CreateTripSheetState();
 }
 
-class _CreateTripSheetState extends State<CreateTripSheet> {
+class _CreateTripSheetState extends State<_CreateTripSheet> {
   final _nameC = TextEditingController();
   final _contactNameC = TextEditingController();
   final _contactC = TextEditingController();
@@ -130,58 +212,90 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
   Set<WeekDays> weekDays=<WeekDays>{WeekDays.MONDAY};
   bool repeat=false;
 
-  late List<DateTime> _stopDateTime;
-  late List<TextEditingController> _stopControllers;
+  late List<TempStop> _tempStops=[];
+  final List<String> _toDeleteIds = [];
   @override
   void initState() {
     super.initState();
-    _stopDateTime=[DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0)];
-    _stopControllers=[TextEditingController()];
-    _addStopField();
-    _addStopField();
+
+
+    if(widget.eve==null){
+      //_stopDateTime=[DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0)];
+      //_stopControllers=[TextEditingController()];
+      _addStopField();
+      _addStopField();
+      return;
+    }
+    repeat=widget.eve?.repeat??false;
+    if(repeat)weekDays=widget.eve!.days!.toSet();
+    _nameC.text=widget.eve?.name??"";
+    _contactNameC.text=widget.eve?.contactName??"";
+    _contactC.text=widget.eve?.contact??"";
+
+    //_stopControllers=[];
+    //_stopDateTime=[];
+    for(int i=0; i<widget.sto!.length; i++){
+      final temp = TempStop(
+        originalId: widget.sto![i].id,
+        stopDate:widget.sto![i].start??
+          DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0)
+      );
+      temp.nameC.text = widget.sto![i].name;
+      _tempStops.add(temp);
+    }
   }
 
   void _addStopField() {
     setState((){
-      _stopControllers.add(TextEditingController());
-      _stopDateTime.add(DateTime(_stopDateTime[0].year,_stopDateTime[0].month,_stopDateTime[0].day,0,0));
+      DateTime newDate;
+      if(_tempStops.isNotEmpty){
+        newDate=DateTime(_tempStops.last.stopDate.year,_tempStops.last.stopDate.month,_tempStops.last.stopDate.day,0,0);
+      }else{
+        newDate=DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0);
+      }
+      _tempStops.add(TempStop(stopDate: newDate));
     });
   }
 
   void _removeStopField(int index) {
     setState((){
-      _stopControllers.removeAt(index);
-      _stopDateTime.removeAt(index);
+      final removed = _tempStops.removeAt(index);
+      if (removed.originalId!=null){
+        _toDeleteIds.add(removed.originalId!);
+      }
     });
   }
 
-  void _getDateTime(int index)async{
-    if(!repeat||index==0)
-      _stopDateTime[index]=await getDatetime(context,_stopDateTime[index])??_stopDateTime[index];
-    else{
+  void _getDateTime(BuildContext context,int index)async{
+    if(!repeat||index==0){
+      DateTime? selected=await getDatetime(context,_tempStops[index].stopDate);
+      if(selected!=null){
+        _tempStops[index].stopDate=selected;
+      }
+    }else{
       final tmp=await getTime(context);
       if(tmp==null)return;
-      _stopDateTime[index]=DateTime(
-        _stopDateTime.first!.year,
-        _stopDateTime.first!.month,
-        _stopDateTime.first!.day,
-        tmp.hour,   // Usas la hora de TimeOfDay
-        tmp.minute, // Usas los minutos de TimeOfDay
+      _tempStops[index].stopDate = DateTime(
+        _tempStops.first.stopDate.year,
+        _tempStops.first.stopDate.month,
+        _tempStops.first.stopDate.day,
+        tmp.hour,   
+        tmp.minute, 
       );
     }
     setState((){});
   }
 
-  void _onSave() {
-    if (_formKey.currentState?.validate() ?? false) {
+  void _onSave(BuildContext context){
+    if (_formKey.currentState?.validate()??false) {
       final newTrip =EventsCompanion(
-        id: drift.Value(widget.eve?.id?? Uuid().v4()),
+        id: drift.Value(widget.eve?.id??Uuid().v4()),
         name: drift.Value(_nameC.text),
         contactName:drift.Value(_contactNameC.text),
         contact:drift.Value(phoneParser(_contactC.text)),
-        days: drift.Value(weekDays.toList()),
-        startDateTime: drift.Value(_stopDateTime.first),
-        endDateTime: drift.Value(_stopDateTime.last),
+        days: drift.Value(repeat?weekDays.toList():[]),
+        startDateTime: drift.Value(_tempStops.first.stopDate),
+        endDateTime: drift.Value(_tempStops.last.stopDate),
         repeat: drift.Value(repeat),
         isTrip: drift.Value(widget.isTrip),
         state: drift.Value(EventStates.INCOMPLETE),
@@ -191,28 +305,28 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
 
       final List<StopsCompanion> newStops = [];
       int currentOrder = 0;
-      for (int i=0;i<_stopControllers.length;i++) {
-        if (_stopControllers[i].text.isEmpty) continue;
+      for(final temp in _tempStops){
+        if(temp.nameC.text.isEmpty)continue;
+        
         newStops.add(StopsCompanion(
-          id: drift.Value(const Uuid().v4()),
-          name: drift.Value(_stopControllers[i].text),
-          start: drift.Value(_stopDateTime[i]), 
+          id: drift.Value(temp.originalId??const Uuid().v4()),
+          name: drift.Value(temp.nameC.text),
+          start: drift.Value(temp.stopDate), 
           eventId: newTrip.id,
-          orderIndex: drift.Value(currentOrder),
+          orderIndex: drift.Value(currentOrder++),
         ));
-        currentOrder++;
       }
-      //Return a cuple EventsCompanion/StopsCompanion
-      Navigator.of(context).pop((newTrip, newStops));
+      
+      Navigator.of(context).pop((newTrip, newStops, _toDeleteIds));
     }
   }
   
   @override
   void dispose() {
     _nameC.dispose();
-    for (var controller in _stopControllers) {
-      controller.dispose();
-    }
+    _contactNameC.dispose();
+    _contactC.dispose();
+    for(var temp in _tempStops)temp.nameC.dispose();
     super.dispose();
   }
 
@@ -248,7 +362,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                     },
                   )),
                   ElevatedButton(
-                    onPressed:_onSave,
+                    onPressed:()=>_onSave(context),
                     style:ElevatedButton.styleFrom(
                       backgroundColor:widget.mainColor,
                       foregroundColor:Colors.white,
@@ -335,9 +449,9 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                 style:TextStyle(fontSize:16, fontWeight:FontWeight.bold),
               ),
               Expanded(child:ListView.builder(
-                itemCount:_stopControllers.length,
+                itemCount:_tempStops.length,
                 itemBuilder:(context, index) {
-                  bool dated=!(((_stopDateTime[index]?.hour??0)==0)&&((_stopDateTime[index]?.minute??0)==0));
+                  bool dated=!(((_tempStops[index].stopDate?.hour??0)==0)&&((_tempStops[index].stopDate?.minute??0)==0));
                   return Padding(
                     padding:const EdgeInsets.symmetric(vertical:4.0),
                     child:Row(
@@ -357,7 +471,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                               child:dated?
                                 Column(mainAxisAlignment:MainAxisAlignment.center,children:[
                                   //TIME
-                                  Text("${_stopDateTime[index].hour.toString().padLeft(2,'0')}:${_stopDateTime[index].minute.toString().padLeft(2,'0')}",
+                                  Text("${_tempStops[index].stopDate.hour.toString().padLeft(2,'0')}:${_tempStops[index].stopDate.minute.toString().padLeft(2,'0')}",
                                     style: TextStyle(
                                       color: widget.mainColor, 
                                       fontWeight: FontWeight.w900,
@@ -366,7 +480,7 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                                     ),
                                   ),
                                   //DATE
-                                  Text("${_stopDateTime[index].day.toString().padLeft(2, '0')}/${_stopDateTime[index].month.toString().padLeft(2, '0')}", 
+                                  Text("${_tempStops[index].stopDate.day.toString().padLeft(2, '0')}/${_tempStops[index].stopDate.month.toString().padLeft(2, '0')}", 
                                     style:TextStyle(
                                       color:widget.mainColor, 
                                       fontWeight:FontWeight.bold,
@@ -375,14 +489,14 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                                   ),
                                 ],)
                                 :const Icon(Icons.calendar_month),
-                              onTap:()=>_getDateTime(index),
+                              onTap:()=>_getDateTime(context,index),
                             ),
                           )
                         ),
 
                         //STOP NAME INPUT
                         Expanded(child:TextFormField(
-                          controller:_stopControllers[index],
+                          controller:_tempStops[index].nameC,
                           decoration:InputDecoration(
                             labelText:widget.isTrip?'Parada ${index + 1}':"Lugar",
                             //border:const OutlineInputBorder(),
@@ -394,23 +508,23 @@ class _CreateTripSheetState extends State<CreateTripSheet> {
                             prefixIcon:const Icon(Icons.location_on_outlined),
                           ),
                           validator:(value) {
-                            if(_stopControllers.length<2)return "Minimo 2 paradas";
+                            if(_tempStops.length<2)return "Minimo 2 paradas";
                             if ((index==0
-                              &&((_stopDateTime[0].hour==0)
-                              &&(_stopDateTime[0].minute==0)))
-                              ||(index==(_stopControllers.length-1)
-                              &&((_stopDateTime.last.hour==0)
-                              &&(_stopDateTime.last.minute==0)))
+                              &&((_tempStops[0].stopDate.hour==0)
+                              &&(_tempStops[0].stopDate.minute==0)))
+                              ||(index==(_tempStops.length-1)
+                              &&((_tempStops.last.stopDate.hour==0)
+                              &&(_tempStops.last.stopDate.minute==0)))
                               ||(value == null || value.isEmpty))
                               return 'Completa la parada';
-                            if(index==(_stopControllers.length-1)
-                              &&(_stopDateTime.first.isAfter(_stopDateTime.last)))
+                            if(index==(_tempStops.length-1)
+                              &&(_tempStops.first.stopDate.isAfter(_tempStops.last.stopDate)))
                               return "Horarios invalidos";
                             return null;
                           },
                         )),
                         // DELETE BUTTON
-                        if (_stopControllers.length>1&&index!=0)
+                        if (_tempStops.length>1&&index!=0)
                         IconButton(
                           icon:const Icon(Icons.remove_circle_outline, color:Colors.red),
                           onPressed:() => _removeStopField(index),

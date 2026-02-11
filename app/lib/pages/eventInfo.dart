@@ -29,10 +29,6 @@ class eventInfo extends StatelessWidget{
     else maincolor=color;
   }
 
-  //Future<void> _updateEvent(AppDatabase db)async{
-  //  eve=(await ((db.select(db.events)..where((s)=>s.id.equals(eve.id))).get()))[0];
-  //}
-
 
   @override
   Widget build(BuildContext context) {
@@ -48,18 +44,29 @@ class eventInfo extends StatelessWidget{
           padding: const EdgeInsets.all(24),
           child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
             const SizedBox(height:10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: maincolor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
+            Row(children:[
+              pillText(eventStateToString(eve.state),maincolor),
+              Expanded(child:Container()),
+              IconButton(
+                icon:Icon(Icons.edit),
+                onPressed:()async{
+                  final success=await showCreateTripSheet(context,
+                    isTrip:eve.isTrip,
+                    mainColor:maincolor,
+                    event:eve,
+                    stops:sto,
+                    startDate:eve.startDateTime,
+                  );
+                  if(success&&context.mounted){
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:Text("Viaje guardado correctamente"),backgroundColor:Colors.green,
+                      ),
+                    );
+                  }
+                }
               ),
-              child: Text(
-                eventStateToString(eve.state),
-                style: TextStyle(color: maincolor, fontWeight: FontWeight.bold, fontSize: 12),
-              ),
-            ),
-
+            ]),
             const SizedBox(height:10),
             GestureDetector(
               onTap:()async{
@@ -75,10 +82,13 @@ class eventInfo extends StatelessWidget{
               ),
             ),
             
-            if(eve.repeat)
-            weekDaysDots(eve.days,maincolor)
-            else
-            Text(DateFormat('MMMM d','es_ES').format(eve.startDateTime))
+            Row(children:[
+              pillText("\$10.000",maincolor),
+              if(eve.repeat)
+              weekDaysDots(eve.days,maincolor)
+              else
+              Text(DateFormat('MMMM d','es_ES').format(eve.startDateTime))
+            ]),
           ]),
         ),
         

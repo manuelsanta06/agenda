@@ -47,42 +47,6 @@ class _calendarPageState extends State<calendarPage>{
     super.dispose();
   }
 
-  void _showCreateTripSheet(bool trip) async {
-    final (EventsCompanion, List<StopsCompanion>)? newBoth = await showModalBottomSheet(
-      context:context,
-      isScrollControlled:true,
-      builder:(context) => CreateTripSheet(isTrip:trip,startDate:_selectedDay,mainColor:calendarPage.mainColor),
-    );
-    if(newBoth==null){return;}
-    final (newEvent, newStops) = newBoth;
-    if(newEvent==null||newStops==null){widget.errorSnackBar(context);return;}//unnecesary
-
-    final db= Provider.of<AppDatabase>(context,listen: false);
-
-    try{
-      await db.transaction(() async {
-        await db.into(db.events).insert(newEvent);
-
-        await db.batch((batch){
-          batch.insertAll(db.stops, newStops);
-        });
-      });
-    }catch(e){
-      widget.errorSnackBar(context);
-      print("ERROR DB: $e");
-      return;
-    }
-
-    setState((){});
-    // Confirmation snackBar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content:Text('Viaje "${newEvent.name.value}" creado.'),
-        backgroundColor:Colors.green,
-      ),
-    );
-  }
-  
   @override
   Widget build(BuildContext context) {
     final db = Provider.of<AppDatabase>(context);
@@ -220,17 +184,39 @@ class _calendarPageState extends State<calendarPage>{
                 buildMiniFab(calendarPage.mainColor,
                   icon: Icons.directions_bus,
                   label: "Viaje",
-                  onPressed: (){
+                  onPressed:()async{
                     _fabKey.currentState?.toggleMenu();
-                    _showCreateTripSheet(true);
+                    final success=await showCreateTripSheet(
+                      context,mainColor:calendarPage.mainColor,isTrip:true,startDate:DateTime.now()
+                    );
+
+                    if(success&&context.mounted){
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content:Text("Viaje guardado correctamente"),
+                          backgroundColor:Colors.green,
+                        ),
+                      );
+                    }
                   },
                 ),
                 buildMiniFab(calendarPage.mainColor,
                   icon: Icons.task_alt,
                   label: "Recordatorio",
-                  onPressed:(){
+                  onPressed:()async{
                     _fabKey.currentState?.toggleMenu();
-                    _showCreateTripSheet(false);
+                    final success=await showCreateTripSheet(
+                      context,mainColor:calendarPage.mainColor,isTrip:false,startDate:DateTime.now()
+                    );
+
+                    if(success&&context.mounted){
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content:Text("Viaje guardado correctamente"),
+                          backgroundColor:Colors.green,
+                        ),
+                      );
+                    }
                   },
                 ),
               ],
