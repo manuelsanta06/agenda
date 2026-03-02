@@ -38,7 +38,6 @@ class eventInfo extends StatelessWidget{
     return SafeArea(top:false,child:Scaffold(
       extendBodyBehindAppBar: true,
       body:ListView(padding:const EdgeInsets.symmetric(horizontal:5),children:[
-
         //TOP card
         BasicCard(
           padding: const EdgeInsets.all(24),
@@ -53,8 +52,7 @@ class eventInfo extends StatelessWidget{
                   final success=await showCreateTripSheet(context,
                     isTrip:eve.isTrip,
                     mainColor:maincolor,
-                    event:eve,
-                    stops:sto,
+                    event:eve,stops:sto,
                     startDate:eve.startDateTime,
                   );
                   if(success&&context.mounted){
@@ -117,8 +115,8 @@ class eventInfo extends StatelessWidget{
               Row(children:[
                 GestureDetector(
                   child:Icon(Icons.phone),
-                  onTap: ()async{
-                    await launchUrl(Uri.parse("https://wa.me/${eve.contact}"), mode: LaunchMode.externalApplication);
+                  onTap:()async{
+                    await launchUrl(Uri.parse("https://wa.me/${eve.contact}"),mode:LaunchMode.externalApplication);
                   },
                 ),
                 SizedBox(width: 8),

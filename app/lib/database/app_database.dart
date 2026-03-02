@@ -169,6 +169,7 @@ class AppDatabase extends _$AppDatabase {
 
     query.where(
       (school?events.type.equalsValue(EventTypes.SCHOOL):events.type.equalsValue(EventTypes.SCHOOL).not())&
+      (events.state.equalsValue(EventStates.REMOVED).not())&
       (events.repeat.equals(false)&events.startDateTime.isBetweenValues(startOfDay, endOfDay)) |
       (events.repeat.equals(true)&events.startDateTime.isSmallerOrEqualValue(endOfDay)&events.days.cast<String>().like('%$weekdayIndex%'))
     );

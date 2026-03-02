@@ -50,6 +50,7 @@ class _calendarPageState extends State<calendarPage>{
   @override
   Widget build(BuildContext context) {
     final db = Provider.of<AppDatabase>(context);
+    final deafDb=Provider.of<AppDatabase>(context, listen: false);
 
     return Scaffold(
       body:Stack(
@@ -151,6 +152,7 @@ class _calendarPageState extends State<calendarPage>{
                   return ListView.builder(
                     itemCount: filtered.length,
                     itemBuilder:(context, index){
+                      updateFullEventState(deafDb,filtered[index].event);
                       return EventCard(
                         eve:filtered[index].event,
                         sto:filtered[index].stops,
@@ -158,6 +160,7 @@ class _calendarPageState extends State<calendarPage>{
                       );
                     },
                   );
+
                 },
               )
             ),
@@ -187,7 +190,7 @@ class _calendarPageState extends State<calendarPage>{
                   onPressed:()async{
                     _fabKey.currentState?.toggleMenu();
                     final success=await showCreateTripSheet(
-                      context,mainColor:calendarPage.mainColor,isTrip:true,startDate:DateTime.now()
+                      context,mainColor:calendarPage.mainColor,isTrip:true,startDate:_selectedDay
                     );
 
                     if(success&&context.mounted){
@@ -206,7 +209,7 @@ class _calendarPageState extends State<calendarPage>{
                   onPressed:()async{
                     _fabKey.currentState?.toggleMenu();
                     final success=await showCreateTripSheet(
-                      context,mainColor:calendarPage.mainColor,isTrip:false,startDate:DateTime.now()
+                      context,mainColor:calendarPage.mainColor,isTrip:false,startDate:_selectedDay
                     );
 
                     if(success&&context.mounted){

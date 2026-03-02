@@ -2,9 +2,9 @@ import 'package:agenda/database/app_database.dart';
 import 'package:agenda/widgets/cards.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:provider/provider.dart';
-import 'package:path/path.dart'; 
 import '../utilities/parsers.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import '../pages/eventInfo.dart';
 import '../widgets/timeinputs.dart';
@@ -31,8 +31,11 @@ EventStates getEventDateState(AppDatabase db,Event eve){
 }
 
 Future<void> updateFullEventState(AppDatabase db,Event eve)async{
+  final stopwatch = Stopwatch()..start();
   EventStates newState=await getEventCompletitionState(db,eve);
   if(newState==EventStates.NONE)newState=getEventDateState(db,eve);
+  print('myFunction executed in ${stopwatch.elapsedMilliseconds}ms');
+  if(newState==EventStates.NONE||newState==eve.state)return;
 
   await (db.update(db.events)
     ..where((tbl) => tbl.id.equals(eve.id))
@@ -40,6 +43,8 @@ Future<void> updateFullEventState(AppDatabase db,Event eve)async{
     state: drift.Value(newState),
     isSynced: const drift.Value(false),
   ));
+  stopwatch.stop();
+  print('myFunction executed in ${stopwatch.elapsedMilliseconds}ms');
 }
 
 class EventCard extends StatelessWidget{
@@ -47,12 +52,14 @@ class EventCard extends StatelessWidget{
   final List<Stop> sto;
   final Color maincolor;
   final VoidCallback? onLongPressed;
+  final bool hideOptions;
 
   const EventCard({
     super.key,
     required this.eve,
     required this.sto,
     required this.maincolor,
+    this.hideOptions=false,
     this.onLongPressed,
   });
 
@@ -81,6 +88,86 @@ class EventCard extends StatelessWidget{
         padding:const EdgeInsets.all(0),
         onPressed: ()=>_onClick(context),
         onLongPressed:()=>onLongPressed,
+        actionIcon:hideOptions?null:PopupMenuButton(
+          icon:const Icon(Icons.more_vert),
+          onSelected:(String result)async{
+            switch (result){
+              case 'edit':
+                await showCreateTripSheet(context,
+                  isTrip:eve.isTrip,
+                  mainColor:maincolor,
+                  event:eve,stops:sto,
+                  startDate:eve.startDateTime,
+                );
+                break;
+              case 'delete':
+                await showDialog<void>(
+                  context: context,
+                  builder:(BuildContext context){
+                    return AlertDialog(
+                      title:Text("Eliminar evento?"),
+                      content: Text("¿Seguro que queres eliminar '${eve.name}'?"),
+                      actions: [
+                        TextButton(
+                          child: const Text("Cancelar"),
+                          onPressed:()=> Navigator.pop(context),
+                        ),
+                        TextButton(
+                          child:Text("Eliminar", style: TextStyle(color: Colors.red)),
+                          onPressed:()async{
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content:Text("'${eve.name}' Eliminado"),
+                              backgroundColor:Colors.red,
+                            ));
+                            final db=Provider.of<AppDatabase>(context, listen: false);
+                            await (db.update(db.events)
+                              ..where((tbl)=>tbl.id.equals(eve.id)))
+                              .write(EventsCompanion(
+                                  isSynced:drift.Value(false),
+                                  state:drift.Value(EventStates.REMOVED),
+                              ));
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+                break;
+              case 'chat':
+                await launchUrl(Uri.parse("https://wa.me/${eve.contact}"),mode:LaunchMode.externalApplication);
+                break;
+              default:
+                return;
+            }
+          },
+          itemBuilder:(BuildContext Context)=><PopupMenuEntry<String>>[
+            PopupMenuItem<String>(
+              value:'edit',
+              child:Row(children:[
+                Icon(Icons.edit),
+                SizedBox(width:8),
+                Text('Editar')
+              ]),
+            ),
+            PopupMenuItem<String>(
+              value:'chat',
+              child:Row(children:[
+                Icon(Icons.phone),
+                SizedBox(width:8),
+                Text('Chat')
+              ]),
+            ),
+            PopupMenuItem<String>(
+              value:'delete',
+              child:Row(children:[
+                Icon(Icons.delete, color: Colors.red), 
+                SizedBox(width: 8), 
+                Text('Borrar',style:TextStyle(color:Colors.red)),
+              ]),
+            ),
+          ]
+        ),
         child:Padding(padding:const EdgeInsets.all(14),child:Column(
           crossAxisAlignment:CrossAxisAlignment.start,
           children:[
