@@ -101,9 +101,6 @@ CREATE TABLE recorrido_subscriptions (
   address TEXT,
   custom_price INTEGER,
   is_active BOOLEAN DEFAULT TRUE,
-
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 --TABLAS INTERMEDIAS
