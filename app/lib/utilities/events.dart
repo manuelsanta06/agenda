@@ -31,10 +31,8 @@ EventStates getEventDateState(AppDatabase db,Event eve){
 }
 
 Future<void> updateFullEventState(AppDatabase db,Event eve)async{
-  final stopwatch = Stopwatch()..start();
   EventStates newState=await getEventCompletitionState(db,eve);
   if(newState==EventStates.NONE)newState=getEventDateState(db,eve);
-  print('myFunction executed in ${stopwatch.elapsedMilliseconds}ms');
   if(newState==EventStates.NONE||newState==eve.state)return;
 
   await (db.update(db.events)
@@ -43,8 +41,6 @@ Future<void> updateFullEventState(AppDatabase db,Event eve)async{
     state: drift.Value(newState),
     isSynced: const drift.Value(false),
   ));
-  stopwatch.stop();
-  print('myFunction executed in ${stopwatch.elapsedMilliseconds}ms');
 }
 
 class EventCard extends StatelessWidget{
