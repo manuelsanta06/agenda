@@ -100,7 +100,7 @@ CREATE TABLE recorrido_subscriptions (
   subscription_name TEXT NOT NULL,
   address TEXT,
   custom_price INTEGER,
-  is_active BOOLEAN DEFAULT TRUE,
+  is_active BOOLEAN DEFAULT TRUE
 );
 
 --TABLAS INTERMEDIAS
