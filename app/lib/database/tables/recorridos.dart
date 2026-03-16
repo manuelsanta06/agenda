@@ -30,6 +30,8 @@ class RecorridoShifts extends Table {
 
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
 
+  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
+
   Set<Column> get primaryKey => {id};
 }
 

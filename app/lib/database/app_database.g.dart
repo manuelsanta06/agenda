@@ -3368,6 +3368,21 @@ class $RecorridoShiftsTable extends RecorridoShifts
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3377,6 +3392,7 @@ class $RecorridoShiftsTable extends RecorridoShifts
     endTime,
     shiftName,
     isActive,
+    isSynced,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3436,6 +3452,12 @@ class $RecorridoShiftsTable extends RecorridoShifts
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
     return context;
   }
 
@@ -3475,6 +3497,10 @@ class $RecorridoShiftsTable extends RecorridoShifts
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
     );
   }
 
@@ -3495,6 +3521,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
   final DateTime endTime;
   final String shiftName;
   final bool isActive;
+  final bool isSynced;
   const RecorridoShift({
     required this.id,
     required this.recorridoId,
@@ -3503,6 +3530,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     required this.endTime,
     required this.shiftName,
     required this.isActive,
+    required this.isSynced,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3518,6 +3546,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     map['end_time'] = Variable<DateTime>(endTime);
     map['shift_name'] = Variable<String>(shiftName);
     map['is_active'] = Variable<bool>(isActive);
+    map['is_synced'] = Variable<bool>(isSynced);
     return map;
   }
 
@@ -3530,6 +3559,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
       endTime: Value(endTime),
       shiftName: Value(shiftName),
       isActive: Value(isActive),
+      isSynced: Value(isSynced),
     );
   }
 
@@ -3546,6 +3576,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
       endTime: serializer.fromJson<DateTime>(json['endTime']),
       shiftName: serializer.fromJson<String>(json['shiftName']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
   }
   @override
@@ -3559,6 +3590,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
       'endTime': serializer.toJson<DateTime>(endTime),
       'shiftName': serializer.toJson<String>(shiftName),
       'isActive': serializer.toJson<bool>(isActive),
+      'isSynced': serializer.toJson<bool>(isSynced),
     };
   }
 
@@ -3570,6 +3602,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     DateTime? endTime,
     String? shiftName,
     bool? isActive,
+    bool? isSynced,
   }) => RecorridoShift(
     id: id ?? this.id,
     recorridoId: recorridoId ?? this.recorridoId,
@@ -3578,6 +3611,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     endTime: endTime ?? this.endTime,
     shiftName: shiftName ?? this.shiftName,
     isActive: isActive ?? this.isActive,
+    isSynced: isSynced ?? this.isSynced,
   );
   RecorridoShift copyWithCompanion(RecorridoShiftsCompanion data) {
     return RecorridoShift(
@@ -3590,6 +3624,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
       endTime: data.endTime.present ? data.endTime.value : this.endTime,
       shiftName: data.shiftName.present ? data.shiftName.value : this.shiftName,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
   }
 
@@ -3602,7 +3637,8 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
           ..write('startTime: $startTime, ')
           ..write('endTime: $endTime, ')
           ..write('shiftName: $shiftName, ')
-          ..write('isActive: $isActive')
+          ..write('isActive: $isActive, ')
+          ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
   }
@@ -3616,6 +3652,7 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
     endTime,
     shiftName,
     isActive,
+    isSynced,
   );
   @override
   bool operator ==(Object other) =>
@@ -3627,7 +3664,8 @@ class RecorridoShift extends DataClass implements Insertable<RecorridoShift> {
           other.startTime == this.startTime &&
           other.endTime == this.endTime &&
           other.shiftName == this.shiftName &&
-          other.isActive == this.isActive);
+          other.isActive == this.isActive &&
+          other.isSynced == this.isSynced);
 }
 
 class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
@@ -3638,6 +3676,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
   final Value<DateTime> endTime;
   final Value<String> shiftName;
   final Value<bool> isActive;
+  final Value<bool> isSynced;
   final Value<int> rowid;
   const RecorridoShiftsCompanion({
     this.id = const Value.absent(),
@@ -3647,6 +3686,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
     this.endTime = const Value.absent(),
     this.shiftName = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RecorridoShiftsCompanion.insert({
@@ -3657,6 +3697,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
     required DateTime endTime,
     required String shiftName,
     this.isActive = const Value.absent(),
+    this.isSynced = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        recorridoId = Value(recorridoId),
@@ -3672,6 +3713,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
     Expression<DateTime>? endTime,
     Expression<String>? shiftName,
     Expression<bool>? isActive,
+    Expression<bool>? isSynced,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3682,6 +3724,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
       if (endTime != null) 'end_time': endTime,
       if (shiftName != null) 'shift_name': shiftName,
       if (isActive != null) 'is_active': isActive,
+      if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3694,6 +3737,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
     Value<DateTime>? endTime,
     Value<String>? shiftName,
     Value<bool>? isActive,
+    Value<bool>? isSynced,
     Value<int>? rowid,
   }) {
     return RecorridoShiftsCompanion(
@@ -3704,6 +3748,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
       endTime: endTime ?? this.endTime,
       shiftName: shiftName ?? this.shiftName,
       isActive: isActive ?? this.isActive,
+      isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3734,6 +3779,9 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3750,6 +3798,7 @@ class RecorridoShiftsCompanion extends UpdateCompanion<RecorridoShift> {
           ..write('endTime: $endTime, ')
           ..write('shiftName: $shiftName, ')
           ..write('isActive: $isActive, ')
+          ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -8549,6 +8598,7 @@ typedef $$RecorridoShiftsTableCreateCompanionBuilder =
       required DateTime endTime,
       required String shiftName,
       Value<bool> isActive,
+      Value<bool> isSynced,
       Value<int> rowid,
     });
 typedef $$RecorridoShiftsTableUpdateCompanionBuilder =
@@ -8560,6 +8610,7 @@ typedef $$RecorridoShiftsTableUpdateCompanionBuilder =
       Value<DateTime> endTime,
       Value<String> shiftName,
       Value<bool> isActive,
+      Value<bool> isSynced,
       Value<int> rowid,
     });
 
@@ -8676,6 +8727,11 @@ class $$RecorridoShiftsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
   $$RecorridosTableFilterComposer get recorridoId {
     final $$RecorridosTableFilterComposer composer = $composerBuilder(
       composer: this,
@@ -8789,6 +8845,11 @@ class $$RecorridoShiftsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$RecorridosTableOrderingComposer get recorridoId {
     final $$RecorridosTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -8839,6 +8900,9 @@ class $$RecorridoShiftsTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
   $$RecorridosTableAnnotationComposer get recorridoId {
     final $$RecorridosTableAnnotationComposer composer = $composerBuilder(
@@ -8955,6 +9019,7 @@ class $$RecorridoShiftsTableTableManager
                 Value<DateTime> endTime = const Value.absent(),
                 Value<String> shiftName = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecorridoShiftsCompanion(
                 id: id,
@@ -8964,6 +9029,7 @@ class $$RecorridoShiftsTableTableManager
                 endTime: endTime,
                 shiftName: shiftName,
                 isActive: isActive,
+                isSynced: isSynced,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -8975,6 +9041,7 @@ class $$RecorridoShiftsTableTableManager
                 required DateTime endTime,
                 required String shiftName,
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => RecorridoShiftsCompanion.insert(
                 id: id,
@@ -8984,6 +9051,7 @@ class $$RecorridoShiftsTableTableManager
                 endTime: endTime,
                 shiftName: shiftName,
                 isActive: isActive,
+                isSynced: isSynced,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
