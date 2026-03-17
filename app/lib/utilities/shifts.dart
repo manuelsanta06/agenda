@@ -138,7 +138,7 @@ class _CreateShiftFormState extends State<_ShiftForm>{
           Row(children:[
             Expanded(child:Text("Turno",
               style:TextStyle(fontSize:20,fontWeight:FontWeight.bold),
-        )),
+            )),
             ElevatedButton(
               onPressed:()async{await _onSave();},
               style:ElevatedButton.styleFrom(
@@ -244,7 +244,7 @@ class _CreateShiftFormState extends State<_ShiftForm>{
           onTap:()async{
             final tmp=await getTime(context);
             if(tmp==null)return;
-            onSucces(DateTime(0,0,0,tmp.hour,tmp.minute));
+            onSucces(DateTime(2000,1,1,tmp.hour,tmp.minute));
           },
         ),
       )

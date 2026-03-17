@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'database/app_database.dart';
+import 'utilities/syncService.dart';
 
 import 'pages/home.dart';
 import 'pages/colectivos.dart';
@@ -14,7 +15,9 @@ import 'pages/recorridos.dart';
 bool darkMode=true;
 
 void main(){
-  final database = AppDatabase();
+  WidgetsFlutterBinding.ensureInitialized();
+  final database=AppDatabase();
+  SyncService.performFullSync(database);
   initializeDateFormatting().then((_) => runApp(
     Provider<AppDatabase>.value(
       value: database,

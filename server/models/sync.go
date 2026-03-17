@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 
 type Chofer struct {
 	ID           string   `json:"id"`
@@ -11,8 +13,8 @@ type Chofer struct {
 	PicturePath  *string  `json:"picture_path"`
 	Balance      float64  `json:"balance"`
 	IsActive     bool     `json:"is_active"`
-	CreatedAt    string   `json:"created_at"`
-	UpdatedAt    string   `json:"updated_at"`
+	CreatedAt    time.Time`json:"created_at"`
+	UpdatedAt    time.Time`json:"updated_at"`
 }
 
 type Colectivo struct {
@@ -21,12 +23,12 @@ type Colectivo struct {
 	Name       *string `json:"name"`
 	Number     *int    `json:"number"`
 	Capacity   int     `json:"capacity"`
-	FuelAmount string  `json:"fuel_amount"`
-	FuelDate   string  `json:"fuel_date"`
-	OilDate    string  `json:"oil_date"`
+	FuelAmount *string  `json:"fuel_amount"`
+	FuelDate   *time.Time  `json:"fuel_date"`
+	OilDate    time.Time  `json:"oil_date"`
 	IsActive   bool    `json:"is_active"`
-	CreatedAt  string  `json:"created_at"`
-	UpdatedAt  string  `json:"updated_at"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
 }
 
 type Recorrido struct {
@@ -34,8 +36,8 @@ type Recorrido struct {
 	Name      string `json:"name"`
 	BasePrice int    `json:"base_price"`
 	IsActive  bool   `json:"is_active"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Encargado struct {
@@ -43,8 +45,8 @@ type Encargado struct {
 	Name      string  `json:"name"`
 	Phone     *string `json:"phone"`
 	Balance   float64 `json:"balance"`
-	CreatedAt string  `json:"created_at"`
-	UpdatedAt string  `json:"updated_at"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 }
 
 // --- TABLAS CON DEPENDENCIAS ---
@@ -56,21 +58,21 @@ type Event struct {
 	Contact               *string `json:"contact"`
 	Repeat                bool    `json:"repeat"`
 	Days                  *string `json:"days"`
-	StartDateTime         string  `json:"start_date_time"`
-	EndDateTime           string  `json:"end_date_time"`
-	StopRepeatingDateTime *string `json:"stop_repeating_date_time"`
+	StartDateTime         time.Time  `json:"start_date_time"`
+	EndDateTime           time.Time  `json:"end_date_time"`
+	StopRepeatingDateTime *time.Time `json:"stop_repeating_date_time"`
 	State                 int     `json:"state"`
 	Type                  int     `json:"type"`
 	IsTrip                bool    `json:"is_trip"`
 	RecorridoID           *string `json:"recorrido_id"`
-	CreatedAt             string  `json:"created_at"`
-	UpdatedAt             string  `json:"updated_at"`
+	CreatedAt             time.Time  `json:"created_at"`
+	UpdatedAt             time.Time  `json:"updated_at"`
 }
 
 type Stop struct {
 	ID         string  `json:"id"`
 	Name       string  `json:"name"`
-	Start      *string `json:"start"`
+	Start      *time.Time `json:"start"`
 	EventID    string  `json:"event_id"`
 	OrderIndex int     `json:"order_index"`
 }
@@ -79,12 +81,12 @@ type RecorridoShift struct {
 	ID          string `json:"id"`
 	RecorridoID string `json:"recorrido_id"`
 	WeekDay     string `json:"week_day"`
-	StartTime   string `json:"start_time"`
-	EndTime     string `json:"end_time"`
+	StartTime   time.Time `json:"start_time"`
+	EndTime     time.Time `json:"end_time"`
 	ShiftName   string `json:"shift_name"`
 	IsActive    bool   `json:"is_active"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 //TABLAS INTERMEDIAS

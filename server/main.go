@@ -21,5 +21,5 @@ func main() {
   mux.HandleFunc("GET /sync/events",handlers.SyncEventsHandler)
 
 	fmt.Println("Servidor corriendo en http://localhost:8080 ...")
-	log.Fatal(http.ListenAndServe("127.0.0.1:8080",mux))
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080",mux))
 }
