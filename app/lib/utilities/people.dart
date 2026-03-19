@@ -180,8 +180,8 @@ Widget choferToCard(
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                dataLine("DNI: ${chofe.dni}",mainColor),
-                dataLine("Tel: ${chofe.mobileNumber}",mainColor),
+                DataLine(text:"DNI: ${chofe.dni}",mainColor:mainColor),
+                DataLine(text:"Tel: ${chofe.mobileNumber}",mainColor:mainColor),
               ],
             ),
           ],

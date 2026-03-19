@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'database/app_database.dart';
 import 'utilities/syncService.dart';
+import 'utilities/settings.dart';
 
 import 'pages/home.dart';
 import 'pages/colectivos.dart';
@@ -12,17 +13,20 @@ import 'pages/people.dart';
 import 'pages/calendar.dart';
 import 'pages/recorridos.dart';
 
-bool darkMode=true;
 
 void main(){
   WidgetsFlutterBinding.ensureInitialized();
   final database=AppDatabase();
-  SyncService.performFullSync(database);
+  final settings=SettingsProvider();
+  settings.init();
+  //SyncService.performFullSync(database);
   initializeDateFormatting().then((_) => runApp(
-    Provider<AppDatabase>.value(
-      value: database,
+    MultiProvider(
+      providers:[
+        Provider<AppDatabase>.value(value: database),
+        ChangeNotifierProvider<SettingsProvider>.value(value: settings),
+      ],
       child: const MyApp(),
-      //dispose: (context, db) => db.close(), 
     ),
   ));
 }
@@ -106,7 +110,7 @@ class _MyAppState extends State<MyApp>{
           ),
         ),
       ),
-      themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
+      themeMode:context.watch<SettingsProvider>().getValue("dark_mode")?ThemeMode.dark:ThemeMode.light,
 
       home:Scaffold(
         body: _pages[_selectedIndex],
@@ -118,27 +122,27 @@ class _MyAppState extends State<MyApp>{
           items: const [
             BottomNavigationBarItem(
               backgroundColor: peoplePage.mainColor,
-              icon: Icon(Icons.airline_seat_recline_extra),
+              icon: Icon(Icons.airline_seat_recline_extra,color:Colors.black),
               label: 'Choferes',
             ),
             BottomNavigationBarItem(
               backgroundColor: calendarPage.mainColor,
-              icon: Icon(Icons.calendar_month),
+              icon: Icon(Icons.calendar_month,color:Colors.black),
               label: 'Calendario',
             ),
             BottomNavigationBarItem(
               backgroundColor: homePage.mainColor,
-              icon: Icon(Icons.home),
+              icon: Icon(Icons.home,color:Colors.black),
               label: 'Inicio',
             ),
             BottomNavigationBarItem(
               backgroundColor: recorridosPage.mainColor,
-              icon: Icon(Icons.school),
+              icon: Icon(Icons.school,color:Colors.black),
               label: 'Recorridos',
             ),
             BottomNavigationBarItem(
               backgroundColor: colectivosPage.mainColor,
-              icon: Icon(Icons.directions_bus),
+              icon: Icon(Icons.directions_bus,color:Colors.black),
               label: 'Colectivos',
             ),
           ],

@@ -279,12 +279,12 @@ Widget colectivoToCard(
             pillText(bus.plate,mainColor),
           ]),
           //dataLine("Patente: ${bus.plate}",mainColor),
-          dataLine("Capacidad: ${bus.capacity}", mainColor),
-          if(bus.number!=null)dataLine("Interno: ${bus.number}",mainColor),
+          DataLine(text:"Capacidad: ${bus.capacity}",mainColor:mainColor),
+          if(bus.number!=null)DataLine(text:"Interno: ${bus.number}",mainColor:mainColor),
           if(fullInfo&&bus.is_active)
-          dataLine("Gasoil: ${relativeDate(bus.fuelDate)} -> ${bus.fuelAmount}",mainColor),
+          DataLine(text:"Gasoil: ${relativeDate(bus.fuelDate)} -> ${bus.fuelAmount}",mainColor:mainColor),
           if(fullInfo&&bus.is_active)
-          dataLine("Aceite: ${relativeDate(bus.oilDate,montlhy:true)}",mainColor),
+          DataLine(text:"Aceite: ${relativeDate(bus.oilDate,montlhy:true)}",mainColor:mainColor),
         ],
       ),
     )

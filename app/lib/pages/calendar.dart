@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import '../constants.dart' as constants;
 import 'package:table_calendar/table_calendar.dart';
 
-import 'package:drift_db_viewer/drift_db_viewer.dart';
 
 class calendarPage extends StatefulWidget {
   const calendarPage({super.key});
@@ -180,8 +179,6 @@ class _calendarPageState extends State<calendarPage>{
                   label: "Recorrido",
                   onPressed:(){
                     _fabKey.currentState?.toggleMenu();
-                    final db = Provider.of<AppDatabase>(context, listen: false);
-                    Navigator.of(context).push(MaterialPageRoute(builder:(context)=>DriftDbViewer(db)));
                   },//TODO
                 ),
                 buildMiniFab(calendarPage.mainColor,

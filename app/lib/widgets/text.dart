@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
 
-Widget dataLine(String text, Color mainColor) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 2),
-    child: Row(
-      children: [
-        Container(
-          width:6,height:6,
-          margin: const EdgeInsets.only(right: 8),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: mainColor,
+class DataLine extends StatelessWidget {
+  final String text;
+  final Color mainColor;
+
+  const DataLine({
+    super.key,
+    required this.text,
+    required this.mainColor,
+  });
+
+  @override
+  Widget build(BuildContext context){
+    final textColor=Theme.of(context).colorScheme.onSurface.withOpacity(0.87);
+
+    return Padding(
+      padding:const EdgeInsets.only(bottom:2),
+      child:Row(
+        children:[
+          Container(
+            width:6, height:6,
+            margin:const EdgeInsets.only(right:8),
+            decoration: BoxDecoration(shape:BoxShape.circle,color:mainColor),
           ),
-        ),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-          ),
-        ),
-      ],
-    ),
-  );
+          Expanded(child:Text(text,style:TextStyle(fontSize:12,color:textColor))),
+        ],
+      ),
+    );
+  }
 }
 
 Widget subtitleLine(String title,Color mainColor){
