@@ -19,7 +19,7 @@ void main(){
   final database=AppDatabase();
   final settings=SettingsProvider();
   settings.init();
-  //SyncService.performFullSync(database);
+  SyncService.performFullSync(database);
   initializeDateFormatting().then((_) => runApp(
     MultiProvider(
       providers:[

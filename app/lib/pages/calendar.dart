@@ -163,7 +163,6 @@ class _calendarPageState extends State<calendarPage>{
                 },
               )
             ),
-
           ],),),
 
           // Floatting buttons

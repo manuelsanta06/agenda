@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:agenda/database/app_database.dart';
 import 'package:path/path.dart' as p;
 import 'package:permission_handler/permission_handler.dart';
+import '../utilities/syncService.dart';
 
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 
@@ -70,14 +71,72 @@ class PantallaAjustes extends StatelessWidget{
             onChanged:(bool newValue){settings.setValue("dark_mode",newValue);},
           ),
           ListTile(
+            title:const Text("Sincronizar base de datos"),
+            onTap:()async{
+              final deafDb=Provider.of<AppDatabase>(context, listen: false);
+              var returned=await (SyncService.pushUnsyncedData(deafDb));
+              if(returned.$1){
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content:Text('Sincronizado correctamente'),backgroundColor:Colors.green),
+                );
+              }else{
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content:Text('Error al sincronizar'),backgroundColor:Colors.red),
+                );
+                showDialog(
+                  context:context,
+                  builder:(ctx)=>AlertDialog(
+                    content:SingleChildScrollView(
+                      child:Text(returned.$2),
+                    ),
+                    actions:[
+                      TextButton(onPressed:()=>Navigator.of(ctx).pop(),child:const Text('Cerrar'))
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+          ListTile(
             title:const Text("Respaldar base de datos"),
             onTap:()=>buckupDatabase(context),
           ),
           ListTile(
             title:const Text("Inspeccionar base de datos"),
             onTap:(){
-              final db = Provider.of<AppDatabase>(context, listen: false);
+              final db=Provider.of<AppDatabase>(context,listen:false);
               Navigator.of(context).push(MaterialPageRoute(builder:(context)=>DriftDbViewer(db)));
+            },
+          ),
+          ListTile(
+            title:const Text("NUKE"),
+            subtitle:const Text ("ELIMINA TODOS LOS RECORRIDOSHIFTS Y RELACIONADOS"),
+            onTap:() async {
+              try {
+                final db = Provider.of<AppDatabase>(context, listen: false);
+
+                await db.delete(db.shiftChoferes).go();
+                await db.delete(db.shiftColectivos).go();
+                final borrados = await db.delete(db.recorridoShifts).go();
+
+                if(context.mounted){
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('¡Exterminio completo! Se borraron $borrados turnos.'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error al borrar: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
           ),
         ],

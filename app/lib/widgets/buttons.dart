@@ -74,23 +74,23 @@ class ExpandableFabState extends State<ExpandableFab> with SingleTickerProviderS
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
+    _animationController=AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds:200),
     );
 
     // Fade del fondo oscuro
-    _scrimFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    _scrimFadeAnimation=Tween<double>(begin:0.0,end:1.0).animate(
+      CurvedAnimation(parent:_animationController,curve:Curves.easeIn),
     );
 
     // Fade de los botones pequeños
-    _buttonsFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    _buttonsFadeAnimation=Tween<double>(begin:0.0,end:1.0).animate(
+      CurvedAnimation(parent:_animationController,curve:Curves.easeIn),
     );
 
     // Animación de color del FAB principal
-    _fabColorAnimation = ColorTween(
+    _fabColorAnimation=ColorTween(
       begin: widget.mainColor,
       end: Colors.white,
     ).animate(_animationController);

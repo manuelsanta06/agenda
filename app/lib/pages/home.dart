@@ -28,7 +28,7 @@ class _homePageState extends State<homePage>{
                 child:Row(children:[
                   Expanded(child:mySearchBar()),
                   AnimatedContainer(
-                    duration:const Duration(seconds:3),
+                    duration:const Duration(milliseconds:200),
                     width:_showSettings?50.0:0.0,
                     child:IconButton(icon:Icon(Icons.settings),onPressed:(){
                       Navigator.of(context).push(MaterialPageRoute(builder:(context)=>PantallaAjustes()));

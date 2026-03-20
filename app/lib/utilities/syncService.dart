@@ -17,7 +17,7 @@ class SyncService{
   static Future<void> performFullSync(AppDatabase db) async {
     print("Syncing...");
 
-    if(await pushUnsyncedData(db)){
+    if((await pushUnsyncedData(db)).$1){
       print("Push successfull, Pulling..");
       await fetchCatalogUpdates(db);
       await fetchEventsUpdates(db);
@@ -27,10 +27,10 @@ class SyncService{
     }
   }
 
-  static Future<bool> pushUnsyncedData(AppDatabase db)async{
+  static Future<(bool,String)> pushUnsyncedData(AppDatabase db)async{
     try{
       final payload=await db.getUnsyncedPayload();
-      if(payload.values.every((list)=>(list as List).isEmpty))return true;
+      if(payload.values.every((list)=>(list as List).isEmpty))return (true,"successfull");
       log(jsonEncode(payload));
       print("paso");
 
@@ -44,20 +44,20 @@ class SyncService{
 
       if(response.statusCode==200){
         await db.markAsSynced(payload);
-        return true;
+        return (true,"successfull");
       }else{
         print("Error en POST /sync: ${response.statusCode}");
-        return false;
+        return (false,"${response.statusCode}\n\n${response.body}");
       }
     }catch(e){
       print("Error de conexión: $e");
-      return false;
+      return (false,"conection error");
     }
   }
 
   //catalog update
   static Future<void> fetchCatalogUpdates(AppDatabase db)async{
-    if(!(await pushUnsyncedData(db)))return;
+    if(!(await pushUnsyncedData(db)).$1)return;
     final now = DateTime.now().toUtc().toIso8601String();
     try{
       final prefs=await SharedPreferences.getInstance();
@@ -84,7 +84,7 @@ class SyncService{
 
   //events update
   static Future<void> fetchEventsUpdates(AppDatabase db) async {
-    if(!(await pushUnsyncedData(db)))return;
+    if(!(await pushUnsyncedData(db)).$1)return;
     final now = DateTime.now().toUtc().toIso8601String();
     try{
       final prefs=await SharedPreferences.getInstance();
