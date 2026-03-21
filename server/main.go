@@ -20,6 +20,8 @@ func main() {
   mux.HandleFunc("GET /sync/catalog",handlers.SyncCatalogHandler)
   mux.HandleFunc("GET /sync/events",handlers.SyncEventsHandler)
 
+	mux.HandleFunc("POST /populate/recorridos",handlers.RecorridoShiftPopulationHandler)
+
 	fmt.Println("Servidor corriendo en http://localhost:8080 ...")
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080",mux))
 }

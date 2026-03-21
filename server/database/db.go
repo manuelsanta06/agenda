@@ -1,17 +1,55 @@
 package database
 
 import (
-  "context"
-  "fmt"
-  "log"
-  "os"
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"slices"
+	"strconv"
+	"strings"
+	"time"
 
+  "github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	"github.com/manuelsanta06/agenda/models"
-  "github.com/jackc/pgx/v5/pgxpool"
-  "github.com/joho/godotenv"
 )
 
 var DB *pgxpool.Pool
+
+
+func parseWeekDays(daysStr string)[]time.Weekday{
+	if daysStr==""{return nil}
+	
+	strDays:=strings.Split(strings.TrimSpace(daysStr)," ")
+	var weekdays []time.Weekday
+	
+	for _,s:=range strDays{
+		num,err:=strconv.Atoi(s)
+		if err!=nil{continue}
+		
+		switch num{
+      case 1:weekdays=append(weekdays,time.Monday)
+      case 2:weekdays=append(weekdays,time.Tuesday)
+      case 3:weekdays=append(weekdays,time.Wednesday)
+      case 4:weekdays=append(weekdays,time.Thursday)
+      case 5:weekdays=append(weekdays,time.Friday)
+      case 6:weekdays=append(weekdays,time.Saturday)
+      case 7:weekdays=append(weekdays,time.Sunday)
+		}
+	}
+	return weekdays
+}
+
+func containsWeekday(days []time.Weekday,target time.Weekday)bool{
+  return slices.Contains(days,target)
+	// for _,d:=range days{if d==target{return true}}
+	// return false
+}
+
 
 func Connect(){
   err:=godotenv.Load()
@@ -598,4 +636,112 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 	}
 
 	return payload, nil
+}
+
+
+type activeShift struct{
+	ID        string
+	WeekDay   string
+	StartTime time.Time
+	EndTime   time.Time
+	ShiftName string
+  RecorridoName string
+}
+
+func RecorridoShiftPopulationRoutine() error {
+	ctx := context.Background()
+
+	//get all active shifts
+	queryShifts:=`
+		SELECT rs.id, rs.week_day, rs.start_time, rs.end_time, rs.shift_name, r.name
+		FROM recorrido_shifts rs
+		JOIN recorridos r ON rs.recorrido_id = r.id
+		WHERE rs.is_active = TRUE AND r.is_active = TRUE
+	`
+	rows,err:=DB.Query(ctx,queryShifts)
+	if err!=nil{return fmt.Errorf("error obteniendo shifts: %w",err)}
+	defer rows.Close()
+
+	var shifts []activeShift
+	for rows.Next(){
+		var s activeShift
+		if err:=rows.Scan(&s.ID,&s.WeekDay,&s.StartTime,&s.EndTime,&s.ShiftName,&s.RecorridoName);err!=nil{
+			return fmt.Errorf("error leyendo shift: %w",err)
+		}
+		shifts=append(shifts,s)
+	}
+	if err:=rows.Err();err!=nil{return err}
+
+
+	now:=time.Now()
+	startDate:=time.Date(now.Year(),now.Month(),now.Day(),0,0,0,0,now.Location())
+
+	//start the transaction
+	tx,err:=DB.Begin(ctx)
+	if err!=nil{return fmt.Errorf("error iniciando transacción: %w",err)}
+	defer tx.Rollback(ctx)
+
+	//days loop
+	for i:=range 16{
+		targetDate:=startDate.AddDate(0,0,i)
+		targetWeekday:=targetDate.Weekday()
+
+		for _,shift:=range shifts{
+			//this shift applies this wwek day?
+			shiftDays:=parseWeekDays(shift.WeekDay)
+			if !containsWeekday(shiftDays,targetWeekday) {continue}
+
+			//this event already exists?
+			var existingID string
+			checkQuery:=`SELECT id FROM events WHERE shift_id = $1 AND start_date_time::date = $2::date LIMIT 1`
+			err=tx.QueryRow(ctx,checkQuery,shift.ID,targetDate).Scan(&existingID)
+			
+			if err==nil{
+				continue
+			}else if err!=pgx.ErrNoRows{
+				return fmt.Errorf("error comprobando idempotencia: %w",err)
+			}
+
+
+			eventID:=uuid.New().String()
+			
+			startDT:=time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(),
+				shift.StartTime.Hour(), shift.StartTime.Minute(), shift.StartTime.Second(), 0, targetDate.Location())
+			
+			endDT:=time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(),
+				shift.EndTime.Hour(), shift.EndTime.Minute(), shift.EndTime.Second(), 0, targetDate.Location())
+
+			//querry
+			insertEventQuery:=`
+				INSERT INTO events (id, name, start_date_time, end_date_time, state, type, is_trip, shift_id)
+				VALUES ($1, $2, $3, $4, 1, 3, true, $5)
+			`
+			_,err=tx.Exec(ctx,insertEventQuery,eventID,shift.RecorridoName+" - "+shift.ShiftName,startDT,endDT,shift.ID)
+			if err!=nil{return fmt.Errorf("error insertando evento base: %w",err)}
+
+			//shift_chofer -> event_chofer
+			copyChoferesQuery := `
+				INSERT INTO event_choferes (event_id, chofer_id)
+				SELECT $1, chofer_id FROM shift_choferes WHERE shift_id = $2
+			`
+			_, err = tx.Exec(ctx, copyChoferesQuery, eventID, shift.ID)
+			if err!=nil{return fmt.Errorf("error copiando choferes: %w",err)}
+
+			//shift_colectivos -> event_colectivos
+			copyColectivosQuery := `
+				INSERT INTO event_colectivos (event_id, colectivo_id)
+				SELECT $1, colectivo_id FROM shift_colectivos WHERE shift_id = $2
+			`
+			_, err = tx.Exec(ctx, copyColectivosQuery, eventID, shift.ID)
+			if err!=nil{return fmt.Errorf("error copiando colectivos: %w",err)}
+		}
+	}
+
+	//tinal error check
+	if err:=tx.Commit(ctx);err!=nil{
+		return fmt.Errorf("error en el commit: %w",err)
+	}
+
+	fmt.Println("Populador ejecutado con éxito. Ventana de 16 días sincronizada.")
+	return nil
 }
