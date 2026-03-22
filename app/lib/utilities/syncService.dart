@@ -72,6 +72,7 @@ class SyncService{
       if(response.statusCode==200){
         final Map<String, dynamic> jsonData=jsonDecode(response.body);
         
+        log(jsonEncode(jsonData));
         await db.processCatalogSync(jsonData);
         await prefs.setString('last_sync_catalog', now);
       } else {
@@ -99,16 +100,18 @@ class SyncService{
       if(response.statusCode==200){
         final Map<String,dynamic> jsonData=jsonDecode(response.body);
         
+        log(jsonEncode(jsonData));
         await db.processEventsSync(jsonData);
         
         //await db.deleteOldEvents();
 
         await prefs.setString('last_sync_events',now);
       }else{
-        print("Error fetchEventsUpdates: ${response.statusCode}");
+        log("Error fetchEventsUpdates: ${response.statusCode}");
+        log(response.body);
       }
     }catch(e){
-      print("Error de red en Events Sync: $e");
+      log("Error de red en Events Sync: $e");
     }
   }
 }

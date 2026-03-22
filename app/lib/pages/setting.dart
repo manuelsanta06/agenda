@@ -106,6 +106,25 @@ class PantallaAjustes extends StatelessWidget{
             },
           ),
           ListTile(
+            title:const Text("Forzar sincronizacion de TODO"),
+            onTap:()async{
+              try{
+                final db=context.read<AppDatabase>();
+                
+                await db.markAllAsUnsynced();
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Datos marcados para subir. Iniciando rescate...')),
+                );
+                await SyncService.performFullSync(db);
+              }catch(e){
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error en el rescate: $e'), backgroundColor: Colors.red),
+                );
+              }
+            },
+          ),
+          ListTile(
             title:const Text("Respaldar base de datos"),
             onTap:()=>buckupDatabase(context),
           ),

@@ -714,7 +714,7 @@ func RecorridoShiftPopulationRoutine() error {
 			//querry
 			insertEventQuery:=`
 				INSERT INTO events (id, name, start_date_time, end_date_time, state, type, is_trip, shift_id)
-				VALUES ($1, $2, $3, $4, 1, 3, true, $5)
+				VALUES ($1, $2, $3, $4, 0, 3, true, $5)
 			`
 			_,err=tx.Exec(ctx,insertEventQuery,eventID,shift.RecorridoName+" - "+shift.ShiftName,startDT,endDT,shift.ID)
 			if err!=nil{return fmt.Errorf("error insertando evento base: %w",err)}

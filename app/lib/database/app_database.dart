@@ -63,6 +63,17 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  Future<void> markAllAsUnsynced() async {
+    await transaction(() async {
+      await update(choferes).write(const ChoferesCompanion(isSynced: Value(false)));
+      await update(colectivos).write(const ColectivosCompanion(isSynced: Value(false)));
+      await update(recorridos).write(const RecorridosCompanion(isSynced: Value(false)));
+      await update(encargados).write(const EncargadosCompanion(isSynced: Value(false)));
+      await update(events).write(const EventsCompanion(isSynced: Value(false)));
+      await update(recorridoShifts).write(const RecorridoShiftsCompanion(isSynced: Value(false)));
+    });
+  }
+
   Future<void> markAsSynced(Map<String, dynamic> sentPayload) async {
     await transaction(()async{
       //Choferes
@@ -418,17 +429,20 @@ class AppDatabase extends _$AppDatabase {
           EventsCompanion(
             id: drift.Value(e['id']),
             name: drift.Value(e['name']),
-            contactName: drift.Value(e['contact_name']),
-            contact: drift.Value(e['contact']),
+            contactName: drift.Value(e['contact_name'] as String?),
+            contact: drift.Value(e['contact'] as String?),
             repeat: drift.Value(e['repeat'] ?? false),
-            days: drift.Value(const WeekDaysConverter().fromSql(e['days']??'')),
+            days: drift.Value(e['days']!=null&&e['days'].toString().isNotEmpty 
+              ? const WeekDaysConverter().fromSql(e['days'] as String) 
+              : null
+            ),
             startDateTime: drift.Value(DateTime.parse(e['start_date_time']).toLocal()),
             endDateTime: drift.Value(DateTime.parse(e['end_date_time']).toLocal()),
             stopRepeatingDateTime: drift.Value(e['stop_repeating_date_time'] != null 
-                ? DateTime.parse(e['stop_repeating_date_time']).toLocal()
-                : null),
-            state: drift.Value(EventStates.values[e['state']]), 
-            type: drift.Value(EventTypes.values[e['type']]),    
+              ? DateTime.parse(e['stop_repeating_date_time']).toLocal()
+              : null),
+            state: drift.Value(EventStates.values[(e['state'] as num).toInt()]), 
+            type: drift.Value(EventTypes.values[(e['type'] as num).toInt()]),    
             isTrip: drift.Value(e['is_trip'] ?? false),
             shiftId: drift.Value(e['shift_id']),
             isSynced: const drift.Value(true),
