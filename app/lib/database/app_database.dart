@@ -38,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase():super(_openConnection());
 
   @override
-  int get schemaVersion=>2;
+  int get schemaVersion=>3;
 
   @override
   MigrationStrategy get migration{
@@ -49,6 +49,12 @@ class AppDatabase extends _$AppDatabase {
       onUpgrade:(Migrator m,int from,int to)async{
         if(from<2){
           await m.addColumn(recorridoShifts, recorridoShifts.isSynced);
+        }
+        if(from<3){
+          await m.alterTable(TableMigration(
+            events,
+            newColumns: [events.shiftId],
+          ));
         }
       },
       beforeOpen:(details)async{
@@ -193,7 +199,7 @@ class AppDatabase extends _$AppDatabase {
         "state": e.state.index,
         "type": e.type.index,
         "is_trip": e.isTrip,
-        "recorrido_id": e.recorridoId,
+        "shift_id": e.shiftId,
       }).toList(),
 
       "stops": eventStops.map((s)=>{
@@ -424,7 +430,7 @@ class AppDatabase extends _$AppDatabase {
             state: drift.Value(EventStates.values[e['state']]), 
             type: drift.Value(EventTypes.values[e['type']]),    
             isTrip: drift.Value(e['is_trip'] ?? false),
-            recorridoId: drift.Value(e['recorrido_id']),
+            shiftId: drift.Value(e['shift_id']),
             isSynced: const drift.Value(true),
           ),
           mode: drift.InsertMode.insertOrReplace,

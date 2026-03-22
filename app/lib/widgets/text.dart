@@ -83,6 +83,6 @@ bool isYesterday(DateTime date){
 String relativeDate(DateTime date,{bool montlhy=false}){
   if(isToday(date))return "Hoy";
   if(isYesterday(date))return "Ayer";
-  if(montlhy&&(date.difference(DateTime.now()).inDays*-1)>30)return "Hace ${date.difference(DateTime.now()).inDays*-1/30} dias";
+  if(montlhy&&(date.difference(DateTime.now()).inDays*-1)>30)return "Hace ${date.difference(DateTime.now()).inDays*-1/30} meses";
   return "Hace ${date.difference(DateTime.now()).inDays*-1} dias";
 }

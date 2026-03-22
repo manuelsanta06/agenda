@@ -99,7 +99,7 @@ class Events extends Table {
 
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 
-  TextColumn get recorridoId => text().nullable().references(Recorridos, #id)();
+  TextColumn get shiftId => text().nullable().references(RecorridoShifts, #id)();
 
   @override
   Set<Column> get primaryKey => {id};

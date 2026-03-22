@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:agenda/database/app_database.dart';
 import 'package:path/path.dart' as p;
+import 'package:drift/drift.dart' as drift;
 import 'package:permission_handler/permission_handler.dart';
 import '../utilities/syncService.dart';
 
@@ -98,6 +99,13 @@ class PantallaAjustes extends StatelessWidget{
             },
           ),
           ListTile(
+            title:const Text("Pedir eventos"),
+            onTap:()async{
+              final deafDb=Provider.of<AppDatabase>(context, listen: false);
+              await (SyncService.fetchEventsUpdates(deafDb));
+            },
+          ),
+          ListTile(
             title:const Text("Respaldar base de datos"),
             onTap:()=>buckupDatabase(context),
           ),
@@ -115,14 +123,20 @@ class PantallaAjustes extends StatelessWidget{
               try {
                 final db = Provider.of<AppDatabase>(context, listen: false);
 
-                await db.delete(db.shiftChoferes).go();
-                await db.delete(db.shiftColectivos).go();
-                final borrados = await db.delete(db.recorridoShifts).go();
+               // Marcar todos los Recorridos como no sincronizados
+                await db.update(db.recorridos).write(
+                  const RecorridosCompanion(isSynced: drift.Value(false)),
+                );
+
+                // Marcar todos los RecorridoShifts como no sincronizados
+                await db.update(db.recorridoShifts).write(
+                  const RecorridoShiftsCompanion(isSynced: drift.Value(false)),
+);
 
                 if(context.mounted){
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('¡Exterminio completo! Se borraron $borrados turnos.'),
+                      content: Text('¡Exterminio completo! Se borraron  turnos.'),
                       backgroundColor: Colors.green,
                     ),
                   );

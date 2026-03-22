@@ -164,7 +164,7 @@ func FullSync(payload models.SyncPayload)error{
 	//Events
 	for _, e := range payload.Events {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO events (id, name, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, recorrido_id)
+			INSERT INTO events (id, name, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
 			ON CONFLICT (id) DO UPDATE SET
 				name = EXCLUDED.name,
@@ -178,9 +178,9 @@ func FullSync(payload models.SyncPayload)error{
 				state = EXCLUDED.state,
 				type = EXCLUDED.type,
 				is_trip = EXCLUDED.is_trip,
-				recorrido_id = EXCLUDED.recorrido_id,
+				shift_id = EXCLUDED.shift_id,
 				updated_at = CURRENT_TIMESTAMP;
-		`, e.ID, e.Name, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.RecorridoID)
+		`, e.ID, e.Name, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.ShiftID)
 		if err != nil {
 			return fmt.Errorf("error guardando event %s: %v", e.ID, err)
 		}
@@ -550,7 +550,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 
 	//EVENTOS
 	rowsEvents, err := DB.Query(ctx, `
-		SELECT id, name, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, recorrido_id, created_at, updated_at
+		SELECT id, name, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, created_at, updated_at
 		FROM events
 		WHERE updated_at > $1 
 		AND start_date_time >= NOW() - INTERVAL '30 days'
@@ -562,7 +562,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 
 	for rowsEvents.Next() {
 		var e models.Event
-		err := rowsEvents.Scan(&e.ID, &e.Name, &e.ContactName, &e.Contact, &e.Repeat, &e.Days, &e.StartDateTime, &e.EndDateTime, &e.StopRepeatingDateTime, &e.State, &e.Type, &e.IsTrip, &e.RecorridoID, &e.CreatedAt, &e.UpdatedAt)
+		err := rowsEvents.Scan(&e.ID, &e.Name, &e.ContactName, &e.Contact, &e.Repeat, &e.Days, &e.StartDateTime, &e.EndDateTime, &e.StopRepeatingDateTime, &e.State, &e.Type, &e.IsTrip, &e.ShiftID, &e.CreatedAt, &e.UpdatedAt)
 		if err != nil {
 			return payload, fmt.Errorf("error leyendo fila de event: %v", err)
 		}
@@ -649,7 +649,7 @@ type activeShift struct{
 }
 
 func RecorridoShiftPopulationRoutine() error {
-	ctx := context.Background()
+	ctx:=context.Background()
 
 	//get all active shifts
 	queryShifts:=`
