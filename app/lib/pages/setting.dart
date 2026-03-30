@@ -135,43 +135,6 @@ class PantallaAjustes extends StatelessWidget{
               Navigator.of(context).push(MaterialPageRoute(builder:(context)=>DriftDbViewer(db)));
             },
           ),
-          ListTile(
-            title:const Text("NUKE"),
-            subtitle:const Text ("ELIMINA TODOS LOS RECORRIDOSHIFTS Y RELACIONADOS"),
-            onTap:() async {
-              try {
-                final db = Provider.of<AppDatabase>(context, listen: false);
-
-               // Marcar todos los Recorridos como no sincronizados
-                await db.update(db.recorridos).write(
-                  const RecorridosCompanion(isSynced: drift.Value(false)),
-                );
-
-                // Marcar todos los RecorridoShifts como no sincronizados
-                await db.update(db.recorridoShifts).write(
-                  const RecorridoShiftsCompanion(isSynced: drift.Value(false)),
-);
-
-                if(context.mounted){
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('¡Exterminio completo! Se borraron  turnos.'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error al borrar: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-          ),
         ],
       ),
     );

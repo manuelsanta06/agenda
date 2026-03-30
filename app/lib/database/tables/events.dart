@@ -50,13 +50,15 @@ enum EventTypes{
   EVENT,
   REMINDER,
   SCHOOL,
+  SHIFT,
 }
 String eventTypeToString(EventTypes type){
   switch(type){
     case EventTypes.NONE: return "Error";
     case EventTypes.EVENT: return "Viaje";
-    case EventTypes.SCHOOL: return "Recorrido";
     case EventTypes.REMINDER: return "Recordatorio";
+    case EventTypes.SCHOOL: return "Recorrido";
+    case EventTypes.SHIFT: return "Turno";
   }
 }
 enum EventStates{
@@ -99,7 +101,8 @@ class Events extends Table {
 
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
 
-  TextColumn get shiftId => text().nullable().references(RecorridoShifts, #id)();
+  TextColumn get recorridoId => text().nullable().references(Recorridos, #id)();
+  TextColumn get shiftId => text().nullable().references(Events, #id)();
 
   @override
   Set<Column> get primaryKey => {id};

@@ -91,8 +91,10 @@ class EventCard extends StatelessWidget{
               case 'edit':
                 await showCreateTripSheet(context,
                   isTrip:eve.isTrip,
+                  isShift:eve.type==EventTypes.SHIFT,
                   mainColor:maincolor,
                   event:eve,stops:sto,
+                  recoId:eve.recorridoId,
                   startDate:eve.startDateTime,
                 );
                 break;
@@ -181,7 +183,7 @@ class EventCard extends StatelessWidget{
               ),
             ),
               
-            if(eve.repeat)
+            if(eve.days!=null&&(eve.days?.isNotEmpty??false))
             weekDaysDots(eve.days,maincolor),
             if(eve.type!=EventTypes.NONE||sto.isNotEmpty)
             stopsLineHorizontal(sto,eve.repeat,maincolor),
@@ -198,8 +200,10 @@ class EventCard extends StatelessWidget{
 Future<bool> showCreateTripSheet(BuildContext context,{
   Event? event,
   List<Stop>? stops,
-  required Color mainColor,
+  bool isShift=false,
+  final String? recoId,
   required bool isTrip,
+  required Color mainColor,
   required DateTime startDate,
 })async{
   assert(
@@ -213,7 +217,9 @@ Future<bool> showCreateTripSheet(BuildContext context,{
       mainColor: mainColor,
       eve: event,
       sto: stops,
+      recoId:recoId,
       isTrip: isTrip,
+      isShift: isShift,
       startDate: startDate,
     ),
   );
@@ -269,6 +275,8 @@ class TempStop{
 //Return a cuple EventsCompanion/StopsCompanion
 class _CreateTripSheet extends StatefulWidget {
   final bool isTrip;
+  final bool isShift;
+  final String? recoId;
   final Event? eve;
   final List<Stop>? sto;
   final Color mainColor;
@@ -279,6 +287,8 @@ class _CreateTripSheet extends StatefulWidget {
     required this.mainColor ,
     this.eve,
     this.sto,
+    this.recoId,
+    this.isShift=false,
     required this.isTrip,
     required this.startDate
   });
@@ -287,12 +297,12 @@ class _CreateTripSheet extends StatefulWidget {
   State<_CreateTripSheet> createState() => _CreateTripSheetState();
 }
 
-class _CreateTripSheetState extends State<_CreateTripSheet> {
+class _CreateTripSheetState extends State<_CreateTripSheet>{
   final _nameC = TextEditingController();
   final _contactNameC = TextEditingController();
   final _contactC = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  Set<WeekDays> weekDays=<WeekDays>{WeekDays.MONDAY};
+  late Set<WeekDays> weekDays;
   bool repeat=false;
 
   late List<TempStop> _tempStops=[];
@@ -307,9 +317,12 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
       //_stopControllers=[TextEditingController()];
       _addStopField();
       _addStopField();
+      weekDays=<WeekDays>{WeekDays.MONDAY,WeekDays.TUESDAY,WeekDays.WEDNESDAY,WeekDays.THURSDAY,WeekDays.FRIDAY};
       return;
     }
     repeat=widget.eve?.repeat??false;
+    weekDays=(widget.eve?.days?.toSet())??
+      (<WeekDays>{WeekDays.MONDAY,WeekDays.TUESDAY,WeekDays.WEDNESDAY,WeekDays.THURSDAY,WeekDays.FRIDAY}).toSet();
     if(repeat)weekDays=widget.eve!.days!.toSet();
     _nameC.text=widget.eve?.name??"";
     _contactNameC.text=widget.eve?.contactName??"";
@@ -350,7 +363,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
   }
 
   void _getDateTime(BuildContext context,int index)async{
-    if(!repeat||index==0){
+    if((!repeat||index==0)&&!widget.isShift){
       DateTime? selected=await getDatetime(context,_tempStops[index].stopDate);
       if(selected!=null){
         _tempStops[index].stopDate=selected;
@@ -370,24 +383,29 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
   }
 
   void _onSave(BuildContext context){
-    if (_formKey.currentState?.validate()??false) {
-      final newTrip =EventsCompanion(
-        id: drift.Value(widget.eve?.id??Uuid().v4()),
-        name: drift.Value(_nameC.text),
+    if(_formKey.currentState?.validate()??false){
+      final newTrip=EventsCompanion(
+        id:drift.Value(widget.eve?.id??Uuid().v4()),
+        name:drift.Value(_nameC.text),
         contactName:drift.Value(_contactNameC.text),
         contact:drift.Value(phoneParser(_contactC.text)),
-        days: drift.Value(repeat?weekDays.toList():[]),
-        startDateTime: drift.Value(_tempStops.first.stopDate),
-        endDateTime: drift.Value(_tempStops.last.stopDate),
-        repeat: drift.Value(repeat),
-        isTrip: drift.Value(widget.isTrip),
-        state: drift.Value(EventStates.INCOMPLETE),
-        isSynced: drift.Value(false),
-        type: drift.Value(widget.isTrip?EventTypes.EVENT:EventTypes.REMINDER),
+        repeat:drift.Value(repeat),
+        days:drift.Value(repeat||widget.isShift?weekDays.toList():[]),
+        startDateTime:drift.Value(_tempStops.first.stopDate),
+        endDateTime:drift.Value(_tempStops.last.stopDate),
+        //stoprepeatingdatetime
+        isTrip:drift.Value(widget.isTrip),
+        isSynced:drift.Value(false),
+        state:drift.Value(widget.eve?.state??EventStates.INCOMPLETE),
+        type:drift.Value(widget.eve?.type??(widget.isTrip?
+          EventTypes.EVENT:widget.isShift?
+            EventTypes.SHIFT:EventTypes.REMINDER)),
+        recorridoId:drift.Value(widget.recoId),
+        shiftId:drift.Value(null),
       );
 
-      final List<StopsCompanion> newStops = [];
-      int currentOrder = 0;
+      final List<StopsCompanion> newStops=[];
+      int currentOrder=0;
       for(final temp in _tempStops){
         if(temp.nameC.text.isEmpty)continue;
         
@@ -456,6 +474,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
               ),
               const Divider(height:5),
 
+              if(!widget.isShift)
               Row(
                 children: [
                   Expanded(child: Text(
@@ -474,7 +493,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
                   )
                 ],
               ),
-              if(repeat)
+              if(repeat||widget.isShift)
               SegmentedButton<WeekDays>(
                 segments: const <ButtonSegment<WeekDays>>[
                   ButtonSegment<WeekDays>(value: WeekDays.MONDAY,label: Text("LU")),
@@ -493,6 +512,25 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
                 },
                 multiSelectionEnabled: true,
                 showSelectedIcon: false,
+                style:ButtonStyle(
+                  backgroundColor: MaterialStateProperty.resolveWith<Color?>(
+                    (Set<MaterialState> states) {
+                      if (states.contains(MaterialState.selected))return widget.mainColor.withAlpha(100);
+                      return null;
+                    },
+                  ),
+                  foregroundColor: MaterialStateProperty.resolveWith<Color?>(
+                    (Set<MaterialState> states) {
+                      if (states.contains(MaterialState.selected))return Colors.white;
+                      return widget.mainColor;
+                    },
+                  ),
+                  side: MaterialStateProperty.resolveWith<BorderSide?>(
+                    (Set<MaterialState> states) {
+                      return BorderSide(color:widget.mainColor);
+                    }
+                  )
+                ),
               ),
               const SizedBox(height: 5),
 
@@ -541,8 +579,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet> {
                       children:[
                         //TIME PICKER
                         Container(
-                          width: 65,
-                          height: 50,
+                          width: 65, height: 50,
                           margin: EdgeInsets.only(right:5),
                           child: Material(
                             color:(dated?widget.mainColor:Colors.red).withAlpha(50),

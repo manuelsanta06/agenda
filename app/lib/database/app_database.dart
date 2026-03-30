@@ -28,9 +28,9 @@ class EventWithStops {
   EventChoferes, 
   EventColectivos,
   Recorridos,
-  RecorridoShifts,
-  ShiftChoferes,
-  ShiftColectivos,
+  //RecorridoShifts,
+  //ShiftChoferes,
+  //ShiftColectivos,
   Encargados,
   RecorridoSubscriptions
 ])
@@ -38,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase():super(_openConnection());
 
   @override
-  int get schemaVersion=>3;
+  int get schemaVersion=>4;
 
   @override
   MigrationStrategy get migration{
@@ -48,12 +48,20 @@ class AppDatabase extends _$AppDatabase {
       },
       onUpgrade:(Migrator m,int from,int to)async{
         if(from<2){
-          await m.addColumn(recorridoShifts, recorridoShifts.isSynced);
-        }
-        if(from<3){
+          await customStatement('ALTER TABLE recorrido_shifts ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 0;');
+        }if(from<3){
           await m.alterTable(TableMigration(
             events,
             newColumns: [events.shiftId],
+          ));
+        }if(from<4){
+          await customStatement('DROP TABLE IF EXISTS shift_choferes;');
+          await customStatement('DROP TABLE IF EXISTS shift_colectivos;');
+          await customStatement('DROP TABLE IF EXISTS recorrido_shifts;');
+
+          await m.alterTable(TableMigration(
+            events,
+            newColumns: [events.recorridoId], 
           ));
         }
       },
@@ -70,7 +78,7 @@ class AppDatabase extends _$AppDatabase {
       await update(recorridos).write(const RecorridosCompanion(isSynced: Value(false)));
       await update(encargados).write(const EncargadosCompanion(isSynced: Value(false)));
       await update(events).write(const EventsCompanion(isSynced: Value(false)));
-      await update(recorridoShifts).write(const RecorridoShiftsCompanion(isSynced: Value(false)));
+      //await update(recorridoShifts).write(const RecorridoShiftsCompanion(isSynced: Value(false)));
     });
   }
 
@@ -117,12 +125,12 @@ class AppDatabase extends _$AppDatabase {
       }
 
       //Recorrido Shifts
-      final shiftIds = (sentPayload['recorrido_shifts'] as List)
-          .map((e) => e['id'] as String).toList();
-      if (shiftIds.isNotEmpty) {
-        await (update(recorridoShifts)..where((t) => t.id.isIn(shiftIds)))
-            .write(const RecorridoShiftsCompanion(isSynced:Value(true)));
-      }
+      //final shiftIds = (sentPayload['recorrido_shifts'] as List)
+      //    .map((e) => e['id'] as String).toList();
+      //if (shiftIds.isNotEmpty) {
+      //  await (update(recorridoShifts)..where((t) => t.id.isIn(shiftIds)))
+      //      .write(const RecorridoShiftsCompanion(isSynced:Value(true)));
+      //}
     });
   }
 
@@ -132,7 +140,7 @@ class AppDatabase extends _$AppDatabase {
     final unsyncedRecorridos=await(select(recorridos)..where((t)=>t.isSynced.equals(false))).get();
     final unsyncedEncargados=await(select(encargados)..where((t)=>t.isSynced.equals(false))).get();
     final unsyncedEvents    =await(select(events)..where((t)=>t.isSynced.equals(false))).get();
-    final unsyncedShifts    =await(select(recorridoShifts)..where((t)=>t.isSynced.equals(false))).get();
+    //final unsyncedShifts    =await(select(recorridoShifts)..where((t)=>t.isSynced.equals(false))).get();
 
     //look fordependant tables
     
@@ -146,11 +154,11 @@ class AppDatabase extends _$AppDatabase {
         await (select(eventColectivos)..where((t)=>t.eventId.isIn(eventIds))).get();
 
     //recorridoShifts dependencies
-    final shiftIds=unsyncedShifts.map((s)=>s.id).toList();
-    final shiftChoferesList=shiftIds.isEmpty?<ShiftChofere>[]:
-        await (select(shiftChoferes)..where((t)=>t.shiftId.isIn(shiftIds))).get();
-    final shiftColectivosList=shiftIds.isEmpty?<ShiftColectivo>[]:
-        await (select(shiftColectivos)..where((t)=>t.shiftId.isIn(shiftIds))).get();
+    //final shiftIds=unsyncedShifts.map((s)=>s.id).toList();
+    //final shiftChoferesList=shiftIds.isEmpty?<ShiftChofere>[]:
+    //    await (select(shiftChoferes)..where((t)=>t.shiftId.isIn(shiftIds))).get();
+    //final shiftColectivosList=shiftIds.isEmpty?<ShiftColectivo>[]:
+    //    await (select(shiftColectivos)..where((t)=>t.shiftId.isIn(shiftIds))).get();
 
     //rncargados dependencies
     final encargadoIds=unsyncedEncargados.map((e)=>e.id).toList();
@@ -211,6 +219,7 @@ class AppDatabase extends _$AppDatabase {
         "type": e.type.index,
         "is_trip": e.isTrip,
         "shift_id": e.shiftId,
+        "recorrido_id": e.recorridoId,
       }).toList(),
 
       "stops": eventStops.map((s)=>{
@@ -221,15 +230,15 @@ class AppDatabase extends _$AppDatabase {
         "order_index": s.orderIndex,
       }).toList(),
 
-      "recorrido_shifts": unsyncedShifts.map((s)=>{
-        "id": s.id,
-        "recorrido_id": s.recorridoId,
-        "week_day": const WeekDaysConverter().toSql(s.weekDay),
-        "start_time": s.startTime.toUtc().toIso8601String(),
-        "end_time": s.endTime.toUtc().toIso8601String(),
-        "shift_name": s.shiftName,
-        "is_active": s.isActive,
-      }).toList(),
+      //"recorrido_shifts": unsyncedShifts.map((s)=>{
+      //  "id": s.id,
+      //  "recorrido_id": s.recorridoId,
+      //  "week_day": const WeekDaysConverter().toSql(s.weekDay),
+      //  "start_time": s.startTime.toUtc().toIso8601String(),
+      //  "end_time": s.endTime.toUtc().toIso8601String(),
+      //  "shift_name": s.shiftName,
+      //  "is_active": s.isActive,
+      //}).toList(),
 
       "recorrido_subscriptions": recSubscriptions.map((s)=>{
         "id": s.id,
@@ -251,15 +260,15 @@ class AppDatabase extends _$AppDatabase {
         "colectivo_id": ec.colectivoId,
       }).toList(),
 
-      "shift_choferes": shiftChoferesList.map((sc)=>{
-        "shift_id": sc.shiftId,
-        "chofer_id": sc.choferId,
-      }).toList(),
-
-      "shift_colectivos": shiftColectivosList.map((sc)=>{
-        "shift_id": sc.shiftId,
-        "colectivo_id": sc.colectivoId,
-      }).toList(),
+      //"shift_choferes": shiftChoferesList.map((sc)=>{
+      //  "shift_id": sc.shiftId,
+      //  "chofer_id": sc.choferId,
+      //}).toList(),
+      //
+      //"shift_colectivos": shiftColectivosList.map((sc)=>{
+      //  "shift_id": sc.shiftId,
+      //  "colectivo_id": sc.colectivoId,
+      //}).toList(),
     };
   }
 
@@ -340,25 +349,25 @@ class AppDatabase extends _$AppDatabase {
       }
 
       //RECORRIDO SHIFTS
-      final shiftsList = json['recorrido_shifts'] as List<dynamic>? ?? [];
-      final List<String> updatedShiftIds = [];
-
-      for(var s in shiftsList) {
-        updatedShiftIds.add(s['id']);
-        await into(recorridoShifts).insert(
-          RecorridoShiftsCompanion(
-            id: drift.Value(s['id']),
-            recorridoId: drift.Value(s['recorrido_id']),
-            weekDay: drift.Value(const WeekDaysConverter().fromSql(s['week_day'])), 
-            startTime: drift.Value(DateTime.parse(s['start_time']).toLocal()),
-            endTime: drift.Value(DateTime.parse(s['end_time']).toLocal()),
-            shiftName: drift.Value(s['shift_name']),
-            isActive: drift.Value(s['is_active'] ?? true),
-            isSynced: const drift.Value(true),
-          ),
-          mode: drift.InsertMode.insertOrReplace,
-        );
-      }
+      //final shiftsList = json['recorrido_shifts'] as List<dynamic>? ?? [];
+      //final List<String> updatedShiftIds = [];
+      //
+      //for(var s in shiftsList) {
+      //  updatedShiftIds.add(s['id']);
+      //  await into(recorridoShifts).insert(
+      //    RecorridoShiftsCompanion(
+      //      id: drift.Value(s['id']),
+      //      recorridoId: drift.Value(s['recorrido_id']),
+      //      weekDay: drift.Value(const WeekDaysConverter().fromSql(s['week_day'])), 
+      //      startTime: drift.Value(DateTime.parse(s['start_time']).toLocal()),
+      //      endTime: drift.Value(DateTime.parse(s['end_time']).toLocal()),
+      //      shiftName: drift.Value(s['shift_name']),
+      //      isActive: drift.Value(s['is_active'] ?? true),
+      //      isSynced: const drift.Value(true),
+      //    ),
+      //    mode: drift.InsertMode.insertOrReplace,
+      //  );
+      //}
 
       //TABLAS INTERMEDIAS/DEPENDIENTES
 
@@ -385,35 +394,35 @@ class AppDatabase extends _$AppDatabase {
       }
 
       //SHIFT CHOFERES & COLECTIVOS(Dependen de Recorrido Shifts)
-      if (updatedShiftIds.isNotEmpty) {
-        //nuke
-        await (delete(shiftChoferes)..where((t) => t.shiftId.isIn(updatedShiftIds))).go();
-        await (delete(shiftColectivos)..where((t) => t.shiftId.isIn(updatedShiftIds))).go();
-
-        //Choferes
-        final shiftChoferesList = json['shift_choferes'] as List<dynamic>? ?? [];
-        for(var sc in shiftChoferesList) {
-          await into(shiftChoferes).insert(
-            ShiftChoferesCompanion(
-              shiftId: drift.Value(sc['shift_id']),
-              choferId: drift.Value(sc['chofer_id']),
-            ),
-            mode: drift.InsertMode.insertOrReplace,
-          );
-        }
-
-        //Colectivos
-        final shiftColectivosList = json['shift_colectivos'] as List<dynamic>? ?? [];
-        for(var sc in shiftColectivosList) {
-          await into(shiftColectivos).insert(
-            ShiftColectivosCompanion(
-              shiftId: drift.Value(sc['shift_id']),
-              colectivoId: drift.Value(sc['colectivo_id']),
-            ),
-            mode: drift.InsertMode.insertOrReplace,
-          );
-        }
-      }
+      //if (updatedShiftIds.isNotEmpty) {
+      //  //nuke
+      //  await (delete(shiftChoferes)..where((t) => t.shiftId.isIn(updatedShiftIds))).go();
+      //  await (delete(shiftColectivos)..where((t) => t.shiftId.isIn(updatedShiftIds))).go();
+      //
+      //  //Choferes
+      //  final shiftChoferesList = json['shift_choferes'] as List<dynamic>? ?? [];
+      //  for(var sc in shiftChoferesList) {
+      //    await into(shiftChoferes).insert(
+      //      ShiftChoferesCompanion(
+      //        shiftId: drift.Value(sc['shift_id']),
+      //        choferId: drift.Value(sc['chofer_id']),
+      //      ),
+      //      mode: drift.InsertMode.insertOrReplace,
+      //    );
+      //  }
+      //
+      //  //Colectivos
+      //  final shiftColectivosList = json['shift_colectivos'] as List<dynamic>? ?? [];
+      //  for(var sc in shiftColectivosList) {
+      //    await into(shiftColectivos).insert(
+      //      ShiftColectivosCompanion(
+      //        shiftId: drift.Value(sc['shift_id']),
+      //        colectivoId: drift.Value(sc['colectivo_id']),
+      //      ),
+      //      mode: drift.InsertMode.insertOrReplace,
+      //    );
+      //  }
+      //}
     });
   }
 
@@ -656,6 +665,42 @@ class AppDatabase extends _$AppDatabase {
         if (stop != null) {
           item.stops.add(stop);
         }
+      }
+
+      return groupedData.values.toList();
+    });
+  }
+  Stream<List<EventWithStops>> watchShiftsWithStops(String recoId){
+    final query=select(events).join([
+      leftOuterJoin(stops, stops.eventId.equalsExp(events.id)),
+    ]);
+
+    //filtering
+    query.where(
+      events.type.equalsValue(EventTypes.SHIFT) &
+      events.recorridoId.equals(recoId) &
+      events.state.equalsValue(EventStates.REMOVED).not()
+    );
+
+    //order
+    query.orderBy([
+      OrderingTerm.asc(events.startDateTime),
+      OrderingTerm.asc(stops.orderIndex),
+    ]);
+
+    return query.watch().map((rows) {
+      final groupedData=<String, EventWithStops>{};
+
+      for(final row in rows){
+        final event=row.readTable(events);
+        final stop=row.readTableOrNull(stops);
+
+        final item=groupedData.putIfAbsent(
+          event.id, 
+          ()=>EventWithStops(event:event,stops:[])
+        );
+
+        if(stop!=null){item.stops.add(stop);}
       }
 
       return groupedData.values.toList();

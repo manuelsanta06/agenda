@@ -1,6 +1,7 @@
 import 'package:agenda/pages/recorridos.dart';
 import 'package:agenda/utilities/encargados.dart';
-import 'package:agenda/utilities/shifts.dart';
+//import 'package:agenda/utilities/shifts.dart';
+import 'package:agenda/utilities/events.dart';
 import 'package:agenda/widgets/text.dart';
 
 import '../widgets/searchBar.dart';
@@ -88,8 +89,8 @@ class recorridoInfo extends StatelessWidget{
 
   Widget _buildHorariosTab(BuildContext context) {
     final db = Provider.of<AppDatabase>(context);
-    return StreamBuilder<List<RecorridoShift>>(
-      stream:(db.select(db.recorridoShifts)..where((t)=>t.recorridoId.equals(reco.id))).watch(),
+    return StreamBuilder<List<EventWithStops>>(
+      stream:db.watchShiftsWithStops(reco.id),
       builder:(context,snapshot){
         if(snapshot.hasError){return Center(
           child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
@@ -106,14 +107,10 @@ class recorridoInfo extends StatelessWidget{
         return ListView(
           padding: const EdgeInsets.all(16),
           children:[
-            ...List.generate(shifts.length,(index)=>shiftToCard(
-              context,maincolor,shifts[index],
-              onPressed:()async{await showCreateModifiShiftSheet(
-                context,maincolor,reco.id,shiftEdit:shifts[index]
-              );},
-              onLongPressed:()async{
-                //TODO: shift removing
-              }
+            ...List.generate(shifts.length,(index)=>EventCard(
+              maincolor:maincolor,
+              eve:shifts[index].event,
+              sto:shifts[index].stops,
             )),
             Material(
               color: Colors.transparent,
@@ -123,7 +120,13 @@ class recorridoInfo extends StatelessWidget{
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
-                onTap:()async=>snack(context,(await showCreateModifiShiftSheet(context,maincolor,reco.id))??false),
+                onTap:()async=>snack(context,(await showCreateTripSheet(context,
+                  mainColor:maincolor,
+                  isTrip:false,
+                  isShift:true,
+                  recoId:reco.id,
+                  startDate: DateTime(2000,1,1),
+                ))??false),
                 child: Container(
                   width:double.infinity,
                   padding:const EdgeInsets.symmetric(vertical:7,horizontal:5),

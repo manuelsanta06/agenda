@@ -16,41 +16,6 @@ class Recorridos extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-//LOS HORARIOS/TURNOS
-class RecorridoShifts extends Table {
-  TextColumn get id => text()();
-  
-  TextColumn get recorridoId => text().references(Recorridos, #id, onDelete: KeyAction.cascade)();
-  TextColumn get weekDay => text().map(const WeekDaysConverter())();
-  
-  DateTimeColumn get startTime => dateTime()(); 
-  DateTimeColumn get endTime => dateTime()();   
-
-  TextColumn get shiftName => text()();
-
-  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-
-  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
-
-  Set<Column> get primaryKey => {id};
-}
-
-class ShiftChoferes extends Table {
-  TextColumn get shiftId => text().references(RecorridoShifts, #id, onDelete: KeyAction.cascade)();
-  TextColumn get choferId => text().references(Choferes, #id, onDelete: KeyAction.cascade)();
-  
-  @override
-  Set<Column> get primaryKey => {shiftId, choferId};
-}
-
-class ShiftColectivos extends Table {
-  TextColumn get shiftId => text().references(RecorridoShifts, #id, onDelete: KeyAction.cascade)();
-  TextColumn get colectivoId => text().references(Colectivos, #id, onDelete: KeyAction.cascade)();
-  
-  @override
-  Set<Column> get primaryKey => {shiftId, colectivoId};
-}
-
 //ENCARGADOS (Quien paga/El Padre)
 class Encargados extends Table {
   TextColumn get id => text()();
