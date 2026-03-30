@@ -65,6 +65,7 @@ type Event struct {
 	Type                  int     `json:"type"`
 	IsTrip                bool    `json:"is_trip"`
 	ShiftID               *string `json:"shift_id"`
+	RecorridoID           *string `json:"recorrido_id"`
 	CreatedAt             time.Time  `json:"created_at"`
 	UpdatedAt             time.Time  `json:"updated_at"`
 }

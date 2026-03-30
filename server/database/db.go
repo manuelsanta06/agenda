@@ -46,8 +46,6 @@ func parseWeekDays(daysStr string)[]time.Weekday{
 
 func containsWeekday(days []time.Weekday,target time.Weekday)bool{
   return slices.Contains(days,target)
-	// for _,d:=range days{if d==target{return true}}
-	// return false
 }
 
 
@@ -179,29 +177,11 @@ func FullSync(payload models.SyncPayload)error{
 				type = EXCLUDED.type,
 				is_trip = EXCLUDED.is_trip,
 				shift_id = EXCLUDED.shift_id,
+        recorrido_id = EXCLUDED.recorrido_id,
 				updated_at = CURRENT_TIMESTAMP;
 		`, e.ID, e.Name, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.ShiftID)
 		if err != nil {
 			return fmt.Errorf("error guardando event %s: %v", e.ID, err)
-		}
-	}
-
-	//RecorridoShifts
-	for _, rs := range payload.RecorridoShifts {
-		_, err := tx.Exec(ctx, `
-			INSERT INTO recorrido_shifts (id, recorrido_id, week_day, start_time, end_time, shift_name, is_active)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
-			ON CONFLICT (id) DO UPDATE SET
-				recorrido_id = EXCLUDED.recorrido_id,
-				week_day = EXCLUDED.week_day,
-				start_time = EXCLUDED.start_time,
-				end_time = EXCLUDED.end_time,
-				shift_name = EXCLUDED.shift_name,
-				is_active = EXCLUDED.is_active,
-				updated_at = CURRENT_TIMESTAMP;
-		`, rs.ID, rs.RecorridoID, rs.WeekDay, rs.StartTime, rs.EndTime, rs.ShiftName, rs.IsActive)
-		if err != nil {
-			return fmt.Errorf("error guardando recorrido_shift %s: %v", rs.ID, err)
 		}
 	}
 
@@ -232,18 +212,6 @@ func FullSync(payload models.SyncPayload)error{
 		_, err = tx.Exec(ctx, `DELETE FROM event_colectivos WHERE event_id = $1`, e.ID)
 		if err != nil {
 			return fmt.Errorf("error limpiando colectivos del event %s: %v", e.ID, err)
-		}
-	}
-
-	// Limpiar ShiftChoferes y ShiftColectivos (Dueño: RecorridoShift)
-	for _, rs := range payload.RecorridoShifts {
-		_, err := tx.Exec(ctx, `DELETE FROM shift_choferes WHERE shift_id = $1`, rs.ID)
-		if err != nil {
-			return fmt.Errorf("error limpiando choferes del shift %s: %v", rs.ID, err)
-		}
-		_, err = tx.Exec(ctx, `DELETE FROM shift_colectivos WHERE shift_id = $1`, rs.ID)
-		if err != nil {
-			return fmt.Errorf("error limpiando colectivos del shift %s: %v", rs.ID, err)
 		}
 	}
 
@@ -315,42 +283,6 @@ func FullSync(payload models.SyncPayload)error{
 		}
 	}
 
-	//ShiftChoferes (Dueño: RecorridoShift)
-	for _, sc := range payload.ShiftChoferes {
-		_, err := tx.Exec(ctx, `
-			INSERT INTO shift_choferes (shift_id, chofer_id)
-			VALUES ($1, $2)
-			ON CONFLICT (shift_id, chofer_id) DO NOTHING;
-		`, sc.ShiftID, sc.ChoferID)
-		if err != nil {
-			return fmt.Errorf("error relacionando shift %s con chofer %s: %v", sc.ShiftID, sc.ChoferID, err)
-		}
-
-		// Marcar al RecorridoShift como sucio
-		_, err = tx.Exec(ctx, `UPDATE recorrido_shifts SET updated_at = CURRENT_TIMESTAMP WHERE id = $1`, sc.ShiftID)
-		if err != nil {
-			return fmt.Errorf("error marcando shift como sucio: %v", err)
-		}
-	}
-
-	//ShiftColectivos (Dueño: RecorridoShift)
-	for _, scol := range payload.ShiftColectivos {
-		_, err := tx.Exec(ctx, `
-			INSERT INTO shift_colectivos (shift_id, colectivo_id)
-			VALUES ($1, $2)
-			ON CONFLICT (shift_id, colectivo_id) DO NOTHING;
-		`, scol.ShiftID, scol.ColectivoID)
-		if err != nil {
-			return fmt.Errorf("error relacionando shift %s con colectivo %s: %v", scol.ShiftID, scol.ColectivoID, err)
-		}
-
-		// Marcar al RecorridoShift como sucio
-		_, err = tx.Exec(ctx, `UPDATE recorrido_shifts SET updated_at = CURRENT_TIMESTAMP WHERE id = $1`, scol.ShiftID)
-		if err != nil {
-			return fmt.Errorf("error marcando shift como sucio: %v", err)
-		}
-	}
-
 	// Confirmar Transacción
 	err = tx.Commit(ctx)
 	if err != nil {
@@ -368,10 +300,7 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 	payload.Colectivos = []models.Colectivo{}
 	payload.Recorridos = []models.Recorrido{}
 	payload.Encargados = []models.Encargado{}
-	payload.RecorridoShifts = []models.RecorridoShift{}
 	payload.RecorridoSubscriptions = []models.RecorridoSubscription{}
-	payload.ShiftChoferes = []models.ShiftChofer{}
-	payload.ShiftColectivos = []models.ShiftColectivo{}
 
 	//CHOFERES
 	rowsChoferes, err := DB.Query(ctx, `
@@ -453,26 +382,6 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 		payload.Encargados = append(payload.Encargados, enc)
 	}
 
-	//RECORRIDO SHIFTS (Dueños de ShiftChoferes y ShiftColectivos)
-	rowsShifts, err := DB.Query(ctx, `
-		SELECT id, recorrido_id, week_day, start_time, end_time, shift_name, is_active, created_at, updated_at 
-		FROM recorrido_shifts 
-		WHERE updated_at > $1
-	`, lastSyncStr)
-	if err != nil {
-		return payload, fmt.Errorf("error consultando recorrido_shifts: %v", err)
-	}
-	defer rowsShifts.Close()
-
-	for rowsShifts.Next() {
-		var rs models.RecorridoShift
-		err := rowsShifts.Scan(&rs.ID, &rs.RecorridoID, &rs.WeekDay, &rs.StartTime, &rs.EndTime, &rs.ShiftName, &rs.IsActive, &rs.CreatedAt, &rs.UpdatedAt)
-		if err != nil {
-			return payload, fmt.Errorf("error leyendo fila de recorrido_shift: %v", err)
-		}
-		payload.RecorridoShifts = append(payload.RecorridoShifts, rs)
-	}
-
 	//RECORRIDO SUBSCRIPTIONS (Dependientes de Encargados)
 	rowsSubs, err := DB.Query(ctx, `
 		SELECT rs.id, rs.recorrido_id, rs.encargado_id, rs.subscription_name, rs.address, rs.custom_price, rs.is_active
@@ -494,48 +403,6 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 		payload.RecorridoSubscriptions = append(payload.RecorridoSubscriptions, sub)
 	}
 
-	//SHIFT CHOFERES (Dependientes de RecorridoShifts)
-	rowsShiftChoferes, err := DB.Query(ctx, `
-		SELECT sc.shift_id, sc.chofer_id
-		FROM shift_choferes sc
-		JOIN recorrido_shifts rs ON sc.shift_id = rs.id
-		WHERE rs.updated_at > $1
-	`, lastSyncStr)
-	if err != nil {
-		return payload, fmt.Errorf("error consultando shift_choferes: %v", err)
-	}
-	defer rowsShiftChoferes.Close()
-
-	for rowsShiftChoferes.Next() {
-		var sc models.ShiftChofer
-		err := rowsShiftChoferes.Scan(&sc.ShiftID, &sc.ChoferID)
-		if err != nil {
-			return payload, fmt.Errorf("error leyendo fila de shift_choferes: %v", err)
-		}
-		payload.ShiftChoferes = append(payload.ShiftChoferes, sc)
-	}
-
-	//SHIFT COLECTIVOS (Dependientes de RecorridoShifts)
-	rowsShiftColectivos, err := DB.Query(ctx, `
-		SELECT scol.shift_id, scol.colectivo_id
-		FROM shift_colectivos scol
-		JOIN recorrido_shifts rs ON scol.shift_id = rs.id
-		WHERE rs.updated_at > $1
-	`, lastSyncStr)
-	if err != nil {
-		return payload, fmt.Errorf("error consultando shift_colectivos: %v", err)
-	}
-	defer rowsShiftColectivos.Close()
-
-	for rowsShiftColectivos.Next() {
-		var scol models.ShiftColectivo
-		err := rowsShiftColectivos.Scan(&scol.ShiftID, &scol.ColectivoID)
-		if err != nil {
-			return payload, fmt.Errorf("error leyendo fila de shift_colectivos: %v", err)
-		}
-		payload.ShiftColectivos = append(payload.ShiftColectivos, scol)
-	}
-
 	return payload, nil
 }
 
@@ -550,10 +417,10 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 
 	//EVENTOS
 	rowsEvents, err := DB.Query(ctx, `
-		SELECT id, name, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, created_at, updated_at
+		SELECT id, name, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id, created_at, updated_at
 		FROM events
 		WHERE updated_at > $1 
-		AND start_date_time >= NOW() - INTERVAL '30 days'
+		AND (start_date_time >= NOW() - INTERVAL '30 days' OR type = 4)
 	`, lastSyncStr)
 	if err != nil {
 		return payload, fmt.Errorf("error consultando events: %v", err)
@@ -562,7 +429,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 
 	for rowsEvents.Next() {
 		var e models.Event
-		err := rowsEvents.Scan(&e.ID, &e.Name, &e.ContactName, &e.Contact, &e.Repeat, &e.Days, &e.StartDateTime, &e.EndDateTime, &e.StopRepeatingDateTime, &e.State, &e.Type, &e.IsTrip, &e.ShiftID, &e.CreatedAt, &e.UpdatedAt)
+		err := rowsEvents.Scan(&e.ID, &e.Name, &e.ContactName, &e.Contact, &e.Repeat, &e.Days, &e.StartDateTime, &e.EndDateTime, &e.StopRepeatingDateTime, &e.State, &e.Type, &e.IsTrip, &e.ShiftID, &e.RecorridoID, &e.CreatedAt, &e.UpdatedAt)
 		if err != nil {
 			return payload, fmt.Errorf("error leyendo fila de event: %v", err)
 		}
@@ -575,7 +442,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 		FROM stops s
 		JOIN events e ON s.event_id = e.id
 		WHERE e.updated_at > $1 
-		AND e.start_date_time >= NOW() - INTERVAL '30 days'
+		AND (e.start_date_time >= NOW() - INTERVAL '30 days' OR e.type = 4)
 	`, lastSyncStr)
 	if err!=nil {
 		return payload,fmt.Errorf("error consultando stops: %v",err)
@@ -597,7 +464,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 		FROM event_choferes ec
 		JOIN events e ON ec.event_id = e.id
 		WHERE e.updated_at > $1 
-		AND e.start_date_time >= NOW() - INTERVAL '30 days'
+		AND (e.start_date_time >= NOW() - INTERVAL '30 days' OR e.type = 4)
 	`, lastSyncStr)
 	if err != nil {
 		return payload, fmt.Errorf("error consultando event_choferes: %v", err)
@@ -619,7 +486,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 		FROM event_colectivos ecol
 		JOIN events e ON ecol.event_id = e.id
 		WHERE e.updated_at > $1 
-		AND e.start_date_time >= NOW() - INTERVAL '30 days'
+		AND (e.start_date_time >= NOW() - INTERVAL '30 days' OR e.type = 4)
 	`, lastSyncStr)
 	if err != nil {
 		return payload, fmt.Errorf("error consultando event_colectivos: %v", err)
@@ -639,107 +506,130 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 }
 
 
-type activeShift struct{
-	ID        string
-	WeekDay   string
-	StartTime time.Time
-	EndTime   time.Time
-	ShiftName string
-  RecorridoName string
+type activeTemplate struct {
+	ID            string
+	Name          string
+	Days          string
+	StartTime     time.Time
+	EndTime       time.Time
+	RecorridoName string
+  RecorridoID   string
 }
 
 func RecorridoShiftPopulationRoutine() error {
-	ctx:=context.Background()
-
-	//get all active shifts
-	queryShifts:=`
-		SELECT rs.id, rs.week_day, rs.start_time, rs.end_time, rs.shift_name, r.name
-		FROM recorrido_shifts rs
-		JOIN recorridos r ON rs.recorrido_id = r.id
-		WHERE rs.is_active = TRUE AND r.is_active = TRUE
+	ctx := context.Background()
+	queryTemplates:=`
+		SELECT e.id, e.days, e.start_date_time, e.end_date_time, e.name, r.name, e.recorrido_id
+		FROM events e
+		JOIN recorridos r ON e.recorrido_id = r.id
+		WHERE e.type = 4 AND e.state != 1 AND r.is_active = TRUE
 	`
-	rows,err:=DB.Query(ctx,queryShifts)
-	if err!=nil{return fmt.Errorf("error obteniendo shifts: %w",err)}
+	rows, err := DB.Query(ctx, queryTemplates)
+	if err!=nil{
+		return fmt.Errorf("error obteniendo templates: %w", err)
+	}
 	defer rows.Close()
 
-	var shifts []activeShift
+	var templates []activeTemplate
 	for rows.Next(){
-		var s activeShift
-		if err:=rows.Scan(&s.ID,&s.WeekDay,&s.StartTime,&s.EndTime,&s.ShiftName,&s.RecorridoName);err!=nil{
-			return fmt.Errorf("error leyendo shift: %w",err)
+		var t activeTemplate
+		var daysPtr *string
+		if err:=rows.Scan(&t.ID,&daysPtr,&t.StartTime,&t.EndTime,&t.Name,&t.RecorridoName,&t.RecorridoID);err!=nil{
+			return fmt.Errorf("error leyendo template: %w",err)
 		}
-		shifts=append(shifts,s)
+		if daysPtr!=nil{
+			t.Days=*daysPtr
+		}else{
+			t.Days=""
+		}
+		templates=append(templates,t)
 	}
 	if err:=rows.Err();err!=nil{return err}
-
 
 	now:=time.Now()
 	startDate:=time.Date(now.Year(),now.Month(),now.Day(),0,0,0,0,now.Location())
 
-	//start the transaction
-	tx,err:=DB.Begin(ctx)
-	if err!=nil{return fmt.Errorf("error iniciando transacción: %w",err)}
+	//transaction
+	tx, err := DB.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("error iniciando transacción: %w", err)
+	}
 	defer tx.Rollback(ctx)
 
 	//days loop
-	for i:=range 16{
-		targetDate:=startDate.AddDate(0,0,i)
-		targetWeekday:=targetDate.Weekday()
+	for i := range 16 {
+		targetDate := startDate.AddDate(0, 0, i)
+		targetWeekday := targetDate.Weekday()
 
-		for _,shift:=range shifts{
-			//this shift applies this wwek day?
-			shiftDays:=parseWeekDays(shift.WeekDay)
-			if !containsWeekday(shiftDays,targetWeekday) {continue}
+		for _, template := range templates {
+			//day check
+			if template.Days==""{continue}
+			templateDays := parseWeekDays(template.Days)
+			if !containsWeekday(templateDays,targetWeekday){continue}
 
-			//this event already exists?
+			//duplicate check
 			var existingID string
-			checkQuery:=`SELECT id FROM events WHERE shift_id = $1 AND start_date_time::date = $2::date LIMIT 1`
-			err=tx.QueryRow(ctx,checkQuery,shift.ID,targetDate).Scan(&existingID)
-			
+			checkQuery := `SELECT id FROM events WHERE shift_id = $1 AND start_date_time::date = $2::date LIMIT 1`
+			err = tx.QueryRow(ctx, checkQuery, template.ID, targetDate).Scan(&existingID)
+
 			if err==nil{
 				continue
 			}else if err!=pgx.ErrNoRows{
-				return fmt.Errorf("error comprobando idempotencia: %w",err)
+				return fmt.Errorf("error comprobando idempotencia: %w", err)
 			}
 
-
 			eventID:=uuid.New().String()
-			
+
 			startDT:=time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(),
-				shift.StartTime.Hour(), shift.StartTime.Minute(), shift.StartTime.Second(), 0, targetDate.Location())
-			
-			endDT:=time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(),
-				shift.EndTime.Hour(), shift.EndTime.Minute(), shift.EndTime.Second(), 0, targetDate.Location())
+				template.StartTime.Hour(),template.StartTime.Minute(),template.StartTime.Second(),0,targetDate.Location())
 
-			//querry
+			endDT:=time.Date(targetDate.Year(),targetDate.Month(),targetDate.Day(),
+				template.EndTime.Hour(),template.EndTime.Minute(),template.EndTime.Second(), 0, targetDate.Location())
+
 			insertEventQuery:=`
-				INSERT INTO events (id, name, start_date_time, end_date_time, state, type, is_trip, shift_id)
-				VALUES ($1, $2, $3, $4, 0, 3, true, $5)
+				INSERT INTO events (id, name,start_date_time, end_date_time, state, type, is_trip, shift_id, recorrido_id)
+				VALUES ($1, $2,$3, $4, 0, 3, true, $5, $6)
 			`
-			_,err=tx.Exec(ctx,insertEventQuery,eventID,shift.RecorridoName+" - "+shift.ShiftName,startDT,endDT,shift.ID)
-			if err!=nil{return fmt.Errorf("error insertando evento base: %w",err)}
+			_,err=tx.Exec(ctx,insertEventQuery,eventID,template.RecorridoName+" - "+template.Name,startDT,endDT,template.ID,template.RecorridoID)
+			if err!=nil{
+				return fmt.Errorf("error insertando evento base: %w", err)
+			}
 
-			//shift_chofer -> event_chofer
+			//Choferes
 			copyChoferesQuery := `
 				INSERT INTO event_choferes (event_id, chofer_id)
-				SELECT $1, chofer_id FROM shift_choferes WHERE shift_id = $2
+				SELECT $1, chofer_id FROM event_choferes WHERE event_id = $2
 			`
-			_, err = tx.Exec(ctx, copyChoferesQuery, eventID, shift.ID)
-			if err!=nil{return fmt.Errorf("error copiando choferes: %w",err)}
+			_, err = tx.Exec(ctx, copyChoferesQuery, eventID, template.ID)
+			if err != nil {
+				return fmt.Errorf("error copiando choferes: %w", err)
+			}
 
-			//shift_colectivos -> event_colectivos
-			copyColectivosQuery := `
+			//Colectivos
+      copyColectivosQuery:=`
 				INSERT INTO event_colectivos (event_id, colectivo_id)
-				SELECT $1, colectivo_id FROM shift_colectivos WHERE shift_id = $2
+				SELECT $1, colectivo_id FROM event_colectivos WHERE event_id = $2
 			`
-			_, err = tx.Exec(ctx, copyColectivosQuery, eventID, shift.ID)
-			if err!=nil{return fmt.Errorf("error copiando colectivos: %w",err)}
-		}
+			_, err = tx.Exec(ctx, copyColectivosQuery, eventID, template.ID)
+			if err != nil {
+				return fmt.Errorf("error copiando colectivos: %w", err)
+			}
+
+			//Stops
+      copyStopsQuery := `
+        INSERT INTO stops (id, name, start, event_id, order_index)
+        SELECT gen_random_uuid()::text, name, $3::date + start::time, $1, order_index 
+        FROM stops WHERE event_id = $2
+      `
+      _, err = tx.Exec(ctx, copyStopsQuery, eventID, template.ID, targetDate)
+      if err!=nil{
+        return fmt.Errorf("error copiando paradas: %w",err)
+      }
+    }
 	}
 
-	//tinal error check
 	if err:=tx.Commit(ctx);err!=nil{
-		return fmt.Errorf("error en el commit: %w",err)
+		return fmt.Errorf("error en el commit: %w", err)
 	}
 
 	fmt.Println("Populador ejecutado con éxito. Ventana de 16 días sincronizada.")
