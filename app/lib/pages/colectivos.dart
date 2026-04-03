@@ -63,7 +63,7 @@ class _colectivosPageState extends State<colectivosPage>{
                   final filtered = searchQuery.isEmpty
                     ? listaColectivos
                     : listaColectivos.where((c){
-                      return(c.name?.toLowerCase().contains(searchQuery.toLowerCase())?? false) ||
+                      return(c.name?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
                         c.plate.toLowerCase().contains(searchQuery.toLowerCase())||
                        (c.number?.toString().contains(searchQuery)?? false);
                         }).toList();

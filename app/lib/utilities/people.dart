@@ -200,9 +200,9 @@ Future<Chofer?> choferCardSelectionList(BuildContext context,List<(Chofer, bool)
     builder:(BuildContext context){
       return StatefulBuilder(builder:(BuildContext context,StateSetter setStateModal){
         final filtered=chofes.where((s){
-          return (s.$1.name?.contains(searchQuery)??false)
-            ||(s.$1.surname?.contains(searchQuery)??false)
-            ||(s.$1.alias?.contains(searchQuery)??false);
+          return (s.$1.name?.toUpperCase().contains(searchQuery.toUpperCase())??false)
+            ||(s.$1.surname?.toUpperCase().contains(searchQuery.toUpperCase())??false)
+            ||(s.$1.alias?.toUpperCase().contains(searchQuery.toUpperCase())??false);
         }).toList();
         return Padding(padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),child:Column(
           mainAxisSize:MainAxisSize.min,

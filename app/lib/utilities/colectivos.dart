@@ -300,8 +300,8 @@ Future<Colectivo?> colectivoCardSelectionList(BuildContext context,List<(Colecti
     builder:(BuildContext context){
       return StatefulBuilder(builder:(BuildContext context,StateSetter setStateModal){
         final filtered=buses.where((s){
-          return (s.$1.name?.contains(searchQuery)??false)
-            ||s.$1.plate.contains(searchQuery);
+          return (s.$1.name?.toUpperCase().contains(searchQuery.toUpperCase())??false)
+            ||s.$1.plate.toUpperCase().contains(searchQuery.toUpperCase());
         }).toList();
         return Padding(padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),child:Column(
           mainAxisSize:MainAxisSize.min,
