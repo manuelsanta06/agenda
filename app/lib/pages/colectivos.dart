@@ -14,7 +14,7 @@ class colectivosPage extends StatefulWidget {
 }
 
 class _colectivosPageState extends State<colectivosPage>{
-  String searchQuery = "";
+  String searchQuery="";
   bool showInactives=false;
 
   @override
@@ -87,7 +87,7 @@ class _colectivosPageState extends State<colectivosPage>{
       ),),
       floatingActionButton: FloatingActionButton(
         onPressed:()async{
-          final success=await showCreateModifiColectivo(context);
+          final success=await showCreateModifiColectivo(context,mainColor:colectivosPage.mainColor);
           if(success&&context.mounted){
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content:Text("Colectivo actualizado"),backgroundColor:Colors.green),

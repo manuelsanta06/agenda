@@ -10,12 +10,11 @@ import 'package:agenda/widgets/text.dart';
 import '../utilities/syncService.dart';
 
 
-// 1. EL WRAPPER (Maneja la Base de Datos)
-Future<bool> showCreateModifiColectivo(BuildContext context,{Colectivo? bus})async{
+Future<bool> showCreateModifiColectivo(BuildContext context,{Colectivo? bus,required Color mainColor})async{
   final result=await showModalBottomSheet<ColectivosCompanion?>(
     context:context,
     isScrollControlled:true,
-    builder:(BuildContext context)=>_CreateColectivoSheet(bus: bus),
+    builder:(BuildContext context)=>_CreateColectivoSheet(bus: bus,mainColor:mainColor),
   );
   if(result==null)return false;
   final db=Provider.of<AppDatabase>(context,listen:false);
@@ -31,17 +30,27 @@ Future<bool> showCreateModifiColectivo(BuildContext context,{Colectivo? bus})asy
 
 class _CreateColectivoSheet extends StatefulWidget {
   final Colectivo? bus;
-  const _CreateColectivoSheet({this.bus});
+  final Color mainColor;
+
+  const _CreateColectivoSheet({
+    Key? key,
+    this.bus,
+    required this.mainColor,
+  }) : super(key: key);
 
   @override
   State<_CreateColectivoSheet> createState() => _CreateColectivoSheetState();
 }
 
 class _CreateColectivoSheetState extends State<_CreateColectivoSheet> {
+  final _formKey = GlobalKey<FormState>();
+  
   late final TextEditingController nameC;
   late final TextEditingController plateC;
   late final TextEditingController internC;
   late final TextEditingController capacityC;
+
+  bool get _isEditing => widget.bus != null;
 
   @override
   void initState() {
@@ -61,68 +70,139 @@ class _CreateColectivoSheetState extends State<_CreateColectivoSheet> {
     super.dispose();
   }
 
+  void _save() {
+    if (_formKey.currentState?.validate() ?? false) {
+      final nuevo = ColectivosCompanion(
+        id: drift.Value(widget.bus?.id ?? const Uuid().v4()),
+        name: drift.Value(nameC.text.trim()),
+        plate: drift.Value(plateC.text.trim().toUpperCase()),
+        number: drift.Value(int.tryParse(internC.text.trim())),
+        capacity: drift.Value(int.tryParse(capacityC.text.trim()) ?? 0),
+        fuelAmount: drift.Value(widget.bus?.fuelAmount ?? "0"),
+        fuelDate: drift.Value(widget.bus?.fuelDate ?? DateTime.now()),
+        oilDate: drift.Value(widget.bus?.oilDate ?? DateTime.now()),
+        isSynced: const drift.Value(false),
+      );
+      Navigator.pop(context, nuevo);
+    }
+  }
+
+  InputDecoration _customDecoration(String label, String hint, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon, color: widget.mainColor),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: widget.mainColor, width: 2),
+      ),
+      floatingLabelStyle: TextStyle(color: widget.mainColor),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: AnimatedPadding(
-        duration: const Duration(milliseconds: 150),
-        padding: EdgeInsets.only(
-          left: 15, right: 15, top: 15,
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            const Text("Nombre"),
-            TextField(controller: nameC, decoration: const InputDecoration(hintText: "A")),
-            const SizedBox(height: 10),
-            
-            const Text("Patente"),
-            TextField(controller: plateC, decoration: const InputDecoration(hintText: "AAA-000")),
-            const SizedBox(height: 10),
-            
-            const Text("Interno"),
-            TextField(
-              controller: internC, 
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(hintText: "NN")
-            ),
-            const SizedBox(height: 10),
-            
-            const Text("Capacidad"),
-            TextField(
-              controller: capacityC, 
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(hintText: "32")
-            ),
-            const SizedBox(height: 40),
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _isEditing ? "Editar Colectivo" : "Nuevo Colectivo",
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
 
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                child: const Text("Guardar"),
-                onPressed: () {
-                  if (plateC.text.isEmpty) return;
-                  
-                  final nuevo = ColectivosCompanion(
-                    id: drift.Value(widget.bus?.id ?? const Uuid().v4()),
-                    name: drift.Value(nameC.text),
-                    plate: drift.Value(plateC.text.toUpperCase()),
-                    number: drift.Value(int.tryParse(internC.text)),
-                    capacity: drift.Value(int.tryParse(capacityC.text) ?? 0),
-                    fuelAmount: drift.Value(widget.bus?.fuelAmount ?? "0"),
-                    fuelDate: drift.Value(widget.bus?.fuelDate ?? DateTime.now()),
-                    oilDate: drift.Value(widget.bus?.oilDate ?? DateTime.now()),
-                    isSynced: const drift.Value(false),
-                  );
-                  // Le devolvemos el companion al Wrapper
-                  Navigator.pop(context, nuevo);
-                },
-              ),
+                // Campo: Nombre
+                TextFormField(
+                  controller: nameC,
+                  textCapitalization: TextCapitalization.words,
+                  decoration: _customDecoration("Nombre (Opcional)", "", Icons.directions_bus_outlined),
+                ),
+                const SizedBox(height: 16),
+                
+                //Patente
+                TextFormField(
+                  controller: plateC,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: _customDecoration("Patente", "Ej: AAA-000", Icons.pin_invoke_outlined),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'La patente es obligatoria';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                
+                //Interno y Capacidad
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: internC,
+                        keyboardType: TextInputType.number,
+                        decoration: _customDecoration("Interno", "Ej: 15", Icons.numbers),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextFormField(
+                        controller: capacityC,
+                        keyboardType: TextInputType.number,
+                        decoration: _customDecoration("Capacidad", "Ej: 32", Icons.airline_seat_recline_normal),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+
+                //Guardar
+                FilledButton.icon(
+                  icon: const Icon(Icons.save_outlined),
+                  label: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(
+                      "Guardar",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: widget.mainColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: _save,
+                ),
+                const SizedBox(height: 10),
+              ],
             ),
-            const SizedBox(height: 20),
-          ],
+          ),
         ),
       ),
     );
@@ -249,7 +329,7 @@ Widget colectivoToCard(
         onSelected:(String result)async{
           switch (result) {
             case 'edit':
-              final success=await showCreateModifiColectivo(context,bus:bus);
+              final success=await showCreateModifiColectivo(context,bus:bus,mainColor:mainColor);
               if(success&&context.mounted){
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content:Text("Colectivo actualizado"),backgroundColor:Colors.green),
