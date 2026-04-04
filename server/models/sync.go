@@ -18,17 +18,18 @@ type Chofer struct {
 }
 
 type Colectivo struct {
-	ID         string  `json:"id"`
-	Plate      string  `json:"plate"`
-	Name       *string `json:"name"`
-	Number     *int    `json:"number"`
-	Capacity   int     `json:"capacity"`
-	FuelAmount *string  `json:"fuel_amount"`
-	FuelDate   *time.Time  `json:"fuel_date"`
-	OilDate    time.Time  `json:"oil_date"`
-	IsActive   bool    `json:"is_active"`
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
+	ID          string      `json:"id"`
+	Plate       string      `json:"plate"`
+	Vtv         time.Time   `json:"vtv"`
+	Name        *string     `json:"name"`
+	Number      *int        `json:"number"`
+	Capacity    int         `json:"capacity"`
+	FuelAmount  *string     `json:"fuel_amount"`
+	FuelDate    *time.Time  `json:"fuel_date"`
+	OilDate     time.Time   `json:"oil_date"`
+	IsActive    bool        `json:"is_active"`
+	CreatedAt   time.Time   `json:"created_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }
 
 type Recorrido struct {
@@ -54,6 +55,8 @@ type Encargado struct {
 type Event struct {
 	ID                    string  `json:"id"`
 	Name                  string  `json:"name"`
+	Price                 int     `json:"price"`
+	Data                  string  `json:"data"`
 	ContactName           *string `json:"contact_name"`
 	Contact               *string `json:"contact"`
 	Repeat                bool    `json:"repeat"`
