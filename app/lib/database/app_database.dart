@@ -183,7 +183,7 @@ class AppDatabase extends _$AppDatabase {
       "colectivos": unsyncedColectivos.map((c)=>{
         "id": c.id,
         "plate": c.plate,
-        "vtv": c.vtv,
+        "vtv": c.vtv.toUtc().toIso8601String(),
         "name": c.name,
         "number": c.number,
         "capacity": c.capacity,
@@ -306,7 +306,7 @@ class AppDatabase extends _$AppDatabase {
           ColectivosCompanion(
             id: drift.Value(c['id']),
             plate: drift.Value(c['plate']),
-            vtv: drift.Value(c['vtv']),
+            vtv: drift.Value(DateTime.parse(c['vtv']).toLocal()),
             name: drift.Value(c['name']),
             number: drift.Value(c['number']),
             capacity: drift.Value(c['capacity'] ?? 0),
