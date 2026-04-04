@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
-Future<String?> quickChangeDialog(BuildContext context, String title,{String def=""})async{
+Future<String?> quickChangeDialog(BuildContext context,
+  String title,{
+  String def="",
+  bool multiLine=false,
+})async{
   final controller = TextEditingController(text: def);
   return await showDialog<String?>(
     context: context,
@@ -9,6 +13,8 @@ Future<String?> quickChangeDialog(BuildContext context, String title,{String def
         title: Text("Cambiar $title"),
         content: TextField(
           controller: controller,
+          maxLines:multiLine?null:1,
+          textInputAction:multiLine?TextInputAction.newline:TextInputAction.done,
           decoration: InputDecoration(hintText:title,),
         ),
         actions:[

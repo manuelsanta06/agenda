@@ -1,3 +1,4 @@
+import 'package:agenda/widgets/timeinputs.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart' as drift; 
 import 'package:flutter/material.dart';
@@ -218,6 +219,15 @@ Widget colectivoToCard(
             case 'oil':
               inputOilDialog(context,bus);
               break;
+            case 'vtv':
+              DateTime? newDate=await getDate(context,null);
+              if(newDate==null/*||newDate.isBefore(DateTime.now())*/)return;
+              final db=Provider.of<AppDatabase>(context, listen: false);
+              await (db.update(db.colectivos)
+                ..where((tbl) => tbl.id.equals(bus.id)))
+                .write(ColectivosCompanion(
+                  vtv:drift.Value(newDate),isSynced:drift.Value(false)));
+              break;
             case 'delete':
               removeColectivoDialog(context,bus,!(bus.is_active));
               break;
@@ -252,6 +262,14 @@ Widget colectivoToCard(
             ]),
           ),
           PopupMenuItem<String>(
+            value:'vtv',
+            child:Row(children:[
+              Icon(Icons.shield),
+              SizedBox(width:8),
+              Text('VTV')
+            ]),
+          ),
+          PopupMenuItem<String>(
             value: 'delete',
             child: Row(
               children:bus.is_active? ([
@@ -274,17 +292,27 @@ Widget colectivoToCard(
         crossAxisAlignment: CrossAxisAlignment.start,
         children:[
           Row(children:[
-            Expanded(child:Text("Nombre: ${(bus.name??"").isEmpty?bus.plate:bus.name}",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+            Expanded(child:Text((bus.name??"").isEmpty?bus.plate:bus.name!,
+              style: TextStyle(
+                fontSize:16,fontWeight:FontWeight.w600,
+                color:bus.vtv.isBefore(DateTime.now().add(Duration(days:5)))?Colors.red:null,
+              ))),
             pillText(bus.plate,mainColor),
+            SizedBox(width:20)
           ]),
           //dataLine("Patente: ${bus.plate}",mainColor),
+          if(fullInfo&&bus.is_active)
+            DataLine(text:"Gasoil: ${relativeDate(bus.fuelDate)} -> ${bus.fuelAmount}",mainColor:mainColor),
+          if(bus.is_active)
+            DataLine(text:"VTV: ${bus.vtv.year}-${bus.vtv.month}-${bus.vtv.day}",
+              mainColor:mainColor,
+              textColor:bus.vtv.isBefore(DateTime.now().add(Duration(days:5)))?Colors.red:null
+            ),
+          if(fullInfo&&bus.is_active)
+            DataLine(text:"Aceite: ${relativeDate(bus.oilDate,montlhy:true)}",mainColor:mainColor),
           DataLine(text:"Capacidad: ${bus.capacity}",mainColor:mainColor),
-          if(bus.number!=null)DataLine(text:"Interno: ${bus.number}",mainColor:mainColor),
-          if(fullInfo&&bus.is_active)
-          DataLine(text:"Gasoil: ${relativeDate(bus.fuelDate)} -> ${bus.fuelAmount}",mainColor:mainColor),
-          if(fullInfo&&bus.is_active)
-          DataLine(text:"Aceite: ${relativeDate(bus.oilDate,montlhy:true)}",mainColor:mainColor),
+          if(bus.number!=null)
+            DataLine(text:"Interno: ${bus.number}",mainColor:mainColor),
         ],
       ),
     )

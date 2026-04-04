@@ -29,7 +29,7 @@ class Colectivos extends Table {
   TextColumn get id => text()();
   
   TextColumn get plate => text().unique()();
-  
+  DateTimeColumn get vtv => dateTime().withDefault(Constant(DateTime(2000,1,1)))();
   TextColumn get name => text().nullable()();
   IntColumn get number => integer().nullable()();
   

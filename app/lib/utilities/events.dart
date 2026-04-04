@@ -62,12 +62,12 @@ class EventCard extends StatelessWidget{
 
   void _onClick(BuildContext context){
     Navigator.of(context).push(
-      MaterialPageRoute(builder:(context)=>eventInfo(maincolor,eve:eve,sto:sto)),
+      MaterialPageRoute(builder:(context)=>eventInfo(defColor:maincolor,initialEvent:eve,sto:sto)),
     );
   }
   void _onLongClick(BuildContext context){
     Navigator.of(context).push(
-      MaterialPageRoute(builder:(context)=>eventInfo(maincolor,eve:eve,sto:sto)),
+      MaterialPageRoute(builder:(context)=>eventInfo(defColor:maincolor,initialEvent:eve,sto:sto)),
     );
   }
 

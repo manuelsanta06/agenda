@@ -28,9 +28,6 @@ class EventWithStops {
   EventChoferes, 
   EventColectivos,
   Recorridos,
-  //RecorridoShifts,
-  //ShiftChoferes,
-  //ShiftColectivos,
   Encargados,
   RecorridoSubscriptions
 ])
@@ -38,7 +35,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase():super(_openConnection());
 
   @override
-  int get schemaVersion=>4;
+  int get schemaVersion=>5;
 
   @override
   MigrationStrategy get migration{
@@ -63,6 +60,10 @@ class AppDatabase extends _$AppDatabase {
             events,
             newColumns: [events.recorridoId], 
           ));
+        }if(from<5){
+          await m.addColumn(events,events.price);
+          await m.addColumn(events,events.data);
+          await m.addColumn(colectivos,colectivos.vtv);
         }
       },
       beforeOpen:(details)async{
@@ -182,6 +183,7 @@ class AppDatabase extends _$AppDatabase {
       "colectivos": unsyncedColectivos.map((c)=>{
         "id": c.id,
         "plate": c.plate,
+        "vtv": c.vtv,
         "name": c.name,
         "number": c.number,
         "capacity": c.capacity,
@@ -208,6 +210,8 @@ class AppDatabase extends _$AppDatabase {
       "events": unsyncedEvents.map((e)=>{
         "id": e.id,
         "name": e.name,
+        "price":e.price,
+        "data":e.data,
         "contact_name": e.contactName,
         "contact": e.contact,
         "repeat": e.repeat,
@@ -302,6 +306,7 @@ class AppDatabase extends _$AppDatabase {
           ColectivosCompanion(
             id: drift.Value(c['id']),
             plate: drift.Value(c['plate']),
+            vtv: drift.Value(c['vtv']),
             name: drift.Value(c['name']),
             number: drift.Value(c['number']),
             capacity: drift.Value(c['capacity'] ?? 0),
@@ -438,6 +443,8 @@ class AppDatabase extends _$AppDatabase {
           EventsCompanion(
             id: drift.Value(e['id']),
             name: drift.Value(e['name']),
+            price: drift.Value((e['price'] as num).toInt()),
+            data: drift.Value(e['data']),
             contactName: drift.Value(e['contact_name'] as String?),
             contact: drift.Value(e['contact'] as String?),
             repeat: drift.Value(e['repeat'] ?? false),

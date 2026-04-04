@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 class DataLine extends StatelessWidget {
   final String text;
   final Color mainColor;
+  final Color? textColor;
 
   const DataLine({
     super.key,
+    this.textColor,
     required this.text,
     required this.mainColor,
   });
 
   @override
   Widget build(BuildContext context){
-    final textColor=Theme.of(context).colorScheme.onSurface.withOpacity(0.87);
-
     return Padding(
       padding:const EdgeInsets.only(bottom:2),
       child:Row(
@@ -23,7 +23,10 @@ class DataLine extends StatelessWidget {
             margin:const EdgeInsets.only(right:8),
             decoration: BoxDecoration(shape:BoxShape.circle,color:mainColor),
           ),
-          Expanded(child:Text(text,style:TextStyle(fontSize:12,color:textColor))),
+          Expanded(child:Text(text,style:TextStyle(
+            fontSize:12,
+            color:textColor??Theme.of(context).colorScheme.onSurface.withOpacity(0.87)
+          ))),
         ],
       ),
     );
@@ -47,20 +50,27 @@ Widget subtitleLine(String title,Color mainColor){
   );
 }
 
-Widget pillText(String text, Color mainColor){
-  return Container(
-    padding:const EdgeInsets.symmetric(horizontal:10,vertical:4),
-    decoration:BoxDecoration(
-      color:mainColor.withOpacity(0.1),
+Widget pillText(String text, Color mainColor, {VoidCallback? onTap}) {
+  return Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: onTap,
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: mainColor.withOpacity(0.5)),
-    ),
-    child: Text(
-      text,
-      style: TextStyle(
-        color: mainColor, 
-        fontSize: 14, 
-        fontWeight: FontWeight.bold
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: mainColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: mainColor.withOpacity(0.5)),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: mainColor,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     ),
   );
@@ -83,6 +93,8 @@ bool isYesterday(DateTime date){
 String relativeDate(DateTime date,{bool montlhy=false}){
   if(isToday(date))return "Hoy";
   if(isYesterday(date))return "Ayer";
-  if(montlhy&&(date.difference(DateTime.now()).inDays*-1)>30)return "Hace ${date.difference(DateTime.now()).inDays*-1/30} meses";
-  return "Hace ${date.difference(DateTime.now()).inDays*-1} dias";
+  final days=date.difference(DateTime.now()).inDays*-1;
+  if(montlhy&&(days)>30)
+    return "Hace ${days~/30} mes${days~/30!=1?"es":""}, ${days%30} dias";
+  return "Hace $days dias";
 }
