@@ -86,15 +86,13 @@ class _colectivosPageState extends State<colectivosPage>{
           ],
       ),),
       floatingActionButton: FloatingActionButton(
-        onPressed:()async {
-          final nuevo = await showAddColectivoSheet(context);
-          if(nuevo == null)return;
-          await db.into(db.colectivos).insert(nuevo);
-      
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: const Text('Colectivo guardado'),
-            backgroundColor:Colors.green,
-          ));
+        onPressed:()async{
+          final success=await showCreateModifiColectivo(context);
+          if(success&&context.mounted){
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content:Text("Colectivo actualizado"),backgroundColor:Colors.green),
+            );
+          }
         },
         backgroundColor: colectivosPage.mainColor,
         child:Icon(Icons.add),

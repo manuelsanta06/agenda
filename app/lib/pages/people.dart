@@ -94,14 +94,12 @@ class _peoplePageState extends State<peoplePage>{
       ),),
       floatingActionButton: FloatingActionButton(
         onPressed:() async {
-          final nuevo = await getChofer(context, peoplePage.mainColor, null);
-          if(nuevo == null)return;
-          await db.into(db.choferes).insert(nuevo);
-      
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content:const Text('chofer guardado'),
-            backgroundColor:Colors.green,
-          ));
+          final success = await showCreateModifiChofer(context,peoplePage.mainColor);
+          if(success&&context.mounted){
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Chofer actualizado"), backgroundColor: Colors.green),
+            );
+          }
         },
         backgroundColor: peoplePage.mainColor,
         child:Icon(Icons.add),

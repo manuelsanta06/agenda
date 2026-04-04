@@ -7,81 +7,126 @@ import '../database/app_database.dart';
 import '../widgets/searchBar.dart';
 import 'package:agenda/widgets/cards.dart';
 import 'package:agenda/widgets/text.dart';
+import '../utilities/syncService.dart';
 
 
-Future<ColectivosCompanion?> showAddColectivoSheet(BuildContext context,{Colectivo? bus})async{
-  final nameC = TextEditingController(text: bus?.name??"");
-  final plateC = TextEditingController(text: bus?.plate??"");
-  final internC = TextEditingController(text: bus?.number?.toString()??"");
-  final capacityC = TextEditingController(text: bus?.capacity.toString()??"");
+// 1. EL WRAPPER (Maneja la Base de Datos)
+Future<bool> showCreateModifiColectivo(BuildContext context,{Colectivo? bus})async{
+  final result=await showModalBottomSheet<ColectivosCompanion?>(
+    context:context,
+    isScrollControlled:true,
+    builder:(BuildContext context)=>_CreateColectivoSheet(bus: bus),
+  );
+  if(result==null)return false;
+  final db=Provider.of<AppDatabase>(context,listen:false);
+  try{
+    await db.into(db.colectivos).insert(result,mode:drift.InsertMode.insertOrReplace);
+    SyncService.pushUnsyncedData(db);
+    return true;
+  }catch(e){
+    print("Error guardando colectivo en Drift: $e");
+    return false;
+  }
+}
 
-  return await showModalBottomSheet<ColectivosCompanion?>(
-    context: context,
-    isScrollControlled: true,
-    builder:(BuildContext context){
-      return SafeArea(child:AnimatedPadding(
+class _CreateColectivoSheet extends StatefulWidget {
+  final Colectivo? bus;
+  const _CreateColectivoSheet({this.bus});
+
+  @override
+  State<_CreateColectivoSheet> createState() => _CreateColectivoSheetState();
+}
+
+class _CreateColectivoSheetState extends State<_CreateColectivoSheet> {
+  late final TextEditingController nameC;
+  late final TextEditingController plateC;
+  late final TextEditingController internC;
+  late final TextEditingController capacityC;
+
+  @override
+  void initState() {
+    super.initState();
+    nameC = TextEditingController(text: widget.bus?.name ?? "");
+    plateC = TextEditingController(text: widget.bus?.plate ?? "");
+    internC = TextEditingController(text: widget.bus?.number?.toString() ?? "");
+    capacityC = TextEditingController(text: widget.bus?.capacity.toString() ?? "");
+  }
+
+  @override
+  void dispose() {
+    nameC.dispose();
+    plateC.dispose();
+    internC.dispose();
+    capacityC.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: AnimatedPadding(
         duration: const Duration(milliseconds: 150),
         padding: EdgeInsets.only(
-          left: 15,right: 15,
-          top: 15,bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 15, right: 15, top: 15,
+          bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children:<Widget>[
-            Text("Nombre"),
-            const SizedBox(height: 8),
-            TextField(decoration: InputDecoration(hintText: "A"),
-              controller: nameC,),
-
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text("Nombre"),
+            TextField(controller: nameC, decoration: const InputDecoration(hintText: "A")),
             const SizedBox(height: 10),
-            Text("Patente"),
-            const SizedBox(height: 8),
-            TextField(decoration: InputDecoration(hintText: "AAA-000"),
-              controller: plateC,),
-
+            
+            const Text("Patente"),
+            TextField(controller: plateC, decoration: const InputDecoration(hintText: "AAA-000")),
             const SizedBox(height: 10),
-            Text("Interno"),
-            const SizedBox(height: 8),
-            TextField(decoration: InputDecoration(hintText: "NN"),
+            
+            const Text("Interno"),
+            TextField(
+              controller: internC, 
               keyboardType: TextInputType.number,
-              controller: internC,),
-
+              decoration: const InputDecoration(hintText: "NN")
+            ),
             const SizedBox(height: 10),
-            Text("Capacidad"),
-            const SizedBox(height: 8),
-            TextField(decoration: InputDecoration(hintText: "32"),
+            
+            const Text("Capacidad"),
+            TextField(
+              controller: capacityC, 
               keyboardType: TextInputType.number,
-              controller: capacityC,),
+              decoration: const InputDecoration(hintText: "32")
+            ),
             const SizedBox(height: 40),
 
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                child: Text("Guardar"),
-                onPressed:(){
-                  if(plateC.text.isEmpty)return;
+                child: const Text("Guardar"),
+                onPressed: () {
+                  if (plateC.text.isEmpty) return;
+                  
                   final nuevo = ColectivosCompanion(
-                    id: drift.Value(bus?.id?? Uuid().v4()),
+                    id: drift.Value(widget.bus?.id ?? const Uuid().v4()),
                     name: drift.Value(nameC.text),
                     plate: drift.Value(plateC.text.toUpperCase()),
                     number: drift.Value(int.tryParse(internC.text)),
-                    capacity:drift.Value(int.tryParse(capacityC.text)??0),
-                    
-                    fuelAmount:drift.Value(bus==null?"0":bus.fuelAmount),
-                    fuelDate:drift.Value(bus==null?DateTime.now():bus.fuelDate),
-
-                    oilDate:drift.Value(bus==null?DateTime.now():bus.oilDate),
+                    capacity: drift.Value(int.tryParse(capacityC.text) ?? 0),
+                    fuelAmount: drift.Value(widget.bus?.fuelAmount ?? "0"),
+                    fuelDate: drift.Value(widget.bus?.fuelDate ?? DateTime.now()),
+                    oilDate: drift.Value(widget.bus?.oilDate ?? DateTime.now()),
+                    isSynced: const drift.Value(false),
                   );
+                  // Le devolvemos el companion al Wrapper
                   Navigator.pop(context, nuevo);
                 },
-              )
+              ),
             ),
             const SizedBox(height: 20),
-          ]
+          ],
         ),
-      ));
-    },
-  );
+      ),
+    );
+  }
 }
 
 Future<void> inputFuelDialog(BuildContext context, Colectivo bus){
@@ -204,12 +249,12 @@ Widget colectivoToCard(
         onSelected:(String result)async{
           switch (result) {
             case 'edit':
-              final nuevo=await showAddColectivoSheet(context,bus: bus);
-              if(nuevo==null)return;
-              final db=Provider.of<AppDatabase>(context, listen: false);
-              await (db.update(db.colectivos)
-                ..where((tbl) => tbl.id.equals(bus.id)))
-                .write(nuevo);
+              final success=await showCreateModifiColectivo(context,bus:bus);
+              if(success&&context.mounted){
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content:Text("Colectivo actualizado"),backgroundColor:Colors.green),
+                );
+              }
               break;
 
             case 'fuel':
@@ -298,7 +343,8 @@ Widget colectivoToCard(
                 color:bus.vtv.isBefore(DateTime.now().add(Duration(days:5)))?Colors.red:null,
               ))),
             pillText(bus.plate,mainColor),
-            SizedBox(width:20)
+            if(!hideOptions)
+              SizedBox(width:20)
           ]),
           //dataLine("Patente: ${bus.plate}",mainColor),
           if(fullInfo&&bus.is_active)

@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart' as drift; 
 import 'dart:io';
+import '../utilities/syncService.dart';
 
 typedef Chofer=Chofere;
 
@@ -118,10 +119,12 @@ Widget choferToCard(
         onSelected:(String result)async{
           switch (result){
             case 'edit':
-              final db = Provider.of<AppDatabase>(context,listen:false);
-              final newVal=await getChofer(context,mainColor,chofe);
-              if(newVal==null)return;
-              await(db.update(db.choferes)..where((s)=>s.id.equals(chofe.id))).write(newVal);
+              final success = await showCreateModifiChofer(context, mainColor, chofe: chofe);
+              if (success && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Chofer actualizado"), backgroundColor: Colors.green),
+                );
+              }
               break;
             case 'delete':
               removeChoferDialog(context,chofe,!chofe.is_active);
@@ -232,146 +235,185 @@ Future<Chofer?> choferCardSelectionList(BuildContext context,List<(Chofer, bool)
   );
 }
 
-Future<ChoferesCompanion?> getChofer(BuildContext context, Color mainColor,Chofer? chofe){
-  final nameC = TextEditingController(text: chofe?.name??"");
-  final surNameC = TextEditingController(text: chofe?.surname??"");
-  final aliasC = TextEditingController(text: chofe?.alias??"");
-  final dniC = TextEditingController(text: chofe?.dni??"");
-  final mobileNumberC = TextEditingController(text: chofe?.mobileNumber??"");
-  String pictureD = chofe?.picturePath??"";
 
-  return showModalBottomSheet<ChoferesCompanion>(
+Future<bool> showCreateModifiChofer(BuildContext context, Color mainColor, {Chofer? chofe}) async {
+  final result=await showModalBottomSheet<ChoferesCompanion?>(
     context: context,
     isScrollControlled: true,
-    builder: (BuildContext context){
-      return StatefulBuilder(builder:(BuildContext context,StateSetter setState){
-        return SafeArea(top:false,child:AnimatedPadding(
-          duration: const Duration(milliseconds: 150),
-          padding: EdgeInsets.only(
-            left: 15,right: 15,
-            top: 15,bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisAlignment:MainAxisAlignment.spaceBetween,
-                children:[
-                  Expanded(child:TextFormField(
-                    controller:aliasC,
-                    decoration:const InputDecoration(
-                      labelText:"Apodo",
-                      fillColor:Colors.transparent,
-                      border:UnderlineInputBorder(),
+    builder: (BuildContext context) => _CreateChoferSheet(mainColor: mainColor, chofe: chofe),
+  );
+  if(result==null)return false;
+  final db=Provider.of<AppDatabase>(context, listen: false);
+
+  try{
+    await db.into(db.choferes).insert(
+      result,
+      mode: drift.InsertMode.insertOrReplace,
+    );
+    SyncService.pushUnsyncedData(db);
+    return true;
+  }catch(e){
+    print("Error guardando chofer en Drift: $e");
+    return false;
+  }
+}
+
+class _CreateChoferSheet extends StatefulWidget {
+  final Color mainColor;
+  final Chofer? chofe;
+  
+  const _CreateChoferSheet({required this.mainColor, this.chofe});
+
+  @override
+  State<_CreateChoferSheet> createState() => _CreateChoferSheetState();
+}
+
+class _CreateChoferSheetState extends State<_CreateChoferSheet> {
+  late final TextEditingController nameC;
+  late final TextEditingController surNameC;
+  late final TextEditingController aliasC;
+  late final TextEditingController dniC;
+  late final TextEditingController mobileNumberC;
+  late String pictureD;
+
+  @override
+  void initState() {
+    super.initState();
+    nameC = TextEditingController(text: widget.chofe?.name ?? "");
+    surNameC = TextEditingController(text: widget.chofe?.surname ?? "");
+    aliasC = TextEditingController(text: widget.chofe?.alias ?? "");
+    dniC = TextEditingController(text: widget.chofe?.dni ?? "");
+    mobileNumberC = TextEditingController(text: widget.chofe?.mobileNumber ?? "");
+    pictureD = widget.chofe?.picturePath ?? "";
+  }
+
+  @override
+  void dispose() {
+    nameC.dispose();
+    surNameC.dispose();
+    aliasC.dispose();
+    dniC.dispose();
+    mobileNumberC.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 150),
+        padding: EdgeInsets.only(
+          left: 15, right: 15, top: 15,
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: aliasC,
+                    decoration: const InputDecoration(
+                      labelText: "Apodo",
+                      fillColor: Colors.transparent,
+                      border: UnderlineInputBorder(),
                     ),
-                  )),
-                  ElevatedButton(
-                    onPressed: (){
-                      if(nameC.text.isEmpty&&surNameC.text.isEmpty&&aliasC.text.isEmpty)return;
-                      Navigator.of(context).pop(ChoferesCompanion(
-                          id: drift.Value(chofe?.id?? Uuid().v4()),
-                          name: drift.Value(nameC.text),
-                          surname: drift.Value(surNameC.text),
-                          alias: drift.Value(aliasC.text),
-                          dni: drift.Value(dniC.text),
-                          mobileNumber: drift.Value(phoneParser(mobileNumberC.text)),
-                          picturePath: drift.Value(pictureD),
-                          is_active: drift.Value(true),
-                          isSynced: drift.Value(false),
-                      ));
-                    },
-                    style:ElevatedButton.styleFrom(
-                      backgroundColor:mainColor,
-                      foregroundColor:Colors.white,
-                    ),
-                    child:const Text("Guardar"),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Text("Nombre completo"),
-              Row(
-                children: [
-                  Expanded(child:TextField(
-                    decoration: InputDecoration(hintText: "Nombres/s"),
-                    textCapitalization: TextCapitalization.words,
-                    controller: nameC,
-                  ),),
-                  const SizedBox(width: 8),
-                  Expanded(child:TextField(
-                    decoration: InputDecoration(hintText: "Apellido/s"),
-                    textCapitalization: TextCapitalization.words,
-                    controller: surNameC,
-                  ),),
-                ],
-              ),
-              
-              const SizedBox(height: 8),
-              const Text("DNI"),
-              TextField(
-                decoration: InputDecoration(hintText: "12345678"),
-                keyboardType: TextInputType.number,
-                controller:dniC,
-              ),
-              const SizedBox(height: 8),
-              const Text("Telefono"),
-              TextField(
-                decoration: InputDecoration(hintText: "1234567890"),
-                keyboardType: TextInputType.phone,
-                controller:mobileNumberC,
-              ),
-              
-              const SizedBox(height: 8),
-              const Text("Imagen"),
-              GestureDetector(
-                onTap: ()async{
-                  final tmp=await saveImageLocally(await pickImage(context,[CropAspectRatioPreset.square]));
-                  if(tmp==null)return;
-                  pictureD=tmp;
-                  setState((){});
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: pictureD.isEmpty?Color(0xFF94A3B8):Colors.green,
-                      style: BorderStyle.solid, width: 2
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text(
-                    "Subir foto",
-                    style: TextStyle(color: Color(0xFF94A3B8)),
                   ),
                 ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (nameC.text.isEmpty && surNameC.text.isEmpty && aliasC.text.isEmpty) return;
+                    
+                    final nuevo = ChoferesCompanion(
+                      id: drift.Value(widget.chofe?.id ?? const Uuid().v4()),
+                      name: drift.Value(nameC.text),
+                      surname: drift.Value(surNameC.text),
+                      alias: drift.Value(aliasC.text),
+                      dni: drift.Value(dniC.text),
+                      mobileNumber: drift.Value(phoneParser(mobileNumberC.text)),
+                      picturePath: drift.Value(pictureD),
+                      is_active: const drift.Value(true),
+                      isSynced: const drift.Value(false),
+                    );
+                    Navigator.pop(context, nuevo);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.mainColor,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text("Guardar"),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Center(child:Text("Nombre completo")),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: nameC,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(hintText: "Nombres/s"),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: surNameC,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(hintText: "Apellido/s"),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Center(child:Text("DNI")),
+            TextField(
+              controller: dniC,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(hintText: "12345678"),
+            ),
+            const SizedBox(height: 8),
+            const Center(child:Text("Telefono")),
+            TextField(
+              controller: mobileNumberC,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(hintText: "1234567890"),
+            ),
+            const SizedBox(height: 8),
+            const Center(child:Text("Imagen")),
+            GestureDetector(
+              onTap: () async {
+                final tmp = await saveImageLocally(await pickImage(context, [CropAspectRatioPreset.square]));
+                if (tmp == null) return;
+                setState(() { pictureD = tmp; });
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: pictureD.isEmpty ? const Color(0xFF94A3B8) : Colors.green,
+                    style: BorderStyle.solid,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  "Subir foto",
+                  style: TextStyle(color: Color(0xFF94A3B8)),
+                ),
               ),
-
-              const SizedBox(height: 15),
-              //TODO?
-              //SizedBox(
-              //  width: double.infinity,
-              //  child:OutlinedButton(
-              //    style: OutlinedButton.styleFrom(
-              //      foregroundColor: const Color(0xFF94A3B8),
-              //      side: const BorderSide(color: Color(0xFF334155)),
-              //      padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 5),
-              //      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              //    ),
-              //    onPressed: (){},
-              //    child: const Text(
-              //      "Importar desde Contactos",
-              //      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-              //    ),
-              //  ),
-              //),
-
-              const SizedBox(height: 20),
-            ],
-          ),
-        ));
-      });
-    }
-  );
+            ),
+            const SizedBox(height: 35),
+          ],
+        ),
+      ),
+    );
+  }
 }

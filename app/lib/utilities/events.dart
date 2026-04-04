@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 import '../pages/eventInfo.dart';
 import '../widgets/timeinputs.dart';
 import '../widgets/eventDetails.dart';
+import '../utilities/syncService.dart';
 
 Future<EventStates> getEventCompletitionState(AppDatabase db,Event eve)async{
   final colectivosCount = await (db.select(db.eventColectivos)
@@ -229,40 +230,46 @@ Future<bool> showCreateTripSheet(BuildContext context,{
   final (eventCompanion,stopsCompanions,toDeleteIds)=result;
   final db=Provider.of<AppDatabase>(context,listen:false);
 
-  await db.transaction(() async {
-    //GUARDAR O ACTUALIZAR EL EVENTO
-    final existingEvent=await(db.select(db.events)
-      ..where((t)=>t.id.equals(eventCompanion.id.value))
-    ).getSingleOrNull();
-    
-    if(existingEvent!=null){
-      await(db.update(db.events)
+  try{
+    await db.transaction(() async {
+      //GUARDAR O ACTUALIZAR EL EVENTO
+      final existingEvent=await(db.select(db.events)
         ..where((t)=>t.id.equals(eventCompanion.id.value))
-      ).write(eventCompanion);
-    }else{
-      await db.into(db.events).insert(eventCompanion);
-    }
-    //BORRAR LAS PARADAS ELIMINADAS
-    if(toDeleteIds.isNotEmpty){
-      await(db.delete(db.stops)
-        ..where((t)=>t.id.isIn(toDeleteIds))
-      ).go();
-    }
-    //GUARDAR O ACTUALIZAR LAS PARADAS
-    for (final stopCompanion in stopsCompanions) {
-       final existingStop=await(db.select(db.stops)
-         ..where((t)=>t.id.equals(stopCompanion.id.value))
-       ).getSingleOrNull();
-       if (existingStop != null) {
-         await(db.update(db.stops)
+      ).getSingleOrNull();
+      
+      if(existingEvent!=null){
+        await(db.update(db.events)
+          ..where((t)=>t.id.equals(eventCompanion.id.value))
+        ).write(eventCompanion);
+      }else{
+        await db.into(db.events).insert(eventCompanion);
+      }
+      //BORRAR LAS PARADAS ELIMINADAS
+      if(toDeleteIds.isNotEmpty){
+        await(db.delete(db.stops)
+          ..where((t)=>t.id.isIn(toDeleteIds))
+        ).go();
+      }
+      //GUARDAR O ACTUALIZAR LAS PARADAS
+      for (final stopCompanion in stopsCompanions) {
+         final existingStop=await(db.select(db.stops)
            ..where((t)=>t.id.equals(stopCompanion.id.value))
-         ).write(stopCompanion);
-       }else{
-         await db.into(db.stops).insert(stopCompanion);
-       }
-    }
-  });
-  return true; 
+         ).getSingleOrNull();
+         if (existingStop != null) {
+           await(db.update(db.stops)
+             ..where((t)=>t.id.equals(stopCompanion.id.value))
+           ).write(stopCompanion);
+         }else{
+           await db.into(db.stops).insert(stopCompanion);
+         }
+      }
+    });
+    SyncService.pushUnsyncedData(db);
+    return true; 
+  }catch(e){
+    print("Error saving event to db: $e");
+    return false;
+  }
 }
 
 class TempStop{
