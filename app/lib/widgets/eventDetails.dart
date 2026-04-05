@@ -49,9 +49,9 @@ Widget stopToDot(Stop stop, bool fillDot, Color maincolor,{bool vertical=false})
       Expanded(
         child: Text(
           stop.name,
-          maxLines: 1,
+          //maxLines: 1,
           textAlign: TextAlign.start,
-          overflow: TextOverflow.ellipsis,
+          overflow: TextOverflow.visible,
           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
         ),
       ),

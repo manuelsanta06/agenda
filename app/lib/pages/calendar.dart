@@ -173,13 +173,13 @@ class _calendarPageState extends State<calendarPage>{
               key:_fabKey,
               mainColor: calendarPage.mainColor,
               children: [
-                buildMiniFab(calendarPage.mainColor,
-                  icon: Icons.school,
-                  label: "Recorrido",
-                  onPressed:(){
-                    _fabKey.currentState?.toggleMenu();
-                  },//TODO
-                ),
+                //buildMiniFab(calendarPage.mainColor,
+                //  icon: Icons.school,
+                //  label: "Recorrido",
+                //  onPressed:(){
+                //    _fabKey.currentState?.toggleMenu();
+                //  },//TODO
+                //),
                 buildMiniFab(calendarPage.mainColor,
                   icon: Icons.directions_bus,
                   label: "Viaje",

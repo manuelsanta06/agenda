@@ -285,10 +285,7 @@ class eventInfo extends StatelessWidget{
 
             const SizedBox(height:20),
             subtitleLine("Ruta",maincolor),
-            if(sto.length>5)
             BasicCard(child:stopsLineVertical(sto,eve.repeat,maincolor))
-            else
-            BasicCard(child:stopsLineHorizontal(sto,eve.repeat,maincolor))
           ],);
         }
       )
