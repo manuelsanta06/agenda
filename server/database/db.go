@@ -180,7 +180,7 @@ func FullSync(payload models.SyncPayload)error{
 				type = EXCLUDED.type,
 				is_trip = EXCLUDED.is_trip,
 				shift_id = EXCLUDED.shift_id,
-        		recorrido_id = EXCLUDED.recorrido_id,
+        recorrido_id = EXCLUDED.recorrido_id,
 				updated_at = CURRENT_TIMESTAMP;
 		`, e.ID, e.Name, e.Price, e.Data, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.ShiftID, e.RecorridoID)
 		if err != nil {
@@ -424,6 +424,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 		FROM events
 		WHERE updated_at > $1 
 		AND (start_date_time >= NOW() - INTERVAL '30 days' OR type = 4)
+    ORDER BY CASE WHEN type = 4 THEN 0 ELSE 1 END, start_date_time ASC
 	`, lastSyncStr)
 	if err != nil {
 		return payload, fmt.Errorf("error consultando events: %v", err)

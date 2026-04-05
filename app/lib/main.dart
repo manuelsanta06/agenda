@@ -38,8 +38,8 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp>{
-  int _selectedIndex = 2;
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
+  int _selectedIndex=2;
 
   final List<Widget> _pages = const [
     peoplePage(),
@@ -49,11 +49,42 @@ class _MyAppState extends State<MyApp>{
     colectivosPage(),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
+
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _sincronizarCompleto();
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _pushDeRespaldo();
+    }
+  }
+
+  void _sincronizarCompleto(){
+    final db=Provider.of<AppDatabase>(context,listen: false);
+    SyncService.performFullSync(db).catchError((e)=>print("Error Sync: $e"));
+  }
+
+  void _pushDeRespaldo(){
+    final db = Provider.of<AppDatabase>(context, listen: false);
+    SyncService.pushUnsyncedData(db).catchError((e) => print("Error Push: $e"));
+  }
+
 
   @override
   Widget build(BuildContext context,){

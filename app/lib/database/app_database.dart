@@ -461,6 +461,7 @@ class AppDatabase extends _$AppDatabase {
             type: drift.Value(EventTypes.values[(e['type'] as num).toInt()]),    
             isTrip: drift.Value(e['is_trip'] ?? false),
             shiftId: drift.Value(e['shift_id']),
+            recorridoId: drift.Value(e['recorrido_id']),
             isSynced: const drift.Value(true),
           ),
           mode: drift.InsertMode.insertOrReplace,
