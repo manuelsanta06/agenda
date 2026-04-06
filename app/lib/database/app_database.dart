@@ -135,6 +135,18 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+  Stream<(int, int)> watchVtvStatus() {
+    final hoy=DateTime.now();
+    final limite=hoy.add(const Duration(days:20));
+
+    return (select(colectivos)..where((t)=>t.is_active)).watch().map((lista) {
+      return(
+        lista.where((c)=>!c.vtv.isAfter(hoy)).length,
+        lista.where((c)=>c.vtv.isAfter(hoy)&&!c.vtv.isAfter(limite)).length
+      );
+    });
+  }
+
   Future<Map<String,dynamic>> getUnsyncedPayload()async{
     final unsyncedChoferes  =await(select(choferes)..where((t)=>t.isSynced.equals(false))).get();
     final unsyncedColectivos=await(select(colectivos)..where((t)=>t.isSynced.equals(false))).get();

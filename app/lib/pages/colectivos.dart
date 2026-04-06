@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../widgets/searchBar.dart';
@@ -19,13 +20,15 @@ class _colectivosPageState extends State<colectivosPage>{
 
   @override
   Widget build(BuildContext context){
-    
     final db = Provider.of<AppDatabase>(context);
 
     return Scaffold(
-      body:SafeArea(child: Column(
+      body:SafeArea(child:Column(
           children: [
-            mySearchBar(onChanged:(value){setState((){searchQuery = value;});},),
+            Row(children:[
+              Expanded(child:mySearchBar(onChanged:(value){setState((){searchQuery=value;});})),
+              IconButton(icon:Icon(Icons.filter_list),onPressed:(){})
+            ]),
 
             Container(
               margin:const EdgeInsets.symmetric(horizontal: 10),
@@ -47,7 +50,9 @@ class _colectivosPageState extends State<colectivosPage>{
 
             Expanded(
               child: StreamBuilder<List<Colectivo>>(
-                stream: db.select(db.colectivos).watch(), 
+                stream: (db.select(db.colectivos)..orderBy(
+                    [(c)=>drift.OrderingTerm(expression:((c.name.toString()).isEmpty)?c.plate:c.name)]
+                )).watch(), 
                 builder:(context, snapshot){
                   if(snapshot.hasError){
                     return Center(
@@ -68,7 +73,7 @@ class _colectivosPageState extends State<colectivosPage>{
                        (c.number?.toString().contains(searchQuery)?? false);
                         }).toList();
                   if(filtered.isEmpty)return const Center(child:Text("???"));
-                  filtered.sort((a,b)=>a.number?.compareTo(b.number??999)??1);
+                  //filtered.sort((a,b)=>a.number?.compareTo(b.number??999)??1);
 
                   return ListView.builder(
                     itemCount: filtered.length,

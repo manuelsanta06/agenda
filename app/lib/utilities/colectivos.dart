@@ -430,7 +430,7 @@ Widget colectivoToCard(
           if(fullInfo&&bus.is_active)
             DataLine(text:"Gasoil: ${relativeDate(bus.fuelDate)} -> ${bus.fuelAmount}",mainColor:mainColor),
           if(bus.is_active)
-            DataLine(text:"VTV: ${bus.vtv.year}-${bus.vtv.month}-${bus.vtv.day}",
+            DataLine(text:"VTV: ${bus.vtv.day}-${bus.vtv.month}-${bus.vtv.year}",
               mainColor:mainColor,
               textColor:bus.vtv.isBefore(DateTime.now().add(Duration(days:5)))?Colors.red:null
             ),

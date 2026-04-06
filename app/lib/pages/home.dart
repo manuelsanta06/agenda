@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import '../widgets/buttons.dart';
-import '../widgets/searchBar.dart';
+import 'package:agenda/widgets/buttons.dart';
+import 'package:agenda/widgets/searchBar.dart';
+import 'package:agenda/widgets/cards.dart';
+import 'package:agenda/widgets/text.dart';
+
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/colectivos.dart';
 import 'package:agenda/utilities/people.dart';
 import 'package:agenda/utilities/recorridos.dart';
+
+
 import 'package:provider/provider.dart';
 import 'package:agenda/database/app_database.dart';
 import 'setting.dart';
@@ -18,6 +23,7 @@ class homePage extends StatefulWidget {
 }
 class _homePageState extends State<homePage>{
   final GlobalKey<ExpandableFabState> _fabKey = GlobalKey<ExpandableFabState>();
+  String searchQuery="";
   bool _showSettings=false;
 
 
@@ -27,27 +33,61 @@ class _homePageState extends State<homePage>{
     return Scaffold(
         body:Stack(
           children:[
-            SafeArea(child:Column(
+            SafeArea(child:ListView(
               children:[
-                GestureDetector(
-                  onHorizontalDragEnd:(details){
-                    if(details.primaryVelocity!<0){
-                      setState((){_showSettings=true;});
-                    }else if(details.primaryVelocity!>0){
-                      setState((){_showSettings=false;});
-                    }
-                  },
-                  child:Row(children:[
-                    Expanded(child:mySearchBar()),
-                    AnimatedContainer(
-                      duration:const Duration(milliseconds:200),
-                      width:_showSettings?50.0:0.0,
-                      child:IconButton(icon:Icon(Icons.settings),onPressed:(){
-                        Navigator.of(context).push(MaterialPageRoute(builder:(context)=>PantallaAjustes()));
-                      }),
-                    ),
-                  ]),
-                ),
+                //GestureDetector(
+                //  onHorizontalDragEnd:(details){
+                //    if(details.primaryVelocity!<0){
+                //      setState((){_showSettings=true;});
+                //    }else if(details.primaryVelocity!>0){
+                //      setState((){_showSettings=false;});
+                //    }
+                //  },
+                //  child:Row(children:[
+                //    Expanded(child:mySearchBar(onChanged:(value){setState((){searchQuery = value;});})),
+                //    AnimatedContainer(
+                //      duration:const Duration(milliseconds:200),
+                //      width:_showSettings?50.0:0.0,
+                //      child:IconButton(icon:Icon(Icons.settings),onPressed:(){
+                //        Navigator.of(context).push(MaterialPageRoute(builder:(context)=>PantallaAjustes()));
+                //      }),
+                //    ),
+                //  ]),
+                //),
+                StreamBuilder<(int, int)>(
+                  stream:deafDb.watchVtvStatus(),
+                  builder:(context,snapshot){
+                    final (vencidas,porVencer)=snapshot.data??(0,0);
+                    if (vencidas+porVencer==0)return const SizedBox.shrink();
+
+                    return Column(children:[
+                      if(vencidas>0)
+                      BasicCard(
+                        borderColor:Colors.red,
+                        tonality:Colors.red,
+                        child:Row(children:[
+                          const Icon(Icons.info_outline,color:Colors.red),
+                          const SizedBox(width:8),
+                          Text("$vencidas VTV${vencidas>1?"s venceiron":"vencida"}.", 
+                            style: TextStyle(color: Colors.orange.shade900)),
+                        ]),
+                      ),
+                      if(porVencer>0&&vencidas>0)
+                      const SizedBox(height:10),
+                      if(porVencer>0)
+                      BasicCard(
+                        borderColor:Colors.orange,
+                        tonality:Colors.orange,
+                        child:Row(children:[
+                          const Icon(Icons.info_outline,color:Colors.orange),
+                          const SizedBox(width:8),
+                          Text("$porVencer VTV${porVencer>1?"s":""} próxima${porVencer>1?"s":""} a vencer.", 
+                            style: TextStyle(color: Colors.orange.shade900)),
+                        ]),
+                      ),
+                    ]);
+                  }
+                )
               ],
             )),
             Positioned.fill(
@@ -66,7 +106,7 @@ class _homePageState extends State<homePage>{
                       if(newRecorrido==null)return;
                       await deafDb.into(deafDb.recorridos).insert(newRecorrido);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(backgroundColor:Colors.green,content:Text("Recorrido guardado")),
+                        const SnackBar(backgroundColor:Colors.green,content:Text("Recorrido guardado")),
                       );
                     },
                   ),
@@ -81,10 +121,7 @@ class _homePageState extends State<homePage>{
 
                       if(success&&context.mounted){
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:Text("Viaje guardado"),
-                            backgroundColor:Colors.green,
-                          ),
+                          const SnackBar(content:Text("Viaje guardado"),backgroundColor:Colors.green,)
                         );
                       }
                     },
