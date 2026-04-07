@@ -6,7 +6,7 @@ import 'package:agenda/widgets/text.dart';
 
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/colectivos.dart';
-import 'package:agenda/utilities/people.dart';
+import 'package:agenda/utilities/choferes.dart';
 import 'package:agenda/utilities/recorridos.dart';
 
 
@@ -54,12 +54,11 @@ class _homePageState extends State<homePage>{
                 //    ),
                 //  ]),
                 //),
-                StreamBuilder<(int, int)>(
+                StreamBuilder<(int,int)>(
                   stream:deafDb.watchVtvStatus(),
                   builder:(context,snapshot){
                     final (vencidas,porVencer)=snapshot.data??(0,0);
                     if (vencidas+porVencer==0)return const SizedBox.shrink();
-
                     return Column(children:[
                       if(vencidas>0)
                       BasicCard(
@@ -87,7 +86,7 @@ class _homePageState extends State<homePage>{
                       ),
                     ]);
                   }
-                )
+                ),
               ],
             )),
             Positioned.fill(

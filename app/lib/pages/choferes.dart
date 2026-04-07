@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../database/app_database.dart';
-import '../utilities/people.dart';
+import '../utilities/choferes.dart';
 import '../widgets/searchBar.dart';
 
 typedef Chofer=Chofere;

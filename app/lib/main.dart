@@ -9,7 +9,7 @@ import 'utilities/settings.dart';
 
 import 'pages/home.dart';
 import 'pages/colectivos.dart';
-import 'pages/people.dart';
+import 'pages/choferes.dart';
 import 'pages/calendar.dart';
 import 'pages/recorridos.dart';
 
