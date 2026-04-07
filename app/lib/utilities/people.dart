@@ -114,59 +114,63 @@ Widget choferToCard(
       tonality:chofe.is_active&&!busy?null:Colors.red,
       onPressed:onPressed,
       onLongPressed:onLongPress,
-      actionIcon:hideOptions?null:PopupMenuButton(
-        icon:const Icon(Icons.more_vert),
-        onSelected:(String result)async{
-          switch (result){
-            case 'edit':
-              final success = await showCreateModifiChofer(context, mainColor, chofe: chofe);
-              if (success && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Chofer actualizado"), backgroundColor: Colors.green),
-                );
-              }
-              break;
-            case 'delete':
-              removeChoferDialog(context,chofe,!chofe.is_active);
-              break;
-            case 'chat':
-            await launchUrl(Uri.parse("https://wa.me/${chofe.mobileNumber}"),mode:LaunchMode.externalApplication);
-              break;
-            default:
-              return;
-          }
-        },
-        itemBuilder:(BuildContext Context)=><PopupMenuEntry<String>>[
-          PopupMenuItem<String>(
-            value:'edit',
-            child:Row(children:[
-              Icon(Icons.edit),
-              SizedBox(width:8),
-              Text('Editar')
-            ]),
-          ),
-          PopupMenuItem<String>(
-            value:'chat',
-            child:Row(children:[
-              Icon(Icons.phone),
-              SizedBox(width:8),
-              Text('Chat')
-            ]),
-          ),
-          PopupMenuItem<String>(
-            value:'delete',
-            child:Row(children:chofe.is_active? ([
-              Icon(Icons.delete, color: Colors.red), 
-              SizedBox(width: 8), 
-              Text('Borrar',style:TextStyle(color:Colors.red)),
-            ]):([
-              Icon(Icons.restore_from_trash,color: Colors.green),
-              SizedBox(width: 8), 
-              Text('Restaurar',style:TextStyle(color:Colors.green))
-            ])),
-          ),
-        ]
-      ),
+      actionIcon:hideOptions?
+        IconButton(icon:Icon(Icons.phone),
+          onPressed:()=>launchUrl(Uri.parse("https://wa.me/${chofe.mobileNumber}"),mode:LaunchMode.externalApplication),
+        ):
+        PopupMenuButton(
+          icon:const Icon(Icons.more_vert),
+          onSelected:(String result)async{
+            switch (result){
+              case 'edit':
+                final success = await showCreateModifiChofer(context, mainColor, chofe: chofe);
+                if (success && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Chofer actualizado"), backgroundColor: Colors.green),
+                  );
+                }
+                break;
+              case 'delete':
+                removeChoferDialog(context,chofe,!chofe.is_active);
+                break;
+              case 'chat':
+              await launchUrl(Uri.parse("https://wa.me/${chofe.mobileNumber}"),mode:LaunchMode.externalApplication);
+                break;
+              default:
+                return;
+            }
+          },
+          itemBuilder:(BuildContext Context)=><PopupMenuEntry<String>>[
+            PopupMenuItem<String>(
+              value:'edit',
+              child:Row(children:[
+                Icon(Icons.edit),
+                SizedBox(width:8),
+                Text('Editar')
+              ]),
+            ),
+            PopupMenuItem<String>(
+              value:'chat',
+              child:Row(children:[
+                Icon(Icons.phone),
+                SizedBox(width:8),
+                Text('Chat')
+              ]),
+            ),
+            PopupMenuItem<String>(
+              value:'delete',
+              child:Row(children:chofe.is_active? ([
+                Icon(Icons.delete, color: Colors.red), 
+                SizedBox(width: 8), 
+                Text('Borrar',style:TextStyle(color:Colors.red)),
+              ]):([
+                Icon(Icons.restore_from_trash,color: Colors.green),
+                SizedBox(width: 8), 
+                Text('Restaurar',style:TextStyle(color:Colors.green))
+              ])),
+            ),
+          ]
+        ),
 
       child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
         buildAvatar(chofe, mainColor),
