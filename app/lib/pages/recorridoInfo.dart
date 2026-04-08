@@ -1,16 +1,18 @@
+import 'package:flutter/material.dart';
 import 'package:agenda/pages/recorridos.dart';
 import 'package:agenda/utilities/encargados.dart';
-//import 'package:agenda/utilities/shifts.dart';
-import 'package:agenda/utilities/events.dart';
-import 'package:agenda/widgets/text.dart';
-
-import '../widgets/searchBar.dart';
-import 'package:flutter/material.dart';
-import 'package:agenda/database/app_database.dart';
-import 'package:drift/drift.dart' as drift;
-import '../widgets/cards.dart';
 import 'package:provider/provider.dart';
-import '../utilities/parsers.dart';
+import 'package:drift/drift.dart' as drift;
+
+import 'package:agenda/database/app_database.dart';
+
+import 'package:agenda/widgets/cards.dart';
+import 'package:agenda/widgets/searchBar.dart';
+import 'package:agenda/widgets/text.dart';
+import 'package:agenda/widgets/errorWidgets.dart';
+
+import 'package:agenda/utilities/events.dart';
+import 'package:agenda/utilities/parsers.dart';
 
 class recorridoInfo extends StatelessWidget{
   final Recorrido reco;
@@ -92,15 +94,7 @@ class recorridoInfo extends StatelessWidget{
     return StreamBuilder<List<EventWithStops>>(
       stream:db.watchShiftsWithStops(reco.id),
       builder:(context,snapshot){
-        if(snapshot.hasError){return Center(
-          child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
-            Error: ${snapshot.error}
-            Stacktrace:
-            ${snapshot.stackTrace.toString()
-              .split('\n').take(6).join('\n')}""", 
-            style: TextStyle(color: Colors.red))
-          ));
-        }
+        if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
         if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
         final shifts=snapshot.data!;
         //if(shifts.isEmpty)return const Center(child:Text("..."));
@@ -205,15 +199,7 @@ class recorridoInfo extends StatelessWidget{
               return grouped.entries.map((entry)=>(entry.key,entry.value)).toList();
             }),
           builder:(context,snapshot){
-            if(snapshot.hasError){return Center(
-              child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
-                Error: ${snapshot.error}
-                Stacktrace:
-                ${snapshot.stackTrace.toString()
-                  .split('\n').take(6).join('\n')}""", 
-                style: TextStyle(color: Colors.red))
-              ));
-            }
+            if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
             if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
             final List<(Encargado,List<RecorridoSubscription>)> allData=snapshot.data!;
             //if(allData.isEmpty)return Center(child:Text("..."));

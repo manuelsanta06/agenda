@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../widgets/searchBar.dart';
+
 import 'package:agenda/database/app_database.dart';
+
+import 'package:agenda/pages/recorridoInfo.dart';
+
 import 'package:agenda/utilities/recorridos.dart';
-import 'package:drift/drift.dart' as drift;
-import 'package:uuid/uuid.dart';
-import 'recorridoInfo.dart';
+
+import 'package:agenda/widgets/errorWidgets.dart';
+import 'package:agenda/widgets/searchBar.dart';
 
 
 class recorridosPage extends StatefulWidget {
@@ -30,16 +33,7 @@ class _recorridosPage extends State<recorridosPage>{
         Expanded(child:StreamBuilder<List<Recorrido>>(
           stream: db.select(db.recorridos).watch(),
           builder:(context, snapshot){
-            if(snapshot.hasError){
-              return Center(
-                child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
-                  Error: ${snapshot.error}
-                  Stacktrace:
-                  ${snapshot.stackTrace.toString()
-                    .split('\n').take(6).join('\n')}""", 
-                  style: TextStyle(color: Colors.red))
-              ));
-            }
+            if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
             if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
             //return const Center(child: CircularProgressIndicator());
             final recorridos=snapshot.data!;

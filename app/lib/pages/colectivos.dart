@@ -1,9 +1,13 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../widgets/searchBar.dart';
-import '../utilities/colectivos.dart';
-import '../database/app_database.dart';
+
+import 'package:agenda/database/app_database.dart';
+
+import 'package:agenda/utilities/colectivos.dart';
+
+import 'package:agenda/widgets/errorWidgets.dart';
+import 'package:agenda/widgets/searchBar.dart';
 
 
 class colectivosPage extends StatefulWidget {
@@ -54,12 +58,7 @@ class _colectivosPageState extends State<colectivosPage>{
                     [(c)=>drift.OrderingTerm(expression:((c.name.toString()).isEmpty)?c.plate:c.name)]
                 )).watch(), 
                 builder:(context, snapshot){
-                  if(snapshot.hasError){
-                    return Center(
-                      child: Text("Error: ${snapshot.error}\nperdon, pasale captura a manu", 
-                      style: TextStyle(color: Colors.red))
-                    );
-                  }
+                  if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
                   if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
                   final listaColectivos=snapshot.data!.where((tbl)=>showInactives?!tbl.is_active:tbl.is_active).toList();

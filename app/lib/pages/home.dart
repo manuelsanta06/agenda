@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+
 import 'package:agenda/widgets/buttons.dart';
-import 'package:agenda/widgets/searchBar.dart';
 import 'package:agenda/widgets/cards.dart';
 import 'package:agenda/widgets/text.dart';
+import 'package:agenda/widgets/errorWidgets.dart';
 
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/colectivos.dart';
@@ -23,7 +24,6 @@ class homePage extends StatefulWidget {
 }
 class _homePageState extends State<homePage>{
   final GlobalKey<ExpandableFabState> _fabKey = GlobalKey<ExpandableFabState>();
-  String searchQuery="";
   bool _showSettings=false;
 
 
@@ -86,6 +86,25 @@ class _homePageState extends State<homePage>{
                       ),
                     ]);
                   }
+                ),
+                StreamBuilder<List<EventWithStops>>(
+                  stream: deafDb.watchEventsWithStops(DateTime.now(),false),
+                  builder:(context, snapshot){
+                    if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
+                    if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
+                    final fullList=snapshot.data??List<EventWithStops>.empty();
+
+                    if(fullList.isEmpty)return const Center(child:Text("???"));
+
+                    return Column(children:[
+                      ...fullList.map((e){
+                        return EventCard(
+                          eve:e.event,sto:e.stops,
+                          maincolor:homePage.mainColor,
+                        );
+                      })
+                    ]);
+                  },
                 ),
               ],
             )),

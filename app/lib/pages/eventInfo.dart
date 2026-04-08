@@ -1,17 +1,21 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:drift/drift.dart' as drift;
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
+
+import 'package:agenda/database/app_database.dart';
+
+import 'package:agenda/widgets/errorWidgets.dart';
+import 'package:agenda/widgets/eventDetails.dart';
+import 'package:agenda/widgets/cards.dart';
+import 'package:agenda/widgets/text.dart';
+
 import 'package:agenda/utilities/colectivos.dart';
 import 'package:agenda/utilities/choferes.dart';
 import 'package:agenda/utilities/events.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:agenda/database/app_database.dart';
-import 'package:drift/drift.dart' as drift;
-import '../widgets/cards.dart';
-import 'package:agenda/widgets/text.dart';
-import 'package:intl/intl.dart';
-import '../widgets/eventDetails.dart';
-import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import '../utilities/parsers.dart';
+import 'package:agenda/utilities/parsers.dart';
 
 
 class eventInfo extends StatelessWidget{
@@ -181,16 +185,7 @@ class eventInfo extends StatelessWidget{
                   onlyForEventId:eve.id
                 ),
                 builder:(context,snapshot){
-                  if(snapshot.hasError){
-                    return Center(
-                      child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
-                        Error: ${snapshot.error}
-                        Stacktrace:
-                        ${snapshot.stackTrace.toString()
-                          .split('\n').take(6).join('\n')}""", 
-                        style: TextStyle(color: Colors.red))
-                    ));
-                  }
+                  if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
                   if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
                   final listaChoferes = snapshot.data ?? [];
@@ -237,16 +232,7 @@ class eventInfo extends StatelessWidget{
                   onlyForEventId:eve.id
                 ),
                 builder:(context,snapshot){
-                  if(snapshot.hasError){
-                    return Center(
-                      child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
-                        Error: ${snapshot.error}
-                        Stacktrace:
-                        ${snapshot.stackTrace.toString()
-                          .split('\n').take(6).join('\n')}""", 
-                        style: TextStyle(color: Colors.red))
-                    ));
-                  }
+                  if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
                   if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
                   final listaColectivos = snapshot.data ?? [];

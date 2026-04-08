@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import '../utilities/events.dart';
-import '../widgets/searchBar.dart';
-import '../widgets/buttons.dart';
 import 'package:agenda/database/app_database.dart';
 import 'package:drift/drift.dart' as drift; 
+import 'package:agenda/constants.dart' as constants;
 import 'package:provider/provider.dart';
-import '../constants.dart' as constants;
 import 'package:table_calendar/table_calendar.dart';
+
+import 'package:agenda/widgets/searchBar.dart';
+import 'package:agenda/widgets/buttons.dart';
+import 'package:agenda/widgets/errorWidgets.dart';
+
+import 'package:agenda/utilities/events.dart';
+
 
 
 class calendarPage extends StatefulWidget {
@@ -127,16 +131,7 @@ class _calendarPageState extends State<calendarPage>{
               child:StreamBuilder<List<EventWithStops>>(
                 stream: db.watchEventsWithStops(_selectedDay,recorridos),
                 builder:(context, snapshot){
-                  if(snapshot.hasError){
-                    return Center(
-                      child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
-                        Error: ${snapshot.error}
-                        Stacktrace:
-                        ${snapshot.stackTrace.toString()
-                          .split('\n').take(6).join('\n')}""", 
-                        style: TextStyle(color: Colors.red))
-                    ));
-                  }
+                  if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
                   if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
                   final fullList =snapshot.data??List<EventWithStops>.empty();
@@ -151,7 +146,6 @@ class _calendarPageState extends State<calendarPage>{
                   return ListView.builder(
                     itemCount: filtered.length,
                     itemBuilder:(context, index){
-                      updateFullEventState(deafDb,filtered[index].event);
                       return EventCard(
                         eve:filtered[index].event,
                         sto:filtered[index].stops,

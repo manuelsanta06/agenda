@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../database/app_database.dart';
-import '../utilities/choferes.dart';
-import '../widgets/searchBar.dart';
+
+import 'package:agenda/database/app_database.dart';
+
+import 'package:agenda/utilities/choferes.dart';
+
+import 'package:agenda/widgets/searchBar.dart';
+import 'package:agenda/widgets/errorWidgets.dart';
 
 typedef Chofer=Chofere;
 
@@ -50,16 +54,7 @@ class _peoplePageState extends State<peoplePage>{
             child: StreamBuilder<List<Chofere>>(
               stream: db.select(db.choferes).watch(), 
               builder:(context, snapshot){
-                if(snapshot.hasError){
-                  return Center(
-                    child: SingleChildScrollView(child:Text("""perdon, pasale captura a manu
-                      Error: ${snapshot.error}
-                      Stacktrace:
-                      ${snapshot.stackTrace.toString()
-                        .split('\n').take(6).join('\n')}""", 
-                      style: TextStyle(color: Colors.red))
-                  ));
-                }
+                if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
                 if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
                 final listaChoferes=snapshot.data!.where((tbl)=>showInactives?!tbl.is_active:tbl.is_active).toList();
