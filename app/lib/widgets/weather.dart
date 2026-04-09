@@ -3,29 +3,41 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class WeatherService {
+class WeatherService{
   //TODO: dinamic location
   static const double lat = -34.76;
   static const double lon = -58.40;
 
+  //cache
+  static (double, String)? _cachedData;
+  static DateTime? _lastFetch;
+
   static Future<(double, String)?> getCurrentWeather()async{
+    if((_cachedData!=null&&_lastFetch!=null)&&(DateTime.now().difference(_lastFetch!).inMinutes<15)){
+        return _cachedData;
+    }
+
     try{
       final uri=Uri.parse(
         'https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current_weather=true'
-      );
-
+        );
       final response=await http.get(uri);
+
       if(response.statusCode==200){
         final data=jsonDecode(response.body);
         final current=data['current_weather'];
         final double temp=current['temperature'];
         final int code=current['weathercode'];
-        return (temp,_getWeatherEmoji(code));
+
+        _cachedData=(temp,_getWeatherEmoji(code));
+        _lastFetch=DateTime.now();
+
+        return _cachedData;
       }
       return null;
     }catch(e){
       print("Error obteniendo el clima: $e");
-      return null;
+      return _cachedData; 
     }
   }
 
@@ -42,6 +54,7 @@ class WeatherService {
 }
 class WeatherWidget extends StatelessWidget{
   final Color mainColor;
+  static String data="";
   const WeatherWidget({
     super.key,
     this.mainColor=Colors.blueGrey,
@@ -53,11 +66,12 @@ class WeatherWidget extends StatelessWidget{
       future: WeatherService.getCurrentWeather(),
       builder:(context,snapshot){
         if(snapshot.connectionState==ConnectionState.waiting){
-          return pillProgress(text:"        ",mainColor:mainColor,value:null,onTap:(){});
+          return pillProgress(text:data.isEmpty?"        ":data,mainColor:mainColor,value:null,onTap:(){});
         }
         if(snapshot.hasError||!snapshot.hasData||snapshot.data==null){return const SizedBox.shrink();}
         final (temp,emoji)=snapshot.data!;
-        return pillText("$emoji ${temp.toStringAsFixed(1)}°C",mainColor,onTap:(){});
+        data="$emoji ${temp.toStringAsFixed(1)}°C";
+        return pillText(data,mainColor,onTap:(){});
       },
     );
   }

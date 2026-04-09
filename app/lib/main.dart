@@ -70,21 +70,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
   
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _sincronizarCompleto();
-    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      _pushDeRespaldo();
+    if(state==AppLifecycleState.resumed){
+      final db=Provider.of<AppDatabase>(context,listen: false);
+      SyncService.performFullSync(db).catchError((e)=>print("Error Sync: $e"));
+    }else if(state==AppLifecycleState.paused||state==AppLifecycleState.inactive){
+      final db=Provider.of<AppDatabase>(context,listen:false);
+      SyncService.pushUnsyncedData(db).catchError((e)=>print("Error Push: $e"));
     }
-  }
-
-  void _sincronizarCompleto(){
-    final db=Provider.of<AppDatabase>(context,listen: false);
-    SyncService.performFullSync(db).catchError((e)=>print("Error Sync: $e"));
-  }
-
-  void _pushDeRespaldo(){
-    final db = Provider.of<AppDatabase>(context, listen: false);
-    SyncService.pushUnsyncedData(db).catchError((e) => print("Error Push: $e"));
   }
 
 

@@ -26,6 +26,7 @@ class homePage extends StatefulWidget {
 }
 class _homePageState extends State<homePage>{
   final GlobalKey<ExpandableFabState> _fabKey = GlobalKey<ExpandableFabState>();
+  bool recorridosToday=false;
   bool _showSettings=false;
 
 
@@ -37,25 +38,6 @@ class _homePageState extends State<homePage>{
       body:Stack(
         children:[
           SafeArea(top:false,child:ListView(padding:EdgeInsets.zero,children:[
-            //GestureDetector(
-            //  onHorizontalDragEnd:(details){
-            //    if(details.primaryVelocity!<0){
-            //      setState((){_showSettings=true;});
-            //    }else if(details.primaryVelocity!>0){
-            //      setState((){_showSettings=false;});
-            //    }
-            //  },
-            //  child:Row(children:[
-            //    Expanded(child:mySearchBar(onChanged:(value){setState((){searchQuery = value;});})),
-            //    AnimatedContainer(
-            //      duration:const Duration(milliseconds:200),
-            //      width:_showSettings?50.0:0.0,
-            //      child:IconButton(icon:Icon(Icons.settings),onPressed:(){
-            //        Navigator.of(context).push(MaterialPageRoute(builder:(context)=>PantallaAjustes()));
-            //      }),
-            //    ),
-            //  ]),
-            //),
             //TOP CARD
             BasicCard(
               padding: const EdgeInsets.symmetric(vertical:24),
@@ -72,7 +54,7 @@ class _homePageState extends State<homePage>{
                         setState((){_showSettings=false;});
                       }
                     },
-                    child:WeatherWidget()//pillText("16°c",homePage.mainColor),
+                    child:WeatherWidget(),
                   ),
                   AnimatedContainer(
                     duration:const Duration(milliseconds:200),
@@ -105,9 +87,23 @@ class _homePageState extends State<homePage>{
               ])
             ),
             const SizedBox(height:20),
-            subtitleLine("Viajes hoy",homePage.mainColor),
+            Row(children:[
+              Expanded(child:subtitleLine("Viajes hoy",homePage.mainColor)),
+              Text(
+                  "Recorridos",
+                  style:TextStyle(fontSize:16, fontWeight:recorridosToday?FontWeight.bold:FontWeight.normal),
+                ),
+                Switch(
+                  value: recorridosToday,
+                  activeThumbColor: Colors.white,
+                  activeTrackColor:homePage.mainColor,
+                  onChanged:(bool value){
+                    setState((){recorridosToday=value;});
+                  }
+                )
+            ]),
             StreamBuilder<List<EventWithStops>>(
-              stream:deafDb.watchEventsWithStops(DateTime.now(),false),
+              stream:deafDb.watchEventsWithStops(DateTime.now(),true),
               builder:(context,snapshot){
                 if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
                 if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
