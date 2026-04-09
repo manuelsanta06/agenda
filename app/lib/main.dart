@@ -2,6 +2,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
 
 import 'database/app_database.dart';
 import 'utilities/syncService.dart';
@@ -20,6 +21,7 @@ void main(){
   final settings=SettingsProvider();
   settings.init();
   SyncService.performFullSync(database);
+  Intl.defaultLocale='es_AR';
   initializeDateFormatting().then((_) => runApp(
     MultiProvider(
       providers:[

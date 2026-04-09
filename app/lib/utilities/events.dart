@@ -171,6 +171,7 @@ class EventCard extends StatelessWidget{
           crossAxisAlignment:CrossAxisAlignment.start,
           children:[
             Text( eve.name,
+              overflow:TextOverflow.ellipsis,
               style:TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16.0,

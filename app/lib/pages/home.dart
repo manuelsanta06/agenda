@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:agenda/widgets/buttons.dart';
 import 'package:agenda/widgets/cards.dart';
 import 'package:agenda/widgets/text.dart';
 import 'package:agenda/widgets/errorWidgets.dart';
+import 'package:agenda/widgets/weather.dart';
 
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/colectivos.dart';
@@ -28,151 +30,165 @@ class _homePageState extends State<homePage>{
 
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
+    DateTime today=DateTime.now();
     final deafDb=Provider.of<AppDatabase>(context, listen: false);
     return Scaffold(
-        body:Stack(
-          children:[
-            SafeArea(child:ListView(
-              children:[
-                //GestureDetector(
-                //  onHorizontalDragEnd:(details){
-                //    if(details.primaryVelocity!<0){
-                //      setState((){_showSettings=true;});
-                //    }else if(details.primaryVelocity!>0){
-                //      setState((){_showSettings=false;});
-                //    }
-                //  },
-                //  child:Row(children:[
-                //    Expanded(child:mySearchBar(onChanged:(value){setState((){searchQuery = value;});})),
-                //    AnimatedContainer(
-                //      duration:const Duration(milliseconds:200),
-                //      width:_showSettings?50.0:0.0,
-                //      child:IconButton(icon:Icon(Icons.settings),onPressed:(){
-                //        Navigator.of(context).push(MaterialPageRoute(builder:(context)=>PantallaAjustes()));
-                //      }),
-                //    ),
-                //  ]),
-                //),
-                StreamBuilder<(int,int)>(
+      body:Stack(
+        children:[
+          SafeArea(top:false,child:ListView(padding:EdgeInsets.zero,children:[
+            //GestureDetector(
+            //  onHorizontalDragEnd:(details){
+            //    if(details.primaryVelocity!<0){
+            //      setState((){_showSettings=true;});
+            //    }else if(details.primaryVelocity!>0){
+            //      setState((){_showSettings=false;});
+            //    }
+            //  },
+            //  child:Row(children:[
+            //    Expanded(child:mySearchBar(onChanged:(value){setState((){searchQuery = value;});})),
+            //    AnimatedContainer(
+            //      duration:const Duration(milliseconds:200),
+            //      width:_showSettings?50.0:0.0,
+            //      child:IconButton(icon:Icon(Icons.settings),onPressed:(){
+            //        Navigator.of(context).push(MaterialPageRoute(builder:(context)=>PantallaAjustes()));
+            //      }),
+            //    ),
+            //  ]),
+            //),
+            //TOP CARD
+            BasicCard(
+              padding: const EdgeInsets.symmetric(vertical:24),
+              child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                const SizedBox(height:10),
+                Row(children:[
+                  const SizedBox(width:15),
+                  Expanded(child:Text(DateFormat('EEEE, d MMM').format(today))),
+                  GestureDetector(
+                    onHorizontalDragEnd:(details){
+                      if(details.primaryVelocity!<0){
+                        setState((){_showSettings=true;});
+                      }else if(details.primaryVelocity!>0){
+                        setState((){_showSettings=false;});
+                      }
+                    },
+                    child:WeatherWidget()//pillText("16°c",homePage.mainColor),
+                  ),
+                  AnimatedContainer(
+                    duration:const Duration(milliseconds:200),
+                    width:_showSettings?30.0:0.0,
+                    child:_showSettings?IconButton(icon:Icon(Icons.settings),onPressed:(){
+                      Navigator.of(context).push(MaterialPageRoute(builder:(context)=>PantallaAjustes()));
+                    }):null,
+                  ),
+                  const SizedBox(width:5),
+                ]),
+                const SizedBox(height:10),
+                SingleChildScrollView(scrollDirection:Axis.horizontal,child: StreamBuilder<(int,int)>(
                   stream:deafDb.watchVtvStatus(),
                   builder:(context,snapshot){
+                    //return const SizedBox.shrink();
                     final (vencidas,porVencer)=snapshot.data??(0,0);
                     if (vencidas+porVencer==0)return const SizedBox.shrink();
-                    return Column(children:[
+                    return Row(children:[
+                      const SizedBox(width:10),
                       if(vencidas>0)
-                      BasicCard(
-                        borderColor:Colors.red,
-                        tonality:Colors.red,
-                        child:Row(children:[
-                          const Icon(Icons.info_outline,color:Colors.red),
-                          const SizedBox(width:8),
-                          Text("$vencidas VTV${vencidas>1?"s venceiron":"vencida"}.", 
-                            style: TextStyle(color: Colors.orange.shade900)),
-                        ]),
-                      ),
+                      pillText("$vencidas VTV${vencidas>1?"s venceiron":"vencida"}",Colors.red,),
                       if(porVencer>0&&vencidas>0)
-                      const SizedBox(height:10),
+                      const SizedBox(width:10),
                       if(porVencer>0)
-                      BasicCard(
-                        borderColor:Colors.orange,
-                        tonality:Colors.orange,
-                        child:Row(children:[
-                          const Icon(Icons.info_outline,color:Colors.orange),
-                          const SizedBox(width:8),
-                          Text("$porVencer VTV${porVencer>1?"s":""} próxima${porVencer>1?"s":""} a vencer.", 
-                            style: TextStyle(color: Colors.orange.shade900)),
-                        ]),
-                      ),
+                      pillText("$porVencer VTV${porVencer>1?"s":""} próxima${porVencer>1?"s":""} a vencer",Colors.orange,),
+                      const SizedBox(width:10),
                     ]);
                   }
-                ),
-                StreamBuilder<List<EventWithStops>>(
-                  stream: deafDb.watchEventsWithStops(DateTime.now(),false),
-                  builder:(context, snapshot){
-                    if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
-                    if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
-                    final fullList=snapshot.data??List<EventWithStops>.empty();
-
-                    if(fullList.isEmpty)return const Center(child:Text("???"));
-
-                    return Column(children:[
-                      ...fullList.map((e){
-                        return EventCard(
-                          eve:e.event,sto:e.stops,
-                          maincolor:homePage.mainColor,
-                        );
-                      })
-                    ]);
+                )),
+              ])
+            ),
+            const SizedBox(height:20),
+            subtitleLine("Viajes hoy",homePage.mainColor),
+            StreamBuilder<List<EventWithStops>>(
+              stream:deafDb.watchEventsWithStops(DateTime.now(),false),
+              builder:(context,snapshot){
+                if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
+                if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
+                final fullList=snapshot.data??[];
+                if(fullList.isEmpty)return const Center(child:Text("???"));
+                return Column(children:[
+                  ...fullList.map((e){
+                    return EventCard(
+                      eve:e.event,sto:e.stops,
+                      maincolor:homePage.mainColor,
+                    );
+                  })
+                ]);
+              },
+            ),
+          ])),
+          Positioned.fill(
+            bottom:16.0,
+            right:16.0,
+            child:ExpandableFab(
+            key:_fabKey,
+              mainColor:homePage.mainColor,
+              children:[
+                buildMiniFab(homePage.mainColor,
+                  icon: Icons.school,
+                  label: "Recorrido",
+                  onPressed:()async{
+                    _fabKey.currentState?.toggleMenu();
+                    final newRecorrido=await showCreateRecorridoSheet(context,homePage.mainColor);
+                    if(newRecorrido==null)return;
+                    await deafDb.into(deafDb.recorridos).insert(newRecorrido);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(backgroundColor:Colors.green,content:Text("Recorrido guardado")),
+                    );
                   },
                 ),
-              ],
-            )),
-            Positioned.fill(
-              bottom:16.0,
-              right:16.0,
-              child:ExpandableFab(
-              key:_fabKey,
-                mainColor:homePage.mainColor,
-                children:[
-                  buildMiniFab(homePage.mainColor,
-                    icon: Icons.school,
-                    label: "Recorrido",
-                    onPressed:()async{
-                      _fabKey.currentState?.toggleMenu();
-                      final newRecorrido=await showCreateRecorridoSheet(context,homePage.mainColor);
-                      if(newRecorrido==null)return;
-                      await deafDb.into(deafDb.recorridos).insert(newRecorrido);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(backgroundColor:Colors.green,content:Text("Recorrido guardado")),
-                      );
-                    },
-                  ),
-                  buildMiniFab(homePage.mainColor,
-                    icon: Icons.schedule,
-                    label: "Viaje",
-                    onPressed:()async{
-                      _fabKey.currentState?.toggleMenu();
-                      final success=await showCreateTripSheet(
-                        context,mainColor:homePage.mainColor,isTrip:true,startDate:DateTime.now()
-                      );
+                buildMiniFab(homePage.mainColor,
+                  icon: Icons.schedule,
+                  label: "Viaje",
+                  onPressed:()async{
+                    _fabKey.currentState?.toggleMenu();
+                    final success=await showCreateTripSheet(
+                      context,mainColor:homePage.mainColor,isTrip:true,startDate:DateTime.now()
+                    );
 
-                      if(success&&context.mounted){
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content:Text("Viaje guardado"),backgroundColor:Colors.green,)
-                        );
-                      }
-                    },
-                  ),
-                  buildMiniFab(homePage.mainColor,
-                    icon: Icons.directions_bus,
-                    label: "Colectivo",
-                    onPressed:()async{
-                      _fabKey.currentState?.toggleMenu();
-                      if((await showCreateModifiColectivo(context,mainColor:homePage.mainColor))&&context.mounted){
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content:Text("Colectivo guardado"),backgroundColor:Colors.green),
-                        );
-                      }
-                    },
-                  ),
-                  buildMiniFab(homePage.mainColor,
-                    icon: Icons.person,
-                    label: "Chofer",
-                    onPressed:()async{
-                      _fabKey.currentState?.toggleMenu();
-                      if((await showCreateModifiChofer(context,homePage.mainColor))&&context.mounted){
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Chofer guardado"), backgroundColor: Colors.green),
-                        );
-                      }
-                    },
-                  ),
-                ]
-              )
+                    if(success&&context.mounted){
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content:Text("Viaje guardado"),backgroundColor:Colors.green,)
+                      );
+                    }
+                  },
+                ),
+                buildMiniFab(homePage.mainColor,
+                  icon: Icons.directions_bus,
+                  label: "Colectivo",
+                  onPressed:()async{
+                    _fabKey.currentState?.toggleMenu();
+                    if((await showCreateModifiColectivo(context,mainColor:homePage.mainColor))&&context.mounted){
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content:Text("Colectivo guardado"),backgroundColor:Colors.green),
+                      );
+                    }
+                  },
+                ),
+                buildMiniFab(homePage.mainColor,
+                  icon: Icons.person,
+                  label: "Chofer",
+                  onPressed:()async{
+                    _fabKey.currentState?.toggleMenu();
+                    if((await showCreateModifiChofer(context,homePage.mainColor))&&context.mounted){
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Chofer guardado"), backgroundColor: Colors.green),
+                      );
+                    }
+                  },
+                ),
+              ]
             )
-          ],
-        )
+          )
+        ],
+      )
     );
   }
 }

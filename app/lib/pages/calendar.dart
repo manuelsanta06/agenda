@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:agenda/database/app_database.dart';
-import 'package:drift/drift.dart' as drift; 
 import 'package:agenda/constants.dart' as constants;
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';

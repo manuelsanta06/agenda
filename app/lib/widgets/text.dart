@@ -75,6 +75,48 @@ Widget pillText(String text, Color mainColor, {VoidCallback? onTap}) {
     ),
   );
 }
+Widget pillProgress({
+  required Color mainColor,
+  double? value,//betwen 0.0 and 1.0. null endless
+  String? text,
+  VoidCallback? onTap,
+}) {
+  return Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap:onTap,
+      borderRadius:BorderRadius.circular(12),
+      child:Container(
+        clipBehavior:Clip.antiAlias, 
+        decoration:BoxDecoration(
+          borderRadius:BorderRadius.circular(12),
+          border:Border.all(color:mainColor.withOpacity(0.5)),
+        ),
+        child:Stack(
+          alignment:Alignment.center,
+          children:[
+            Positioned.fill(child:LinearProgressIndicator(
+              value:value,
+              backgroundColor:mainColor.withOpacity(0.1),
+              valueColor:AlwaysStoppedAnimation<Color>(mainColor.withOpacity(0.4)),
+            )),
+            Padding(
+              padding:const EdgeInsets.symmetric(horizontal:10,vertical:4),
+              child:Text(text??'',
+                style:TextStyle(
+                  color:mainColor,
+                  fontSize:14,
+                  fontWeight:FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 
 bool isToday(DateTime date){
   final now = DateTime.now();
