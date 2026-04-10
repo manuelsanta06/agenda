@@ -7,6 +7,7 @@ class SettingsProvider extends ChangeNotifier {
   //Defalts dictionary
   static const Map<String, dynamic> _defaults = {
     'dark_mode':true,
+    'colectivos_order':0,
   };
 
   Future<void> init() async {

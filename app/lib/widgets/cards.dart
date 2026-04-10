@@ -37,7 +37,7 @@ Future<String?> quickChangeDialog(BuildContext context,
 
 class BasicCard extends StatelessWidget {
   final Widget child;
-  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry? margin;
   final Color? tonality;
   final Color? borderColor;
@@ -50,7 +50,7 @@ class BasicCard extends StatelessWidget {
   const BasicCard({
     super.key,
     required this.child,
-    this.padding,
+    this.padding=const EdgeInsets.all(16),
     this.margin,
     this.tonality,
     this.borderColor,
@@ -67,9 +67,9 @@ class BasicCard extends StatelessWidget {
       InkWell(
         onTap: onPressed,
         onLongPress: onLongPressed,
-        child:Padding(padding:padding??const EdgeInsets.all(16),child:child),
+        child:Padding(padding:padding,child:child),
       ):
-      Padding(padding:padding??const EdgeInsets.all(16),child:child);
+      Padding(padding:padding,child:child);
     return Container(
       margin: margin,
       decoration: BoxDecoration(

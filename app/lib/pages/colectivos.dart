@@ -5,13 +5,15 @@ import 'package:provider/provider.dart';
 import 'package:agenda/database/app_database.dart';
 
 import 'package:agenda/utilities/colectivos.dart';
+import 'package:agenda/utilities/settings.dart';
 
 import 'package:agenda/widgets/errorWidgets.dart';
 import 'package:agenda/widgets/searchBar.dart';
 
 
-class colectivosPage extends StatefulWidget {
-  const colectivosPage({super.key});
+class colectivosPage extends StatefulWidget{
+  final int? ordering;
+  const colectivosPage({super.key,this.ordering});
   static const Color mainColor=Color.fromARGB(255, 252, 102, 1);
 
   @override
@@ -24,6 +26,8 @@ class _colectivosPageState extends State<colectivosPage>{
 
   @override
   Widget build(BuildContext context){
+    final settings=context.watch<SettingsProvider>();
+    final int order=((widget.ordering??-1)==-1)?settings.getValue("colectivos_order"):widget.ordering!;
     final db = Provider.of<AppDatabase>(context);
 
     return Scaffold(
@@ -31,7 +35,48 @@ class _colectivosPageState extends State<colectivosPage>{
           children: [
             Row(children:[
               Expanded(child:mySearchBar(onChanged:(value){setState((){searchQuery=value;});})),
-              IconButton(icon:Icon(Icons.filter_list),onPressed:(){})
+              PopupMenuButton(
+                icon:const Icon(Icons.filter_list),
+                onSelected:(String result)async{ switch (result){
+                  case 'nombre':
+                    settings.setValue("colectivos_order",2);
+                    break;
+                  case 'interno':
+                    settings.setValue("colectivos_order",0);
+                    break;
+                  case 'vtv':
+                    settings.setValue("colectivos_order",1);
+                    break;
+                  default:
+                    return;
+                }},
+                itemBuilder:(BuildContext Context)=><PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value:'nombre',
+                    child:Row(children:[
+                      Icon(Icons.abc),
+                      SizedBox(width:8),
+                      Text('Nombre/Patente')
+                    ]),
+                  ),
+                  PopupMenuItem<String>(
+                    value:'interno',
+                    child:Row(children:[
+                      Icon(Icons.numbers),
+                      SizedBox(width:8),
+                      Text('Interno')
+                    ]),
+                  ),
+                  PopupMenuItem<String>(
+                    value:'vtv',
+                    child:Row(children:[
+                      Icon(Icons.shield), 
+                      SizedBox(width: 8), 
+                      Text('VTV'),
+                    ]),
+                  ),
+                ]
+              ),
             ]),
 
             Container(
@@ -54,8 +99,13 @@ class _colectivosPageState extends State<colectivosPage>{
 
             Expanded(
               child: StreamBuilder<List<Colectivo>>(
-                stream: (db.select(db.colectivos)..orderBy(
-                    [(c)=>drift.OrderingTerm(expression:((c.name.toString()).isEmpty)?c.plate:c.name)]
+                stream:(db.select(db.colectivos)..orderBy(
+                    [(c)=>drift.OrderingTerm(expression:switch(order){
+                      0=>c.number,
+                      1=>c.vtv,
+                      2=>((c.name.toString()).isEmpty)?c.plate:c.name,
+                      _=>((c.name.toString()).isEmpty)?c.plate:c.name
+                    })]
                 )).watch(), 
                 builder:(context, snapshot){
                   if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);

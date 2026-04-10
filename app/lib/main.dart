@@ -37,19 +37,13 @@ class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<MyApp> createState() => MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
-  int _selectedIndex=2;
+class MyAppState extends State<MyApp> with WidgetsBindingObserver{
+  int _selectedIndex=2,extraData=-1;
 
-  final List<Widget> _pages = const [
-    peoplePage(),
-    calendarPage(),
-    homePage(),
-    recorridosPage(),
-    colectivosPage(),
-  ];
+  
 
   @override
   void initState() {
@@ -61,9 +55,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
     super.dispose();
   }
 
+  void changeIndex(int index,int? dato){
+    setState((){_selectedIndex=index;extraData=dato??-1;});
+  }
+
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
+      _selectedIndex=index;
+      extraData=-1;
     });
   }
 
@@ -81,7 +80,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver{
 
 
   @override
-  Widget build(BuildContext context,){
+  Widget build(BuildContext context){
+    final List<Widget> _pages=[
+      const peoplePage(),
+      const calendarPage(),
+      homePage(onVtvCheck:changeIndex),
+      const recorridosPage(),
+      colectivosPage(ordering:extraData),
+    ];
+
     return MaterialApp(
       title: "Pincen",
       debugShowCheckedModeBanner: false,

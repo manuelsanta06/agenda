@@ -7,6 +7,7 @@ import 'package:agenda/widgets/text.dart';
 import 'package:agenda/widgets/errorWidgets.dart';
 import 'package:agenda/widgets/weather.dart';
 
+import 'package:agenda/utilities/settings.dart';
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/colectivos.dart';
 import 'package:agenda/utilities/choferes.dart';
@@ -18,7 +19,8 @@ import 'package:agenda/database/app_database.dart';
 import 'setting.dart';
 
 class homePage extends StatefulWidget {
-  const homePage({super.key});
+  final void Function(int index,int dato)? onVtvCheck;
+  const homePage({super.key,this.onVtvCheck});
   static const Color mainColor=Colors.blueGrey;
 
   @override
@@ -32,7 +34,9 @@ class _homePageState extends State<homePage>{
 
   @override
   Widget build(BuildContext context){
+    final settings=context.watch<SettingsProvider>();
     DateTime today=DateTime.now();
+
     final deafDb=Provider.of<AppDatabase>(context, listen: false);
     return Scaffold(
       body:Stack(
@@ -75,11 +79,16 @@ class _homePageState extends State<homePage>{
                     return Row(children:[
                       const SizedBox(width:10),
                       if(vencidas>0)
-                      pillText("$vencidas VTV${vencidas>1?"s venceiron":"vencida"}",Colors.red,),
+                      pillText("$vencidas VTV${vencidas>1?"s venceiron":"vencida"}",Colors.red,onTap:(){
+                        if(widget.onVtvCheck!=null)widget.onVtvCheck!(4,1);
+                      }),
                       if(porVencer>0&&vencidas>0)
                       const SizedBox(width:10),
                       if(porVencer>0)
-                      pillText("$porVencer VTV${porVencer>1?"s":""} próxima${porVencer>1?"s":""} a vencer",Colors.orange,),
+                      pillText("$porVencer VTV${porVencer>1?"s":""} próxima${porVencer>1?"s":""} a vencer",
+                        Colors.orange,onTap:(){
+                          if(widget.onVtvCheck!=null)widget.onVtvCheck!(4,1);
+                        }),
                       const SizedBox(width:10),
                     ]);
                   }
@@ -94,7 +103,7 @@ class _homePageState extends State<homePage>{
                   style:TextStyle(fontSize:16, fontWeight:recorridosToday?FontWeight.bold:FontWeight.normal),
                 ),
                 Switch(
-                  value: recorridosToday,
+                  value:recorridosToday,
                   activeThumbColor: Colors.white,
                   activeTrackColor:homePage.mainColor,
                   onChanged:(bool value){
@@ -103,20 +112,23 @@ class _homePageState extends State<homePage>{
                 )
             ]),
             StreamBuilder<List<EventWithStops>>(
-              stream:deafDb.watchEventsWithStops(DateTime.now(),true),
+              stream:deafDb.watchEventsWithStops(DateTime.now(),recorridosToday),
               builder:(context,snapshot){
                 if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
                 if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
                 final fullList=snapshot.data??[];
-                if(fullList.isEmpty)return const Center(child:Text("???"));
-                return Column(children:[
-                  ...fullList.map((e){
-                    return EventCard(
-                      eve:e.event,sto:e.stops,
-                      maincolor:homePage.mainColor,
-                    );
-                  })
-                ]);
+                if(fullList.isEmpty)return const Center(child:Text("Nada por aca"));
+                return BasicCard(
+                  padding:EdgeInsetsGeometry.symmetric(vertical:8,horizontal:0),
+                  child:Column(children:[
+                    ...fullList.map((e){
+                      return EventCard(
+                        eve:e.event,sto:e.stops,
+                        maincolor:homePage.mainColor,
+                      );
+                    })
+                  ])
+                );
               },
             ),
           ])),
