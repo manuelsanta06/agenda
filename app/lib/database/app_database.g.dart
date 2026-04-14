@@ -3572,17 +3572,18 @@ class $PassengersTable extends Passengers
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
-  static const drift.VerificationMeta _balanceMeta =
-      const drift.VerificationMeta('balance');
+  static const drift.VerificationMeta _customPriceMeta =
+      const drift.VerificationMeta('customPrice');
   @override
-  late final drift.GeneratedColumn<int> balance = drift.GeneratedColumn<int>(
-    'balance',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const drift.Constant(0),
-  );
+  late final drift.GeneratedColumn<int> customPrice =
+      drift.GeneratedColumn<int>(
+        'custom_price',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const drift.Constant(-1),
+      );
   static const drift.VerificationMeta _recorridoIdMeta =
       const drift.VerificationMeta('recorridoId');
   @override
@@ -3631,7 +3632,7 @@ class $PassengersTable extends Passengers
     name,
     managerName,
     managerPhone,
-    balance,
+    customPrice,
     recorridoId,
     isActive,
     isSynced,
@@ -3679,10 +3680,13 @@ class $PassengersTable extends Passengers
         ),
       );
     }
-    if (data.containsKey('balance')) {
+    if (data.containsKey('custom_price')) {
       context.handle(
-        _balanceMeta,
-        balance.isAcceptableOrUnknown(data['balance']!, _balanceMeta),
+        _customPriceMeta,
+        customPrice.isAcceptableOrUnknown(
+          data['custom_price']!,
+          _customPriceMeta,
+        ),
       );
     }
     if (data.containsKey('recorrido_id')) {
@@ -3733,9 +3737,9 @@ class $PassengersTable extends Passengers
         DriftSqlType.string,
         data['${effectivePrefix}manager_phone'],
       ),
-      balance: attachedDatabase.typeMapping.read(
+      customPrice: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}balance'],
+        data['${effectivePrefix}custom_price'],
       )!,
       recorridoId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -3763,7 +3767,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
   final String name;
   final String? managerName;
   final String? managerPhone;
-  final int balance;
+  final int customPrice;
   final String recorridoId;
   final bool isActive;
   final bool isSynced;
@@ -3772,7 +3776,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     required this.name,
     this.managerName,
     this.managerPhone,
-    required this.balance,
+    required this.customPrice,
     required this.recorridoId,
     required this.isActive,
     required this.isSynced,
@@ -3788,7 +3792,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     if (!nullToAbsent || managerPhone != null) {
       map['manager_phone'] = drift.Variable<String>(managerPhone);
     }
-    map['balance'] = drift.Variable<int>(balance);
+    map['custom_price'] = drift.Variable<int>(customPrice);
     map['recorrido_id'] = drift.Variable<String>(recorridoId);
     map['is_active'] = drift.Variable<bool>(isActive);
     map['is_synced'] = drift.Variable<bool>(isSynced);
@@ -3805,7 +3809,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
       managerPhone: managerPhone == null && nullToAbsent
           ? const drift.Value.absent()
           : drift.Value(managerPhone),
-      balance: drift.Value(balance),
+      customPrice: drift.Value(customPrice),
       recorridoId: drift.Value(recorridoId),
       isActive: drift.Value(isActive),
       isSynced: drift.Value(isSynced),
@@ -3822,7 +3826,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
       name: serializer.fromJson<String>(json['name']),
       managerName: serializer.fromJson<String?>(json['managerName']),
       managerPhone: serializer.fromJson<String?>(json['managerPhone']),
-      balance: serializer.fromJson<int>(json['balance']),
+      customPrice: serializer.fromJson<int>(json['customPrice']),
       recorridoId: serializer.fromJson<String>(json['recorridoId']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
@@ -3836,7 +3840,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
       'name': serializer.toJson<String>(name),
       'managerName': serializer.toJson<String?>(managerName),
       'managerPhone': serializer.toJson<String?>(managerPhone),
-      'balance': serializer.toJson<int>(balance),
+      'customPrice': serializer.toJson<int>(customPrice),
       'recorridoId': serializer.toJson<String>(recorridoId),
       'isActive': serializer.toJson<bool>(isActive),
       'isSynced': serializer.toJson<bool>(isSynced),
@@ -3848,7 +3852,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     String? name,
     drift.Value<String?> managerName = const drift.Value.absent(),
     drift.Value<String?> managerPhone = const drift.Value.absent(),
-    int? balance,
+    int? customPrice,
     String? recorridoId,
     bool? isActive,
     bool? isSynced,
@@ -3857,7 +3861,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     name: name ?? this.name,
     managerName: managerName.present ? managerName.value : this.managerName,
     managerPhone: managerPhone.present ? managerPhone.value : this.managerPhone,
-    balance: balance ?? this.balance,
+    customPrice: customPrice ?? this.customPrice,
     recorridoId: recorridoId ?? this.recorridoId,
     isActive: isActive ?? this.isActive,
     isSynced: isSynced ?? this.isSynced,
@@ -3872,7 +3876,9 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
       managerPhone: data.managerPhone.present
           ? data.managerPhone.value
           : this.managerPhone,
-      balance: data.balance.present ? data.balance.value : this.balance,
+      customPrice: data.customPrice.present
+          ? data.customPrice.value
+          : this.customPrice,
       recorridoId: data.recorridoId.present
           ? data.recorridoId.value
           : this.recorridoId,
@@ -3888,7 +3894,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
           ..write('name: $name, ')
           ..write('managerName: $managerName, ')
           ..write('managerPhone: $managerPhone, ')
-          ..write('balance: $balance, ')
+          ..write('customPrice: $customPrice, ')
           ..write('recorridoId: $recorridoId, ')
           ..write('isActive: $isActive, ')
           ..write('isSynced: $isSynced')
@@ -3902,7 +3908,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     name,
     managerName,
     managerPhone,
-    balance,
+    customPrice,
     recorridoId,
     isActive,
     isSynced,
@@ -3915,7 +3921,7 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
           other.name == this.name &&
           other.managerName == this.managerName &&
           other.managerPhone == this.managerPhone &&
-          other.balance == this.balance &&
+          other.customPrice == this.customPrice &&
           other.recorridoId == this.recorridoId &&
           other.isActive == this.isActive &&
           other.isSynced == this.isSynced);
@@ -3926,7 +3932,7 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
   final drift.Value<String> name;
   final drift.Value<String?> managerName;
   final drift.Value<String?> managerPhone;
-  final drift.Value<int> balance;
+  final drift.Value<int> customPrice;
   final drift.Value<String> recorridoId;
   final drift.Value<bool> isActive;
   final drift.Value<bool> isSynced;
@@ -3936,7 +3942,7 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
     this.name = const drift.Value.absent(),
     this.managerName = const drift.Value.absent(),
     this.managerPhone = const drift.Value.absent(),
-    this.balance = const drift.Value.absent(),
+    this.customPrice = const drift.Value.absent(),
     this.recorridoId = const drift.Value.absent(),
     this.isActive = const drift.Value.absent(),
     this.isSynced = const drift.Value.absent(),
@@ -3947,7 +3953,7 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
     required String name,
     this.managerName = const drift.Value.absent(),
     this.managerPhone = const drift.Value.absent(),
-    this.balance = const drift.Value.absent(),
+    this.customPrice = const drift.Value.absent(),
     required String recorridoId,
     this.isActive = const drift.Value.absent(),
     this.isSynced = const drift.Value.absent(),
@@ -3960,7 +3966,7 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
     drift.Expression<String>? name,
     drift.Expression<String>? managerName,
     drift.Expression<String>? managerPhone,
-    drift.Expression<int>? balance,
+    drift.Expression<int>? customPrice,
     drift.Expression<String>? recorridoId,
     drift.Expression<bool>? isActive,
     drift.Expression<bool>? isSynced,
@@ -3971,7 +3977,7 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
       if (name != null) 'name': name,
       if (managerName != null) 'manager_name': managerName,
       if (managerPhone != null) 'manager_phone': managerPhone,
-      if (balance != null) 'balance': balance,
+      if (customPrice != null) 'custom_price': customPrice,
       if (recorridoId != null) 'recorrido_id': recorridoId,
       if (isActive != null) 'is_active': isActive,
       if (isSynced != null) 'is_synced': isSynced,
@@ -3984,7 +3990,7 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
     drift.Value<String>? name,
     drift.Value<String?>? managerName,
     drift.Value<String?>? managerPhone,
-    drift.Value<int>? balance,
+    drift.Value<int>? customPrice,
     drift.Value<String>? recorridoId,
     drift.Value<bool>? isActive,
     drift.Value<bool>? isSynced,
@@ -3995,7 +4001,7 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
       name: name ?? this.name,
       managerName: managerName ?? this.managerName,
       managerPhone: managerPhone ?? this.managerPhone,
-      balance: balance ?? this.balance,
+      customPrice: customPrice ?? this.customPrice,
       recorridoId: recorridoId ?? this.recorridoId,
       isActive: isActive ?? this.isActive,
       isSynced: isSynced ?? this.isSynced,
@@ -4018,8 +4024,8 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
     if (managerPhone.present) {
       map['manager_phone'] = drift.Variable<String>(managerPhone.value);
     }
-    if (balance.present) {
-      map['balance'] = drift.Variable<int>(balance.value);
+    if (customPrice.present) {
+      map['custom_price'] = drift.Variable<int>(customPrice.value);
     }
     if (recorridoId.present) {
       map['recorrido_id'] = drift.Variable<String>(recorridoId.value);
@@ -4043,7 +4049,7 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
           ..write('name: $name, ')
           ..write('managerName: $managerName, ')
           ..write('managerPhone: $managerPhone, ')
-          ..write('balance: $balance, ')
+          ..write('customPrice: $customPrice, ')
           ..write('recorridoId: $recorridoId, ')
           ..write('isActive: $isActive, ')
           ..write('isSynced: $isSynced, ')
@@ -8074,7 +8080,7 @@ typedef $$PassengersTableCreateCompanionBuilder =
       required String name,
       drift.Value<String?> managerName,
       drift.Value<String?> managerPhone,
-      drift.Value<int> balance,
+      drift.Value<int> customPrice,
       required String recorridoId,
       drift.Value<bool> isActive,
       drift.Value<bool> isSynced,
@@ -8086,7 +8092,7 @@ typedef $$PassengersTableUpdateCompanionBuilder =
       drift.Value<String> name,
       drift.Value<String?> managerName,
       drift.Value<String?> managerPhone,
-      drift.Value<int> balance,
+      drift.Value<int> customPrice,
       drift.Value<String> recorridoId,
       drift.Value<bool> isActive,
       drift.Value<bool> isSynced,
@@ -8168,8 +8174,8 @@ class $$PassengersTableFilterComposer
     builder: (column) => drift.ColumnFilters(column),
   );
 
-  drift.ColumnFilters<int> get balance => $composableBuilder(
-    column: $table.balance,
+  drift.ColumnFilters<int> get customPrice => $composableBuilder(
+    column: $table.customPrice,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -8261,8 +8267,8 @@ class $$PassengersTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
-  drift.ColumnOrderings<int> get balance => $composableBuilder(
-    column: $table.balance,
+  drift.ColumnOrderings<int> get customPrice => $composableBuilder(
+    column: $table.customPrice,
     builder: (column) => drift.ColumnOrderings(column),
   );
 
@@ -8325,8 +8331,10 @@ class $$PassengersTableAnnotationComposer
     builder: (column) => column,
   );
 
-  drift.GeneratedColumn<int> get balance =>
-      $composableBuilder(column: $table.balance, builder: (column) => column);
+  drift.GeneratedColumn<int> get customPrice => $composableBuilder(
+    column: $table.customPrice,
+    builder: (column) => column,
+  );
 
   drift.GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
@@ -8415,7 +8423,7 @@ class $$PassengersTableTableManager
                 drift.Value<String> name = const drift.Value.absent(),
                 drift.Value<String?> managerName = const drift.Value.absent(),
                 drift.Value<String?> managerPhone = const drift.Value.absent(),
-                drift.Value<int> balance = const drift.Value.absent(),
+                drift.Value<int> customPrice = const drift.Value.absent(),
                 drift.Value<String> recorridoId = const drift.Value.absent(),
                 drift.Value<bool> isActive = const drift.Value.absent(),
                 drift.Value<bool> isSynced = const drift.Value.absent(),
@@ -8425,7 +8433,7 @@ class $$PassengersTableTableManager
                 name: name,
                 managerName: managerName,
                 managerPhone: managerPhone,
-                balance: balance,
+                customPrice: customPrice,
                 recorridoId: recorridoId,
                 isActive: isActive,
                 isSynced: isSynced,
@@ -8437,7 +8445,7 @@ class $$PassengersTableTableManager
                 required String name,
                 drift.Value<String?> managerName = const drift.Value.absent(),
                 drift.Value<String?> managerPhone = const drift.Value.absent(),
-                drift.Value<int> balance = const drift.Value.absent(),
+                drift.Value<int> customPrice = const drift.Value.absent(),
                 required String recorridoId,
                 drift.Value<bool> isActive = const drift.Value.absent(),
                 drift.Value<bool> isSynced = const drift.Value.absent(),
@@ -8447,7 +8455,7 @@ class $$PassengersTableTableManager
                 name: name,
                 managerName: managerName,
                 managerPhone: managerPhone,
-                balance: balance,
+                customPrice: customPrice,
                 recorridoId: recorridoId,
                 isActive: isActive,
                 isSynced: isSynced,

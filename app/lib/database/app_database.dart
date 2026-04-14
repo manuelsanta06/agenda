@@ -20,6 +20,11 @@ class EventWithStops {
   final List<Stop> stops;
   EventWithStops({required this.event, required this.stops});
 }
+class PassengerWithDebts{
+  final Passenger passenger;
+  final List<Debt> debts;
+  PassengerWithDebts({required this.passenger,required this.debts});
+}
 
 @DriftDatabase(tables: [
   Choferes, 
@@ -171,7 +176,6 @@ class AppDatabase extends _$AppDatabase {
     final unsyncedPassengers=await(select(passengers)..where((t)=>t.isSynced.equals(false))).get();
     final unsyncedDebts     =await(select(debts)..where((t)=>t.isSynced.equals(false))).get();
     final unsyncedEvents    =await(select(events)..where((t)=>t.isSynced.equals(false))).get();
-    //final unsyncedShifts    =await(select(recorridoShifts)..where((t)=>t.isSynced.equals(false))).get();
 
     //look fordependant tables
     
@@ -223,7 +227,7 @@ class AppDatabase extends _$AppDatabase {
         "name":p.name,
         "manager_name":p.managerName,
         "manager_phone":p.managerPhone,
-        "balance":p.balance,
+        "custom_price":p.customPrice,
         "recorrido_id":p.recorridoId,
         "is_active":p.isActive,
       }).toList(),
@@ -346,7 +350,7 @@ class AppDatabase extends _$AppDatabase {
             name:drift.Value(p['name']),
             managerName:drift.Value(p['manager_name']),
             managerPhone:drift.Value(p['manager_phone']),
-            balance:drift.Value(p['balance']??0),
+            customPrice:drift.Value(p['custom_price']??0),
             recorridoId:drift.Value(p['recorrido_id']),
             isActive:drift.Value(p['is_active']??true),
             isSynced:const drift.Value(true),
@@ -460,6 +464,36 @@ class AppDatabase extends _$AppDatabase {
           );
         }
       }
+    });
+  }
+
+  Stream<List<PassengerWithDebts>> watchPassengersWithDebts(String recorridoId){
+    final query=select(passengers).join([
+      leftOuterJoin(debts,debts.passengerId.equalsExp(passengers.id)),
+    ]);
+
+    query.where(passengers.recorridoId.equals(recorridoId));
+
+    query.orderBy([
+      OrderingTerm.asc(debts.isSettled),
+      OrderingTerm.desc(debts.date)
+    ]);
+
+    return query.watch().map((rows){
+      final groupedData=<String,PassengerWithDebts>{};
+
+      for(final row in rows){
+        final passenger=row.readTable(passengers);
+        final debt=row.readTableOrNull(debts);
+
+        final item=groupedData.putIfAbsent(
+          passenger.id, 
+          ()=>PassengerWithDebts(passenger:passenger,debts:[])
+        );
+
+        if(debt!=null)item.debts.add(debt);
+      }
+      return groupedData.values.toList();
     });
   }
 

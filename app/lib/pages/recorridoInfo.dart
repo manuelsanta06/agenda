@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:agenda/pages/recorridos.dart';
-import 'package:agenda/utilities/encargados.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:agenda/pages/recorridos.dart';
 
 import 'package:agenda/database/app_database.dart';
 
@@ -11,6 +10,7 @@ import 'package:agenda/widgets/searchBar.dart';
 import 'package:agenda/widgets/text.dart';
 import 'package:agenda/widgets/errorWidgets.dart';
 
+import 'package:agenda/utilities/passegers.dart';
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/parsers.dart';
 
@@ -181,32 +181,18 @@ class recorridoInfo extends StatelessWidget{
     return Scaffold(
       body:Column(children:[
         SizedBox(height:6),
-        mySearchBar(onChanged:(value){searchQuery=value;}),
-        Expanded(child:StreamBuilder<List<(Encargado, List<RecorridoSubscription>)>>(
-          stream: (db.select(db.encargados).join([
-            drift.innerJoin(
-              db.recorridoSubscriptions, 
-              db.recorridoSubscriptions.encargadoId.equalsExp(db.encargados.id)
-            )]) ..where(db.recorridoSubscriptions.recorridoId.equals(reco.id))).watch()
-            .map((rows){
-              final grouped = <Encargado, List<RecorridoSubscription>>{};
-              for (final row in rows){
-                final encargado=row.readTable(db.encargados);
-                final sub=row.readTable(db.recorridoSubscriptions);
-                grouped.putIfAbsent(encargado,()=>[]);
-                grouped[encargado]!.add(sub);
-              }
-              return grouped.entries.map((entry)=>(entry.key,entry.value)).toList();
-            }),
+        mySearchBar(onChanged:(value){searchQuery=value.toLowerCase();}),
+        Expanded(child:StreamBuilder<List<PassengerWithDebts>>(
+          stream:db.watchPassengersWithDebts(reco.id),
           builder:(context,snapshot){
             if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
             if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
-            final List<(Encargado,List<RecorridoSubscription>)> allData=snapshot.data!;
+            final List<PassengerWithDebts> allData=snapshot.data!;
             //if(allData.isEmpty)return Center(child:Text("..."));
             final filtered=allData.where((s){
-              return s.$1.name.contains(searchQuery)||
-                (s.$1.phone?.contains(searchQuery)??false)||
-                s.$2.any((sub)=>sub.subscriptionName.contains(searchQuery));
+              return s.passenger.name.toLowerCase().contains(searchQuery)||
+                (s.passenger.managerPhone?.toLowerCase().contains(searchQuery)??false)||
+                (s.passenger.managerName?.toLowerCase().contains(searchQuery)??false);
             }).toList();
             return ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -220,7 +206,8 @@ class recorridoInfo extends StatelessWidget{
                   ),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    onTap:()async=>snack(context,(await showCreateModifiEncargadoSheet(context,maincolor,reco.id,searchQuery))??false),
+                    onTap:()async=>
+                      snack(context,(await showCreateModifiPassenger(context,maincolor,recoId:reco.id))),
                     child: Container(
                       width:double.infinity,
                       padding:const EdgeInsets.symmetric(vertical:7,horizontal:5),
@@ -231,14 +218,12 @@ class recorridoInfo extends StatelessWidget{
                     ),
                   ),
                 );}
-                return encargadoToCard(
+                return passengerToCard(
                   context,
                   recorridosPage.mainColor,
-                  filtered[index].$1,
-                  filtered[index].$2,
+                  filtered[index].passenger,
                   reco.id,
-                  ()=>_editBalanceDialog(context,filtered[index].$1,filtered[index].$2),
-                  null
+                  debts:filtered[index].debts,
                 );
               },
             );
@@ -248,77 +233,4 @@ class recorridoInfo extends StatelessWidget{
     );
   }
 
-  void _editBalanceDialog(BuildContext context,Encargado enca,List<RecorridoSubscription> subs)async{
-    final controller = TextEditingController();
-    int monthlyCost=0;
-    for(final tmp in subs)if(tmp.isActive)monthlyCost+=(tmp.customPrice??reco.basePrice);
-    await showDialog<String?>(
-      context: context,
-      builder: (BuildContext context){
-        return AlertDialog(
-          title: Text("Modificar Deuda"),
-          content:Column(mainAxisSize:MainAxisSize.min,children:[
-            BasicCard(
-              tonality: enca.balance < 0 ? Colors.red : Colors.green,
-              borderColor:enca.balance < 0 ? Colors.red : Colors.green,
-              child:Column(children:[
-                Text('SALDO ACTUAL',style:TextStyle(fontSize:12)),
-                Text('\$'+numberParser(enca.balance.toInt()),style:TextStyle(
-                  color:enca.balance<0?Colors.red:Colors.green, fontSize:20,
-                )),
-              ]),
-            ),
-            SizedBox(height:10),
-            TextField(
-              controller: controller,
-              keyboardType:const TextInputType.numberWithOptions(decimal:true),
-              decoration: InputDecoration(
-                labelText:"Monto",
-                prefixIcon:Icon(Icons.attach_money),
-                border:OutlineInputBorder(borderRadius:BorderRadius.circular(12)),
-                filled: true,
-                fillColor: Colors.grey.withOpacity(0.05),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius:BorderRadius.circular(12),
-                  borderSide:BorderSide(color:maincolor,width:2),
-                ),
-              ),
-            ),
-            SizedBox(height:10),
-            ElevatedButton(
-              onPressed:()async{
-                await _updateBalance(context,enca,monthlyCost);
-                Navigator.of(context).pop();
-              },
-              style:ButtonStyle(
-                backgroundColor:MaterialStateProperty.all(Colors.green.withAlpha(50)),
-              ),
-              child:Text("Pago total (\$+$monthlyCost)",style:TextStyle(color:Colors.green)),
-            )
-          ]),
-          actions:[
-            TextButton(
-              child: const Text("Cancelar",style:TextStyle(color:Colors.red)),
-              onPressed:()=>Navigator.of(context).pop(),
-            ),
-            TextButton(
-              child: const Text("Aceptar",style:TextStyle(color:Colors.green)),
-              onPressed:()async{
-                await _updateBalance(context,enca,int.tryParse(controller.value.text)??0);
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      }
-    );
-  }
-
-  Future<void> _updateBalance(BuildContext context,Encargado enca,int amount)async{
-    if(amount==0)return;
-    final deafDb=Provider.of<AppDatabase>(context,listen:false);
-    await (deafDb.update(deafDb.encargados)
-      ..where((tbl)=>tbl.id.equals(enca.id)))
-      .write(EncargadosCompanion(balance:drift.Value(enca.balance+amount),isSynced:drift.Value(false)));
-  }
 }

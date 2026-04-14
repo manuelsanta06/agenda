@@ -19,7 +19,7 @@ class Passengers extends Table{
   TextColumn get name=>text()();
   TextColumn get managerName=>text().nullable()();
   TextColumn get managerPhone=>text().nullable()();
-  IntColumn get balance=>integer().withDefault(const Constant(0))();
+  IntColumn get customPrice=>integer().withDefault(const Constant(-1))();
   TextColumn get recorridoId=>text().references(Recorridos,#id,onDelete:KeyAction.cascade)();
   BoolColumn get isActive=>boolean().withDefault(const Constant(true))();
   BoolColumn get isSynced=>boolean().withDefault(const Constant(false))();

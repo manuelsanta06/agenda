@@ -34,7 +34,7 @@ class _homePageState extends State<homePage>{
 
   @override
   Widget build(BuildContext context){
-    final settings=context.watch<SettingsProvider>();
+    //final settings=context.watch<SettingsProvider>();
     DateTime today=DateTime.now();
 
     final deafDb=Provider.of<AppDatabase>(context, listen: false);

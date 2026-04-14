@@ -130,11 +130,16 @@ Widget choferToCard(
                   );
                 }
                 break;
+
+              case 'chat':
+                await launchUrl(Uri.parse("https://wa.me/${chofe.mobileNumber}"),mode:LaunchMode.externalApplication);
+                break;
+
+              case 'debt':
+                break;
+
               case 'delete':
                 removeChoferDialog(context,chofe,!chofe.is_active);
-                break;
-              case 'chat':
-              await launchUrl(Uri.parse("https://wa.me/${chofe.mobileNumber}"),mode:LaunchMode.externalApplication);
                 break;
               default:
                 return;
@@ -155,6 +160,14 @@ Widget choferToCard(
                 Icon(Icons.phone),
                 SizedBox(width:8),
                 Text('Chat')
+              ]),
+            ),
+            PopupMenuItem<String>(
+              value:'debt',
+              child:Row(children:[
+                Icon(Icons.euro,color:Colors.green),
+                SizedBox(width:8),
+                Text('Añadir deuda')
               ]),
             ),
             PopupMenuItem<String>(
