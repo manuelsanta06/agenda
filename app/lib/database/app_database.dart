@@ -8,6 +8,7 @@ import 'package:drift/drift.dart' as drift;
 import 'tables/users.dart';
 import 'tables/events.dart';
 import 'tables/recorridos.dart';
+import 'tables/debt.dart';
 
 export 'tables/events.dart';
 
@@ -28,14 +29,15 @@ class EventWithStops {
   EventChoferes, 
   EventColectivos,
   Recorridos,
-  Encargados,
-  RecorridoSubscriptions
+  Passengers,
+  Debts
+
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase():super(_openConnection());
 
   @override
-  int get schemaVersion=>5;
+  int get schemaVersion=>6;
 
   @override
   MigrationStrategy get migration{
@@ -49,7 +51,7 @@ class AppDatabase extends _$AppDatabase {
         }if(from<3){
           await m.alterTable(TableMigration(
             events,
-            newColumns: [events.shiftId],
+            newColumns:[events.shiftId],
           ));
         }if(from<4){
           await customStatement('DROP TABLE IF EXISTS shift_choferes;');
@@ -64,6 +66,12 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(events,events.price);
           await m.addColumn(events,events.data);
           await m.addColumn(colectivos,colectivos.vtv);
+        }if(from<6){
+          await customStatement('DROP TABLE IF EXISTS recorrido_subscriptions;');
+          await customStatement('DROP TABLE IF EXISTS encargados;');
+
+          await m.createTable(passengers);
+          await m.createTable(debts);
         }
       },
       beforeOpen:(details)async{
@@ -77,7 +85,8 @@ class AppDatabase extends _$AppDatabase {
       await update(choferes).write(const ChoferesCompanion(isSynced: Value(false)));
       await update(colectivos).write(const ColectivosCompanion(isSynced: Value(false)));
       await update(recorridos).write(const RecorridosCompanion(isSynced: Value(false)));
-      await update(encargados).write(const EncargadosCompanion(isSynced: Value(false)));
+      await update(passengers).write(const PassengersCompanion(isSynced: Value(false)));
+      await update(debts).write(const DebtsCompanion(isSynced: Value(false)));
       await update(events).write(const EventsCompanion(isSynced: Value(false)));
       //await update(recorridoShifts).write(const RecorridoShiftsCompanion(isSynced: Value(false)));
     });
@@ -110,11 +119,19 @@ class AppDatabase extends _$AppDatabase {
       }
 
       //Encargados
-      final encargadoIds = (sentPayload['encargados'] as List)
-          .map((e) => e['id'] as String).toList();
-      if (encargadoIds.isNotEmpty) {
-        await (update(encargados)..where((t) => t.id.isIn(encargadoIds)))
-            .write(const EncargadosCompanion(isSynced:Value(true)));
+      final passengersIds=(sentPayload['encargados'] as List)
+          .map((e)=>e['id'] as String).toList();
+      if(passengersIds.isNotEmpty){
+        await (update(passengers)..where((t)=>t.id.isIn(passengersIds)))
+            .write(const PassengersCompanion(isSynced:Value(true)));
+      }
+
+      //Debts
+      final debtsIds=(sentPayload['encargados'] as List)
+          .map((e)=>e['id'] as String).toList();
+      if(debtsIds.isNotEmpty){
+        await (update(debts)..where((t)=>t.id.isIn(debtsIds)))
+            .write(const DebtsCompanion(isSynced:Value(true)));
       }
 
       //Events
@@ -151,7 +168,8 @@ class AppDatabase extends _$AppDatabase {
     final unsyncedChoferes  =await(select(choferes)..where((t)=>t.isSynced.equals(false))).get();
     final unsyncedColectivos=await(select(colectivos)..where((t)=>t.isSynced.equals(false))).get();
     final unsyncedRecorridos=await(select(recorridos)..where((t)=>t.isSynced.equals(false))).get();
-    final unsyncedEncargados=await(select(encargados)..where((t)=>t.isSynced.equals(false))).get();
+    final unsyncedPassengers=await(select(passengers)..where((t)=>t.isSynced.equals(false))).get();
+    final unsyncedDebts     =await(select(debts)..where((t)=>t.isSynced.equals(false))).get();
     final unsyncedEvents    =await(select(events)..where((t)=>t.isSynced.equals(false))).get();
     //final unsyncedShifts    =await(select(recorridoShifts)..where((t)=>t.isSynced.equals(false))).get();
 
@@ -165,18 +183,6 @@ class AppDatabase extends _$AppDatabase {
         await (select(eventChoferes)..where((t)=>t.eventId.isIn(eventIds))).get();
     final eventColectivosList=eventIds.isEmpty?<EventColectivo>[]:
         await (select(eventColectivos)..where((t)=>t.eventId.isIn(eventIds))).get();
-
-    //recorridoShifts dependencies
-    //final shiftIds=unsyncedShifts.map((s)=>s.id).toList();
-    //final shiftChoferesList=shiftIds.isEmpty?<ShiftChofere>[]:
-    //    await (select(shiftChoferes)..where((t)=>t.shiftId.isIn(shiftIds))).get();
-    //final shiftColectivosList=shiftIds.isEmpty?<ShiftColectivo>[]:
-    //    await (select(shiftColectivos)..where((t)=>t.shiftId.isIn(shiftIds))).get();
-
-    //rncargados dependencies
-    final encargadoIds=unsyncedEncargados.map((e)=>e.id).toList();
-    final recSubscriptions=encargadoIds.isEmpty?<RecorridoSubscription>[]:
-        await (select(recorridoSubscriptions)..where((t)=>t.encargadoId.isIn(encargadoIds))).get();
 
 
     return{
@@ -212,11 +218,25 @@ class AppDatabase extends _$AppDatabase {
         "is_active": r.isActive,
       }).toList(),
 
-      "encargados": unsyncedEncargados.map((e)=>{
-        "id": e.id,
-        "name": e.name,
-        "phone": e.phone,
-        "balance": e.balance,
+      "passengers":unsyncedPassengers.map((p)=>{
+        "id":p.id,
+        "name":p.name,
+        "manager_name":p.managerName,
+        "manager_phone":p.managerPhone,
+        "balance":p.balance,
+        "recorrido_id":p.recorridoId,
+        "is_active":p.isActive,
+      }).toList(),
+      
+      "debts":unsyncedDebts.map((d)=>{
+        "id":d.id,
+        "passenger_id":d.passengerId,
+        "chofer_id":d.choferId,
+        "date":d.date.toUtc().toIso8601String(),
+        "description":d.description,
+        "total_amount":d.totalAmount,
+        "paid_amount":d.paidAmount,
+        "is_settled":d.isSettled,
       }).toList(),
 
       "events": unsyncedEvents.map((e)=>{
@@ -246,26 +266,6 @@ class AppDatabase extends _$AppDatabase {
         "order_index": s.orderIndex,
       }).toList(),
 
-      //"recorrido_shifts": unsyncedShifts.map((s)=>{
-      //  "id": s.id,
-      //  "recorrido_id": s.recorridoId,
-      //  "week_day": const WeekDaysConverter().toSql(s.weekDay),
-      //  "start_time": s.startTime.toUtc().toIso8601String(),
-      //  "end_time": s.endTime.toUtc().toIso8601String(),
-      //  "shift_name": s.shiftName,
-      //  "is_active": s.isActive,
-      //}).toList(),
-
-      "recorrido_subscriptions": recSubscriptions.map((s)=>{
-        "id": s.id,
-        "recorrido_id": s.recorridoId,
-        "encargado_id": s.encargadoId,
-        "subscription_name": s.subscriptionName,
-        "address": s.address,
-        "custom_price": s.customPrice,
-        "is_active": s.isActive,
-      }).toList(),
-
       "event_choferes": eventChoferesList.map((ec)=>{
         "event_id": ec.eventId,
         "chofer_id": ec.choferId,
@@ -275,16 +275,6 @@ class AppDatabase extends _$AppDatabase {
         "event_id": ec.eventId,
         "colectivo_id": ec.colectivoId,
       }).toList(),
-
-      //"shift_choferes": shiftChoferesList.map((sc)=>{
-      //  "shift_id": sc.shiftId,
-      //  "chofer_id": sc.choferId,
-      //}).toList(),
-      //
-      //"shift_colectivos": shiftColectivosList.map((sc)=>{
-      //  "shift_id": sc.shiftId,
-      //  "colectivo_id": sc.colectivoId,
-      //}).toList(),
     };
   }
 
@@ -347,99 +337,42 @@ class AppDatabase extends _$AppDatabase {
         );
       }
 
-      //ENCARGADOS
-      final encargadosList = json['encargados'] as List<dynamic>? ?? [];
-      final List<String> updatedEncargadoIds = [];
-      
-      for(var e in encargadosList) {
-        updatedEncargadoIds.add(e['id']);
-        await into(encargados).insert(
-          EncargadosCompanion(
-            id: drift.Value(e['id']),
-            name: drift.Value(e['name']),
-            phone: drift.Value(e['phone']),
-            balance: drift.Value((e['balance'] as num?)?.toDouble() ?? 0.0),
-            isSynced: const drift.Value(true),
+      //PASSENGERS
+      final passengersList=json['passengers'] as List<dynamic>? ?? [];
+      for(var p in passengersList){
+        await into(passengers).insert(
+          PassengersCompanion(
+            id:drift.Value(p['id']),
+            name:drift.Value(p['name']),
+            managerName:drift.Value(p['manager_name']),
+            managerPhone:drift.Value(p['manager_phone']),
+            balance:drift.Value(p['balance']??0),
+            recorridoId:drift.Value(p['recorrido_id']),
+            isActive:drift.Value(p['is_active']??true),
+            isSynced:const drift.Value(true),
           ),
-          mode: drift.InsertMode.insertOrReplace,
+          mode:drift.InsertMode.insertOrReplace,
         );
       }
 
-      //RECORRIDO SHIFTS
-      //final shiftsList = json['recorrido_shifts'] as List<dynamic>? ?? [];
-      //final List<String> updatedShiftIds = [];
-      //
-      //for(var s in shiftsList) {
-      //  updatedShiftIds.add(s['id']);
-      //  await into(recorridoShifts).insert(
-      //    RecorridoShiftsCompanion(
-      //      id: drift.Value(s['id']),
-      //      recorridoId: drift.Value(s['recorrido_id']),
-      //      weekDay: drift.Value(const WeekDaysConverter().fromSql(s['week_day'])), 
-      //      startTime: drift.Value(DateTime.parse(s['start_time']).toLocal()),
-      //      endTime: drift.Value(DateTime.parse(s['end_time']).toLocal()),
-      //      shiftName: drift.Value(s['shift_name']),
-      //      isActive: drift.Value(s['is_active'] ?? true),
-      //      isSynced: const drift.Value(true),
-      //    ),
-      //    mode: drift.InsertMode.insertOrReplace,
-      //  );
-      //}
-
-      //TABLAS INTERMEDIAS/DEPENDIENTES
-
-      //RECORRIDO SUBSCRIPTIONS (Dependen de Encargados)
-      if (updatedEncargadoIds.isNotEmpty) {
-        //nuke
-        await (delete(recorridoSubscriptions)..where((t) => t.encargadoId.isIn(updatedEncargadoIds))).go();
-        
-        final subsList = json['recorrido_subscriptions'] as List<dynamic>? ?? [];
-        for(var sub in subsList) {
-          await into(recorridoSubscriptions).insert(
-            RecorridoSubscriptionsCompanion(
-              id: drift.Value(sub['id']),
-              recorridoId: drift.Value(sub['recorrido_id']),
-              encargadoId: drift.Value(sub['encargado_id']),
-              subscriptionName: drift.Value(sub['subscription_name']),
-              address: drift.Value(sub['address']),
-              customPrice: drift.Value(sub['custom_price']),
-              isActive: drift.Value(sub['is_active'] ?? true),
-            ),
-            mode: drift.InsertMode.insertOrReplace,
-          );
-        }
+      //DEBTS
+      final debtsList=json['debts'] as List<dynamic>? ?? [];
+      for(var d in debtsList){
+        await into(debts).insert(
+          DebtsCompanion(
+            id:drift.Value(d['id']),
+            passengerId:drift.Value(d['passenger_id']),
+            choferId:drift.Value(d['chofer_id']),
+            date:drift.Value(DateTime.parse(d['date']).toLocal()),
+            description:drift.Value(d['description']),
+            totalAmount:drift.Value(d['total_amount']),
+            paidAmount:drift.Value(d['paid_amount']??0),
+            isSettled:drift.Value(d['is_settled']??false),
+            isSynced:const drift.Value(true),
+          ),
+          mode:drift.InsertMode.insertOrReplace,
+        );
       }
-
-      //SHIFT CHOFERES & COLECTIVOS(Dependen de Recorrido Shifts)
-      //if (updatedShiftIds.isNotEmpty) {
-      //  //nuke
-      //  await (delete(shiftChoferes)..where((t) => t.shiftId.isIn(updatedShiftIds))).go();
-      //  await (delete(shiftColectivos)..where((t) => t.shiftId.isIn(updatedShiftIds))).go();
-      //
-      //  //Choferes
-      //  final shiftChoferesList = json['shift_choferes'] as List<dynamic>? ?? [];
-      //  for(var sc in shiftChoferesList) {
-      //    await into(shiftChoferes).insert(
-      //      ShiftChoferesCompanion(
-      //        shiftId: drift.Value(sc['shift_id']),
-      //        choferId: drift.Value(sc['chofer_id']),
-      //      ),
-      //      mode: drift.InsertMode.insertOrReplace,
-      //    );
-      //  }
-      //
-      //  //Colectivos
-      //  final shiftColectivosList = json['shift_colectivos'] as List<dynamic>? ?? [];
-      //  for(var sc in shiftColectivosList) {
-      //    await into(shiftColectivos).insert(
-      //      ShiftColectivosCompanion(
-      //        shiftId: drift.Value(sc['shift_id']),
-      //        colectivoId: drift.Value(sc['colectivo_id']),
-      //      ),
-      //      mode: drift.InsertMode.insertOrReplace,
-      //    );
-      //  }
-      //}
     });
   }
 

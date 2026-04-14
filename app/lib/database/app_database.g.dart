@@ -3522,12 +3522,12 @@ class EventColectivosCompanion extends drift.UpdateCompanion<EventColectivo> {
   }
 }
 
-class $EncargadosTable extends Encargados
-    with drift.TableInfo<$EncargadosTable, Encargado> {
+class $PassengersTable extends Passengers
+    with drift.TableInfo<$PassengersTable, Passenger> {
   @override
   final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $EncargadosTable(this.attachedDatabase, [this._alias]);
+  $PassengersTable(this.attachedDatabase, [this._alias]);
   static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
     'id',
   );
@@ -3550,13 +3550,23 @@ class $EncargadosTable extends Encargados
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const drift.VerificationMeta _phoneMeta = const drift.VerificationMeta(
-    'phone',
-  );
+  static const drift.VerificationMeta _managerNameMeta =
+      const drift.VerificationMeta('managerName');
   @override
-  late final drift.GeneratedColumn<String> phone =
+  late final drift.GeneratedColumn<String> managerName =
       drift.GeneratedColumn<String>(
-        'phone',
+        'manager_name',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const drift.VerificationMeta _managerPhoneMeta =
+      const drift.VerificationMeta('managerPhone');
+  @override
+  late final drift.GeneratedColumn<String> managerPhone =
+      drift.GeneratedColumn<String>(
+        'manager_phone',
         aliasedName,
         true,
         type: DriftSqlType.string,
@@ -3565,15 +3575,42 @@ class $EncargadosTable extends Encargados
   static const drift.VerificationMeta _balanceMeta =
       const drift.VerificationMeta('balance');
   @override
-  late final drift.GeneratedColumn<double> balance =
-      drift.GeneratedColumn<double>(
-        'balance',
+  late final drift.GeneratedColumn<int> balance = drift.GeneratedColumn<int>(
+    'balance',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const drift.Constant(0),
+  );
+  static const drift.VerificationMeta _recorridoIdMeta =
+      const drift.VerificationMeta('recorridoId');
+  @override
+  late final drift.GeneratedColumn<String> recorridoId =
+      drift.GeneratedColumn<String>(
+        'recorrido_id',
         aliasedName,
         false,
-        type: DriftSqlType.double,
-        requiredDuringInsert: false,
-        defaultValue: const drift.Constant(0.0),
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES recorridos (id) ON DELETE CASCADE',
+        ),
       );
+  static const drift.VerificationMeta _isActiveMeta =
+      const drift.VerificationMeta('isActive');
+  @override
+  late final drift.GeneratedColumn<bool> isActive = drift.GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const drift.Constant(true),
+  );
   static const drift.VerificationMeta _isSyncedMeta =
       const drift.VerificationMeta('isSynced');
   @override
@@ -3592,18 +3629,21 @@ class $EncargadosTable extends Encargados
   List<drift.GeneratedColumn> get $columns => [
     id,
     name,
-    phone,
+    managerName,
+    managerPhone,
     balance,
+    recorridoId,
+    isActive,
     isSynced,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'encargados';
+  static const String $name = 'passengers';
   @override
   drift.VerificationContext validateIntegrity(
-    drift.Insertable<Encargado> instance, {
+    drift.Insertable<Passenger> instance, {
     bool isInserting = false,
   }) {
     final context = drift.VerificationContext();
@@ -3621,16 +3661,45 @@ class $EncargadosTable extends Encargados
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('phone')) {
+    if (data.containsKey('manager_name')) {
       context.handle(
-        _phoneMeta,
-        phone.isAcceptableOrUnknown(data['phone']!, _phoneMeta),
+        _managerNameMeta,
+        managerName.isAcceptableOrUnknown(
+          data['manager_name']!,
+          _managerNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('manager_phone')) {
+      context.handle(
+        _managerPhoneMeta,
+        managerPhone.isAcceptableOrUnknown(
+          data['manager_phone']!,
+          _managerPhoneMeta,
+        ),
       );
     }
     if (data.containsKey('balance')) {
       context.handle(
         _balanceMeta,
         balance.isAcceptableOrUnknown(data['balance']!, _balanceMeta),
+      );
+    }
+    if (data.containsKey('recorrido_id')) {
+      context.handle(
+        _recorridoIdMeta,
+        recorridoId.isAcceptableOrUnknown(
+          data['recorrido_id']!,
+          _recorridoIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recorridoIdMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
     if (data.containsKey('is_synced')) {
@@ -3645,9 +3714,9 @@ class $EncargadosTable extends Encargados
   @override
   Set<drift.GeneratedColumn> get $primaryKey => {id};
   @override
-  Encargado map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Passenger map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Encargado(
+    return Passenger(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -3656,13 +3725,25 @@ class $EncargadosTable extends Encargados
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
-      phone: attachedDatabase.typeMapping.read(
+      managerName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}phone'],
+        data['${effectivePrefix}manager_name'],
+      ),
+      managerPhone: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}manager_phone'],
       ),
       balance: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
+        DriftSqlType.int,
         data['${effectivePrefix}balance'],
+      )!,
+      recorridoId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recorrido_id'],
+      )!,
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
       )!,
       isSynced: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
@@ -3672,22 +3753,28 @@ class $EncargadosTable extends Encargados
   }
 
   @override
-  $EncargadosTable createAlias(String alias) {
-    return $EncargadosTable(attachedDatabase, alias);
+  $PassengersTable createAlias(String alias) {
+    return $PassengersTable(attachedDatabase, alias);
   }
 }
 
-class Encargado extends drift.DataClass implements drift.Insertable<Encargado> {
+class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
   final String id;
   final String name;
-  final String? phone;
-  final double balance;
+  final String? managerName;
+  final String? managerPhone;
+  final int balance;
+  final String recorridoId;
+  final bool isActive;
   final bool isSynced;
-  const Encargado({
+  const Passenger({
     required this.id,
     required this.name,
-    this.phone,
+    this.managerName,
+    this.managerPhone,
     required this.balance,
+    required this.recorridoId,
+    required this.isActive,
     required this.isSynced,
   });
   @override
@@ -3695,36 +3782,49 @@ class Encargado extends drift.DataClass implements drift.Insertable<Encargado> {
     final map = <String, drift.Expression>{};
     map['id'] = drift.Variable<String>(id);
     map['name'] = drift.Variable<String>(name);
-    if (!nullToAbsent || phone != null) {
-      map['phone'] = drift.Variable<String>(phone);
+    if (!nullToAbsent || managerName != null) {
+      map['manager_name'] = drift.Variable<String>(managerName);
     }
-    map['balance'] = drift.Variable<double>(balance);
+    if (!nullToAbsent || managerPhone != null) {
+      map['manager_phone'] = drift.Variable<String>(managerPhone);
+    }
+    map['balance'] = drift.Variable<int>(balance);
+    map['recorrido_id'] = drift.Variable<String>(recorridoId);
+    map['is_active'] = drift.Variable<bool>(isActive);
     map['is_synced'] = drift.Variable<bool>(isSynced);
     return map;
   }
 
-  EncargadosCompanion toCompanion(bool nullToAbsent) {
-    return EncargadosCompanion(
+  PassengersCompanion toCompanion(bool nullToAbsent) {
+    return PassengersCompanion(
       id: drift.Value(id),
       name: drift.Value(name),
-      phone: phone == null && nullToAbsent
+      managerName: managerName == null && nullToAbsent
           ? const drift.Value.absent()
-          : drift.Value(phone),
+          : drift.Value(managerName),
+      managerPhone: managerPhone == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(managerPhone),
       balance: drift.Value(balance),
+      recorridoId: drift.Value(recorridoId),
+      isActive: drift.Value(isActive),
       isSynced: drift.Value(isSynced),
     );
   }
 
-  factory Encargado.fromJson(
+  factory Passenger.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
-    return Encargado(
+    return Passenger(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      phone: serializer.fromJson<String?>(json['phone']),
-      balance: serializer.fromJson<double>(json['balance']),
+      managerName: serializer.fromJson<String?>(json['managerName']),
+      managerPhone: serializer.fromJson<String?>(json['managerPhone']),
+      balance: serializer.fromJson<int>(json['balance']),
+      recorridoId: serializer.fromJson<String>(json['recorridoId']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
   }
@@ -3734,115 +3834,170 @@ class Encargado extends drift.DataClass implements drift.Insertable<Encargado> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
-      'phone': serializer.toJson<String?>(phone),
-      'balance': serializer.toJson<double>(balance),
+      'managerName': serializer.toJson<String?>(managerName),
+      'managerPhone': serializer.toJson<String?>(managerPhone),
+      'balance': serializer.toJson<int>(balance),
+      'recorridoId': serializer.toJson<String>(recorridoId),
+      'isActive': serializer.toJson<bool>(isActive),
       'isSynced': serializer.toJson<bool>(isSynced),
     };
   }
 
-  Encargado copyWith({
+  Passenger copyWith({
     String? id,
     String? name,
-    drift.Value<String?> phone = const drift.Value.absent(),
-    double? balance,
+    drift.Value<String?> managerName = const drift.Value.absent(),
+    drift.Value<String?> managerPhone = const drift.Value.absent(),
+    int? balance,
+    String? recorridoId,
+    bool? isActive,
     bool? isSynced,
-  }) => Encargado(
+  }) => Passenger(
     id: id ?? this.id,
     name: name ?? this.name,
-    phone: phone.present ? phone.value : this.phone,
+    managerName: managerName.present ? managerName.value : this.managerName,
+    managerPhone: managerPhone.present ? managerPhone.value : this.managerPhone,
     balance: balance ?? this.balance,
+    recorridoId: recorridoId ?? this.recorridoId,
+    isActive: isActive ?? this.isActive,
     isSynced: isSynced ?? this.isSynced,
   );
-  Encargado copyWithCompanion(EncargadosCompanion data) {
-    return Encargado(
+  Passenger copyWithCompanion(PassengersCompanion data) {
+    return Passenger(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
-      phone: data.phone.present ? data.phone.value : this.phone,
+      managerName: data.managerName.present
+          ? data.managerName.value
+          : this.managerName,
+      managerPhone: data.managerPhone.present
+          ? data.managerPhone.value
+          : this.managerPhone,
       balance: data.balance.present ? data.balance.value : this.balance,
+      recorridoId: data.recorridoId.present
+          ? data.recorridoId.value
+          : this.recorridoId,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Encargado(')
+    return (StringBuffer('Passenger(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('phone: $phone, ')
+          ..write('managerName: $managerName, ')
+          ..write('managerPhone: $managerPhone, ')
           ..write('balance: $balance, ')
+          ..write('recorridoId: $recorridoId, ')
+          ..write('isActive: $isActive, ')
           ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, phone, balance, isSynced);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    managerName,
+    managerPhone,
+    balance,
+    recorridoId,
+    isActive,
+    isSynced,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Encargado &&
+      (other is Passenger &&
           other.id == this.id &&
           other.name == this.name &&
-          other.phone == this.phone &&
+          other.managerName == this.managerName &&
+          other.managerPhone == this.managerPhone &&
           other.balance == this.balance &&
+          other.recorridoId == this.recorridoId &&
+          other.isActive == this.isActive &&
           other.isSynced == this.isSynced);
 }
 
-class EncargadosCompanion extends drift.UpdateCompanion<Encargado> {
+class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
   final drift.Value<String> id;
   final drift.Value<String> name;
-  final drift.Value<String?> phone;
-  final drift.Value<double> balance;
+  final drift.Value<String?> managerName;
+  final drift.Value<String?> managerPhone;
+  final drift.Value<int> balance;
+  final drift.Value<String> recorridoId;
+  final drift.Value<bool> isActive;
   final drift.Value<bool> isSynced;
   final drift.Value<int> rowid;
-  const EncargadosCompanion({
+  const PassengersCompanion({
     this.id = const drift.Value.absent(),
     this.name = const drift.Value.absent(),
-    this.phone = const drift.Value.absent(),
+    this.managerName = const drift.Value.absent(),
+    this.managerPhone = const drift.Value.absent(),
     this.balance = const drift.Value.absent(),
+    this.recorridoId = const drift.Value.absent(),
+    this.isActive = const drift.Value.absent(),
     this.isSynced = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   });
-  EncargadosCompanion.insert({
+  PassengersCompanion.insert({
     required String id,
     required String name,
-    this.phone = const drift.Value.absent(),
+    this.managerName = const drift.Value.absent(),
+    this.managerPhone = const drift.Value.absent(),
     this.balance = const drift.Value.absent(),
+    required String recorridoId,
+    this.isActive = const drift.Value.absent(),
     this.isSynced = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   }) : id = drift.Value(id),
-       name = drift.Value(name);
-  static drift.Insertable<Encargado> custom({
+       name = drift.Value(name),
+       recorridoId = drift.Value(recorridoId);
+  static drift.Insertable<Passenger> custom({
     drift.Expression<String>? id,
     drift.Expression<String>? name,
-    drift.Expression<String>? phone,
-    drift.Expression<double>? balance,
+    drift.Expression<String>? managerName,
+    drift.Expression<String>? managerPhone,
+    drift.Expression<int>? balance,
+    drift.Expression<String>? recorridoId,
+    drift.Expression<bool>? isActive,
     drift.Expression<bool>? isSynced,
     drift.Expression<int>? rowid,
   }) {
     return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
-      if (phone != null) 'phone': phone,
+      if (managerName != null) 'manager_name': managerName,
+      if (managerPhone != null) 'manager_phone': managerPhone,
       if (balance != null) 'balance': balance,
+      if (recorridoId != null) 'recorrido_id': recorridoId,
+      if (isActive != null) 'is_active': isActive,
       if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  EncargadosCompanion copyWith({
+  PassengersCompanion copyWith({
     drift.Value<String>? id,
     drift.Value<String>? name,
-    drift.Value<String?>? phone,
-    drift.Value<double>? balance,
+    drift.Value<String?>? managerName,
+    drift.Value<String?>? managerPhone,
+    drift.Value<int>? balance,
+    drift.Value<String>? recorridoId,
+    drift.Value<bool>? isActive,
     drift.Value<bool>? isSynced,
     drift.Value<int>? rowid,
   }) {
-    return EncargadosCompanion(
+    return PassengersCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
-      phone: phone ?? this.phone,
+      managerName: managerName ?? this.managerName,
+      managerPhone: managerPhone ?? this.managerPhone,
       balance: balance ?? this.balance,
+      recorridoId: recorridoId ?? this.recorridoId,
+      isActive: isActive ?? this.isActive,
       isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
     );
@@ -3857,11 +4012,20 @@ class EncargadosCompanion extends drift.UpdateCompanion<Encargado> {
     if (name.present) {
       map['name'] = drift.Variable<String>(name.value);
     }
-    if (phone.present) {
-      map['phone'] = drift.Variable<String>(phone.value);
+    if (managerName.present) {
+      map['manager_name'] = drift.Variable<String>(managerName.value);
+    }
+    if (managerPhone.present) {
+      map['manager_phone'] = drift.Variable<String>(managerPhone.value);
     }
     if (balance.present) {
-      map['balance'] = drift.Variable<double>(balance.value);
+      map['balance'] = drift.Variable<int>(balance.value);
+    }
+    if (recorridoId.present) {
+      map['recorrido_id'] = drift.Variable<String>(recorridoId.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = drift.Variable<bool>(isActive.value);
     }
     if (isSynced.present) {
       map['is_synced'] = drift.Variable<bool>(isSynced.value);
@@ -3874,11 +4038,14 @@ class EncargadosCompanion extends drift.UpdateCompanion<Encargado> {
 
   @override
   String toString() {
-    return (StringBuffer('EncargadosCompanion(')
+    return (StringBuffer('PassengersCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('phone: $phone, ')
+          ..write('managerName: $managerName, ')
+          ..write('managerPhone: $managerPhone, ')
           ..write('balance: $balance, ')
+          ..write('recorridoId: $recorridoId, ')
+          ..write('isActive: $isActive, ')
           ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -3886,12 +4053,11 @@ class EncargadosCompanion extends drift.UpdateCompanion<Encargado> {
   }
 }
 
-class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
-    with drift.TableInfo<$RecorridoSubscriptionsTable, RecorridoSubscription> {
+class $DebtsTable extends Debts with drift.TableInfo<$DebtsTable, Debt> {
   @override
   final drift.GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $RecorridoSubscriptionsTable(this.attachedDatabase, [this._alias]);
+  $DebtsTable(this.attachedDatabase, [this._alias]);
   static const drift.VerificationMeta _idMeta = const drift.VerificationMeta(
     'id',
   );
@@ -3903,99 +4069,128 @@ class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const drift.VerificationMeta _recorridoIdMeta =
-      const drift.VerificationMeta('recorridoId');
+  static const drift.VerificationMeta _passengerIdMeta =
+      const drift.VerificationMeta('passengerId');
   @override
-  late final drift.GeneratedColumn<String> recorridoId =
+  late final drift.GeneratedColumn<String> passengerId =
       drift.GeneratedColumn<String>(
-        'recorrido_id',
+        'passenger_id',
         aliasedName,
-        false,
+        true,
         type: DriftSqlType.string,
-        requiredDuringInsert: true,
+        requiredDuringInsert: false,
         defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES recorridos (id) ON DELETE CASCADE',
+          'REFERENCES passengers (id) ON DELETE CASCADE',
         ),
       );
-  static const drift.VerificationMeta _encargadoIdMeta =
-      const drift.VerificationMeta('encargadoId');
+  static const drift.VerificationMeta _choferIdMeta =
+      const drift.VerificationMeta('choferId');
   @override
-  late final drift.GeneratedColumn<String> encargadoId =
+  late final drift.GeneratedColumn<String> choferId =
       drift.GeneratedColumn<String>(
-        'encargado_id',
+        'chofer_id',
         aliasedName,
-        false,
+        true,
         type: DriftSqlType.string,
-        requiredDuringInsert: true,
+        requiredDuringInsert: false,
         defaultConstraints: GeneratedColumn.constraintIsAlways(
-          'REFERENCES encargados (id) ON DELETE CASCADE',
+          'REFERENCES choferes (id) ON DELETE CASCADE',
         ),
       );
-  static const drift.VerificationMeta _subscriptionNameMeta =
-      const drift.VerificationMeta('subscriptionName');
+  static const drift.VerificationMeta _dateMeta = const drift.VerificationMeta(
+    'date',
+  );
   @override
-  late final drift.GeneratedColumn<String> subscriptionName =
-      drift.GeneratedColumn<String>(
-        'subscription_name',
+  late final drift.GeneratedColumn<DateTime> date =
+      drift.GeneratedColumn<DateTime>(
+        'date',
         aliasedName,
         false,
-        type: DriftSqlType.string,
+        type: DriftSqlType.dateTime,
         requiredDuringInsert: true,
       );
-  static const drift.VerificationMeta _addressMeta =
-      const drift.VerificationMeta('address');
+  static const drift.VerificationMeta _descriptionMeta =
+      const drift.VerificationMeta('description');
   @override
-  late final drift.GeneratedColumn<String> address =
+  late final drift.GeneratedColumn<String> description =
       drift.GeneratedColumn<String>(
-        'address',
+        'description',
         aliasedName,
         true,
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       );
-  static const drift.VerificationMeta _customPriceMeta =
-      const drift.VerificationMeta('customPrice');
+  static const drift.VerificationMeta _totalAmountMeta =
+      const drift.VerificationMeta('totalAmount');
   @override
-  late final drift.GeneratedColumn<int> customPrice =
+  late final drift.GeneratedColumn<int> totalAmount =
       drift.GeneratedColumn<int>(
-        'custom_price',
+        'total_amount',
         aliasedName,
-        true,
+        false,
         type: DriftSqlType.int,
-        requiredDuringInsert: false,
+        requiredDuringInsert: true,
       );
-  static const drift.VerificationMeta _isActiveMeta =
-      const drift.VerificationMeta('isActive');
+  static const drift.VerificationMeta _paidAmountMeta =
+      const drift.VerificationMeta('paidAmount');
   @override
-  late final drift.GeneratedColumn<bool> isActive = drift.GeneratedColumn<bool>(
-    'is_active',
+  late final drift.GeneratedColumn<int> paidAmount = drift.GeneratedColumn<int>(
+    'paid_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const drift.Constant(0),
+  );
+  static const drift.VerificationMeta _isSettledMeta =
+      const drift.VerificationMeta('isSettled');
+  @override
+  late final drift.GeneratedColumn<bool> isSettled =
+      drift.GeneratedColumn<bool>(
+        'is_settled',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_settled" IN (0, 1))',
+        ),
+        defaultValue: const drift.Constant(false),
+      );
+  static const drift.VerificationMeta _isSyncedMeta =
+      const drift.VerificationMeta('isSynced');
+  @override
+  late final drift.GeneratedColumn<bool> isSynced = drift.GeneratedColumn<bool>(
+    'is_synced',
     aliasedName,
     false,
     type: DriftSqlType.bool,
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_active" IN (0, 1))',
+      'CHECK ("is_synced" IN (0, 1))',
     ),
-    defaultValue: const drift.Constant(true),
+    defaultValue: const drift.Constant(false),
   );
   @override
   List<drift.GeneratedColumn> get $columns => [
     id,
-    recorridoId,
-    encargadoId,
-    subscriptionName,
-    address,
-    customPrice,
-    isActive,
+    passengerId,
+    choferId,
+    date,
+    description,
+    totalAmount,
+    paidAmount,
+    isSettled,
+    isSynced,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'recorrido_subscriptions';
+  static const String $name = 'debts';
   @override
   drift.VerificationContext validateIntegrity(
-    drift.Insertable<RecorridoSubscription> instance, {
+    drift.Insertable<Debt> instance, {
     bool isInserting = false,
   }) {
     final context = drift.VerificationContext();
@@ -4005,58 +4200,65 @@ class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
     } else if (isInserting) {
       context.missing(_idMeta);
     }
-    if (data.containsKey('recorrido_id')) {
+    if (data.containsKey('passenger_id')) {
       context.handle(
-        _recorridoIdMeta,
-        recorridoId.isAcceptableOrUnknown(
-          data['recorrido_id']!,
-          _recorridoIdMeta,
+        _passengerIdMeta,
+        passengerId.isAcceptableOrUnknown(
+          data['passenger_id']!,
+          _passengerIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('chofer_id')) {
+      context.handle(
+        _choferIdMeta,
+        choferId.isAcceptableOrUnknown(data['chofer_id']!, _choferIdMeta),
+      );
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_amount')) {
+      context.handle(
+        _totalAmountMeta,
+        totalAmount.isAcceptableOrUnknown(
+          data['total_amount']!,
+          _totalAmountMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_recorridoIdMeta);
+      context.missing(_totalAmountMeta);
     }
-    if (data.containsKey('encargado_id')) {
+    if (data.containsKey('paid_amount')) {
       context.handle(
-        _encargadoIdMeta,
-        encargadoId.isAcceptableOrUnknown(
-          data['encargado_id']!,
-          _encargadoIdMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_encargadoIdMeta);
-    }
-    if (data.containsKey('subscription_name')) {
-      context.handle(
-        _subscriptionNameMeta,
-        subscriptionName.isAcceptableOrUnknown(
-          data['subscription_name']!,
-          _subscriptionNameMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_subscriptionNameMeta);
-    }
-    if (data.containsKey('address')) {
-      context.handle(
-        _addressMeta,
-        address.isAcceptableOrUnknown(data['address']!, _addressMeta),
+        _paidAmountMeta,
+        paidAmount.isAcceptableOrUnknown(data['paid_amount']!, _paidAmountMeta),
       );
     }
-    if (data.containsKey('custom_price')) {
+    if (data.containsKey('is_settled')) {
       context.handle(
-        _customPriceMeta,
-        customPrice.isAcceptableOrUnknown(
-          data['custom_price']!,
-          _customPriceMeta,
-        ),
+        _isSettledMeta,
+        isSettled.isAcceptableOrUnknown(data['is_settled']!, _isSettledMeta),
       );
     }
-    if (data.containsKey('is_active')) {
+    if (data.containsKey('is_synced')) {
       context.handle(
-        _isActiveMeta,
-        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
       );
     }
     return context;
@@ -4065,110 +4267,131 @@ class $RecorridoSubscriptionsTable extends RecorridoSubscriptions
   @override
   Set<drift.GeneratedColumn> get $primaryKey => {id};
   @override
-  RecorridoSubscription map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Debt map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return RecorridoSubscription(
+    return Debt(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
       )!,
-      recorridoId: attachedDatabase.typeMapping.read(
+      passengerId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}recorrido_id'],
-      )!,
-      encargadoId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}encargado_id'],
-      )!,
-      subscriptionName: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}subscription_name'],
-      )!,
-      address: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}address'],
+        data['${effectivePrefix}passenger_id'],
       ),
-      customPrice: attachedDatabase.typeMapping.read(
+      choferId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}chofer_id'],
+      ),
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}date'],
+      )!,
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      totalAmount: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
-        data['${effectivePrefix}custom_price'],
-      ),
-      isActive: attachedDatabase.typeMapping.read(
+        data['${effectivePrefix}total_amount'],
+      )!,
+      paidAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}paid_amount'],
+      )!,
+      isSettled: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
-        data['${effectivePrefix}is_active'],
+        data['${effectivePrefix}is_settled'],
+      )!,
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
       )!,
     );
   }
 
   @override
-  $RecorridoSubscriptionsTable createAlias(String alias) {
-    return $RecorridoSubscriptionsTable(attachedDatabase, alias);
+  $DebtsTable createAlias(String alias) {
+    return $DebtsTable(attachedDatabase, alias);
   }
 }
 
-class RecorridoSubscription extends drift.DataClass
-    implements drift.Insertable<RecorridoSubscription> {
+class Debt extends drift.DataClass implements drift.Insertable<Debt> {
   final String id;
-  final String recorridoId;
-  final String encargadoId;
-  final String subscriptionName;
-  final String? address;
-  final int? customPrice;
-  final bool isActive;
-  const RecorridoSubscription({
+  final String? passengerId;
+  final String? choferId;
+  final DateTime date;
+  final String? description;
+  final int totalAmount;
+  final int paidAmount;
+  final bool isSettled;
+  final bool isSynced;
+  const Debt({
     required this.id,
-    required this.recorridoId,
-    required this.encargadoId,
-    required this.subscriptionName,
-    this.address,
-    this.customPrice,
-    required this.isActive,
+    this.passengerId,
+    this.choferId,
+    required this.date,
+    this.description,
+    required this.totalAmount,
+    required this.paidAmount,
+    required this.isSettled,
+    required this.isSynced,
   });
   @override
   Map<String, drift.Expression> toColumns(bool nullToAbsent) {
     final map = <String, drift.Expression>{};
     map['id'] = drift.Variable<String>(id);
-    map['recorrido_id'] = drift.Variable<String>(recorridoId);
-    map['encargado_id'] = drift.Variable<String>(encargadoId);
-    map['subscription_name'] = drift.Variable<String>(subscriptionName);
-    if (!nullToAbsent || address != null) {
-      map['address'] = drift.Variable<String>(address);
+    if (!nullToAbsent || passengerId != null) {
+      map['passenger_id'] = drift.Variable<String>(passengerId);
     }
-    if (!nullToAbsent || customPrice != null) {
-      map['custom_price'] = drift.Variable<int>(customPrice);
+    if (!nullToAbsent || choferId != null) {
+      map['chofer_id'] = drift.Variable<String>(choferId);
     }
-    map['is_active'] = drift.Variable<bool>(isActive);
+    map['date'] = drift.Variable<DateTime>(date);
+    if (!nullToAbsent || description != null) {
+      map['description'] = drift.Variable<String>(description);
+    }
+    map['total_amount'] = drift.Variable<int>(totalAmount);
+    map['paid_amount'] = drift.Variable<int>(paidAmount);
+    map['is_settled'] = drift.Variable<bool>(isSettled);
+    map['is_synced'] = drift.Variable<bool>(isSynced);
     return map;
   }
 
-  RecorridoSubscriptionsCompanion toCompanion(bool nullToAbsent) {
-    return RecorridoSubscriptionsCompanion(
+  DebtsCompanion toCompanion(bool nullToAbsent) {
+    return DebtsCompanion(
       id: drift.Value(id),
-      recorridoId: drift.Value(recorridoId),
-      encargadoId: drift.Value(encargadoId),
-      subscriptionName: drift.Value(subscriptionName),
-      address: address == null && nullToAbsent
+      passengerId: passengerId == null && nullToAbsent
           ? const drift.Value.absent()
-          : drift.Value(address),
-      customPrice: customPrice == null && nullToAbsent
+          : drift.Value(passengerId),
+      choferId: choferId == null && nullToAbsent
           ? const drift.Value.absent()
-          : drift.Value(customPrice),
-      isActive: drift.Value(isActive),
+          : drift.Value(choferId),
+      date: drift.Value(date),
+      description: description == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(description),
+      totalAmount: drift.Value(totalAmount),
+      paidAmount: drift.Value(paidAmount),
+      isSettled: drift.Value(isSettled),
+      isSynced: drift.Value(isSynced),
     );
   }
 
-  factory RecorridoSubscription.fromJson(
+  factory Debt.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
-    return RecorridoSubscription(
+    return Debt(
       id: serializer.fromJson<String>(json['id']),
-      recorridoId: serializer.fromJson<String>(json['recorridoId']),
-      encargadoId: serializer.fromJson<String>(json['encargadoId']),
-      subscriptionName: serializer.fromJson<String>(json['subscriptionName']),
-      address: serializer.fromJson<String?>(json['address']),
-      customPrice: serializer.fromJson<int?>(json['customPrice']),
-      isActive: serializer.fromJson<bool>(json['isActive']),
+      passengerId: serializer.fromJson<String?>(json['passengerId']),
+      choferId: serializer.fromJson<String?>(json['choferId']),
+      date: serializer.fromJson<DateTime>(json['date']),
+      description: serializer.fromJson<String?>(json['description']),
+      totalAmount: serializer.fromJson<int>(json['totalAmount']),
+      paidAmount: serializer.fromJson<int>(json['paidAmount']),
+      isSettled: serializer.fromJson<bool>(json['isSettled']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
     );
   }
   @override
@@ -4176,64 +4399,72 @@ class RecorridoSubscription extends drift.DataClass
     serializer ??= drift.driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'recorridoId': serializer.toJson<String>(recorridoId),
-      'encargadoId': serializer.toJson<String>(encargadoId),
-      'subscriptionName': serializer.toJson<String>(subscriptionName),
-      'address': serializer.toJson<String?>(address),
-      'customPrice': serializer.toJson<int?>(customPrice),
-      'isActive': serializer.toJson<bool>(isActive),
+      'passengerId': serializer.toJson<String?>(passengerId),
+      'choferId': serializer.toJson<String?>(choferId),
+      'date': serializer.toJson<DateTime>(date),
+      'description': serializer.toJson<String?>(description),
+      'totalAmount': serializer.toJson<int>(totalAmount),
+      'paidAmount': serializer.toJson<int>(paidAmount),
+      'isSettled': serializer.toJson<bool>(isSettled),
+      'isSynced': serializer.toJson<bool>(isSynced),
     };
   }
 
-  RecorridoSubscription copyWith({
+  Debt copyWith({
     String? id,
-    String? recorridoId,
-    String? encargadoId,
-    String? subscriptionName,
-    drift.Value<String?> address = const drift.Value.absent(),
-    drift.Value<int?> customPrice = const drift.Value.absent(),
-    bool? isActive,
-  }) => RecorridoSubscription(
+    drift.Value<String?> passengerId = const drift.Value.absent(),
+    drift.Value<String?> choferId = const drift.Value.absent(),
+    DateTime? date,
+    drift.Value<String?> description = const drift.Value.absent(),
+    int? totalAmount,
+    int? paidAmount,
+    bool? isSettled,
+    bool? isSynced,
+  }) => Debt(
     id: id ?? this.id,
-    recorridoId: recorridoId ?? this.recorridoId,
-    encargadoId: encargadoId ?? this.encargadoId,
-    subscriptionName: subscriptionName ?? this.subscriptionName,
-    address: address.present ? address.value : this.address,
-    customPrice: customPrice.present ? customPrice.value : this.customPrice,
-    isActive: isActive ?? this.isActive,
+    passengerId: passengerId.present ? passengerId.value : this.passengerId,
+    choferId: choferId.present ? choferId.value : this.choferId,
+    date: date ?? this.date,
+    description: description.present ? description.value : this.description,
+    totalAmount: totalAmount ?? this.totalAmount,
+    paidAmount: paidAmount ?? this.paidAmount,
+    isSettled: isSettled ?? this.isSettled,
+    isSynced: isSynced ?? this.isSynced,
   );
-  RecorridoSubscription copyWithCompanion(
-    RecorridoSubscriptionsCompanion data,
-  ) {
-    return RecorridoSubscription(
+  Debt copyWithCompanion(DebtsCompanion data) {
+    return Debt(
       id: data.id.present ? data.id.value : this.id,
-      recorridoId: data.recorridoId.present
-          ? data.recorridoId.value
-          : this.recorridoId,
-      encargadoId: data.encargadoId.present
-          ? data.encargadoId.value
-          : this.encargadoId,
-      subscriptionName: data.subscriptionName.present
-          ? data.subscriptionName.value
-          : this.subscriptionName,
-      address: data.address.present ? data.address.value : this.address,
-      customPrice: data.customPrice.present
-          ? data.customPrice.value
-          : this.customPrice,
-      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      passengerId: data.passengerId.present
+          ? data.passengerId.value
+          : this.passengerId,
+      choferId: data.choferId.present ? data.choferId.value : this.choferId,
+      date: data.date.present ? data.date.value : this.date,
+      description: data.description.present
+          ? data.description.value
+          : this.description,
+      totalAmount: data.totalAmount.present
+          ? data.totalAmount.value
+          : this.totalAmount,
+      paidAmount: data.paidAmount.present
+          ? data.paidAmount.value
+          : this.paidAmount,
+      isSettled: data.isSettled.present ? data.isSettled.value : this.isSettled,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('RecorridoSubscription(')
+    return (StringBuffer('Debt(')
           ..write('id: $id, ')
-          ..write('recorridoId: $recorridoId, ')
-          ..write('encargadoId: $encargadoId, ')
-          ..write('subscriptionName: $subscriptionName, ')
-          ..write('address: $address, ')
-          ..write('customPrice: $customPrice, ')
-          ..write('isActive: $isActive')
+          ..write('passengerId: $passengerId, ')
+          ..write('choferId: $choferId, ')
+          ..write('date: $date, ')
+          ..write('description: $description, ')
+          ..write('totalAmount: $totalAmount, ')
+          ..write('paidAmount: $paidAmount, ')
+          ..write('isSettled: $isSettled, ')
+          ..write('isSynced: $isSynced')
           ..write(')'))
         .toString();
   }
@@ -4241,99 +4472,115 @@ class RecorridoSubscription extends drift.DataClass
   @override
   int get hashCode => Object.hash(
     id,
-    recorridoId,
-    encargadoId,
-    subscriptionName,
-    address,
-    customPrice,
-    isActive,
+    passengerId,
+    choferId,
+    date,
+    description,
+    totalAmount,
+    paidAmount,
+    isSettled,
+    isSynced,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is RecorridoSubscription &&
+      (other is Debt &&
           other.id == this.id &&
-          other.recorridoId == this.recorridoId &&
-          other.encargadoId == this.encargadoId &&
-          other.subscriptionName == this.subscriptionName &&
-          other.address == this.address &&
-          other.customPrice == this.customPrice &&
-          other.isActive == this.isActive);
+          other.passengerId == this.passengerId &&
+          other.choferId == this.choferId &&
+          other.date == this.date &&
+          other.description == this.description &&
+          other.totalAmount == this.totalAmount &&
+          other.paidAmount == this.paidAmount &&
+          other.isSettled == this.isSettled &&
+          other.isSynced == this.isSynced);
 }
 
-class RecorridoSubscriptionsCompanion
-    extends drift.UpdateCompanion<RecorridoSubscription> {
+class DebtsCompanion extends drift.UpdateCompanion<Debt> {
   final drift.Value<String> id;
-  final drift.Value<String> recorridoId;
-  final drift.Value<String> encargadoId;
-  final drift.Value<String> subscriptionName;
-  final drift.Value<String?> address;
-  final drift.Value<int?> customPrice;
-  final drift.Value<bool> isActive;
+  final drift.Value<String?> passengerId;
+  final drift.Value<String?> choferId;
+  final drift.Value<DateTime> date;
+  final drift.Value<String?> description;
+  final drift.Value<int> totalAmount;
+  final drift.Value<int> paidAmount;
+  final drift.Value<bool> isSettled;
+  final drift.Value<bool> isSynced;
   final drift.Value<int> rowid;
-  const RecorridoSubscriptionsCompanion({
+  const DebtsCompanion({
     this.id = const drift.Value.absent(),
-    this.recorridoId = const drift.Value.absent(),
-    this.encargadoId = const drift.Value.absent(),
-    this.subscriptionName = const drift.Value.absent(),
-    this.address = const drift.Value.absent(),
-    this.customPrice = const drift.Value.absent(),
-    this.isActive = const drift.Value.absent(),
+    this.passengerId = const drift.Value.absent(),
+    this.choferId = const drift.Value.absent(),
+    this.date = const drift.Value.absent(),
+    this.description = const drift.Value.absent(),
+    this.totalAmount = const drift.Value.absent(),
+    this.paidAmount = const drift.Value.absent(),
+    this.isSettled = const drift.Value.absent(),
+    this.isSynced = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   });
-  RecorridoSubscriptionsCompanion.insert({
+  DebtsCompanion.insert({
     required String id,
-    required String recorridoId,
-    required String encargadoId,
-    required String subscriptionName,
-    this.address = const drift.Value.absent(),
-    this.customPrice = const drift.Value.absent(),
-    this.isActive = const drift.Value.absent(),
+    this.passengerId = const drift.Value.absent(),
+    this.choferId = const drift.Value.absent(),
+    required DateTime date,
+    this.description = const drift.Value.absent(),
+    required int totalAmount,
+    this.paidAmount = const drift.Value.absent(),
+    this.isSettled = const drift.Value.absent(),
+    this.isSynced = const drift.Value.absent(),
     this.rowid = const drift.Value.absent(),
   }) : id = drift.Value(id),
-       recorridoId = drift.Value(recorridoId),
-       encargadoId = drift.Value(encargadoId),
-       subscriptionName = drift.Value(subscriptionName);
-  static drift.Insertable<RecorridoSubscription> custom({
+       date = drift.Value(date),
+       totalAmount = drift.Value(totalAmount);
+  static drift.Insertable<Debt> custom({
     drift.Expression<String>? id,
-    drift.Expression<String>? recorridoId,
-    drift.Expression<String>? encargadoId,
-    drift.Expression<String>? subscriptionName,
-    drift.Expression<String>? address,
-    drift.Expression<int>? customPrice,
-    drift.Expression<bool>? isActive,
+    drift.Expression<String>? passengerId,
+    drift.Expression<String>? choferId,
+    drift.Expression<DateTime>? date,
+    drift.Expression<String>? description,
+    drift.Expression<int>? totalAmount,
+    drift.Expression<int>? paidAmount,
+    drift.Expression<bool>? isSettled,
+    drift.Expression<bool>? isSynced,
     drift.Expression<int>? rowid,
   }) {
     return drift.RawValuesInsertable({
       if (id != null) 'id': id,
-      if (recorridoId != null) 'recorrido_id': recorridoId,
-      if (encargadoId != null) 'encargado_id': encargadoId,
-      if (subscriptionName != null) 'subscription_name': subscriptionName,
-      if (address != null) 'address': address,
-      if (customPrice != null) 'custom_price': customPrice,
-      if (isActive != null) 'is_active': isActive,
+      if (passengerId != null) 'passenger_id': passengerId,
+      if (choferId != null) 'chofer_id': choferId,
+      if (date != null) 'date': date,
+      if (description != null) 'description': description,
+      if (totalAmount != null) 'total_amount': totalAmount,
+      if (paidAmount != null) 'paid_amount': paidAmount,
+      if (isSettled != null) 'is_settled': isSettled,
+      if (isSynced != null) 'is_synced': isSynced,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  RecorridoSubscriptionsCompanion copyWith({
+  DebtsCompanion copyWith({
     drift.Value<String>? id,
-    drift.Value<String>? recorridoId,
-    drift.Value<String>? encargadoId,
-    drift.Value<String>? subscriptionName,
-    drift.Value<String?>? address,
-    drift.Value<int?>? customPrice,
-    drift.Value<bool>? isActive,
+    drift.Value<String?>? passengerId,
+    drift.Value<String?>? choferId,
+    drift.Value<DateTime>? date,
+    drift.Value<String?>? description,
+    drift.Value<int>? totalAmount,
+    drift.Value<int>? paidAmount,
+    drift.Value<bool>? isSettled,
+    drift.Value<bool>? isSynced,
     drift.Value<int>? rowid,
   }) {
-    return RecorridoSubscriptionsCompanion(
+    return DebtsCompanion(
       id: id ?? this.id,
-      recorridoId: recorridoId ?? this.recorridoId,
-      encargadoId: encargadoId ?? this.encargadoId,
-      subscriptionName: subscriptionName ?? this.subscriptionName,
-      address: address ?? this.address,
-      customPrice: customPrice ?? this.customPrice,
-      isActive: isActive ?? this.isActive,
+      passengerId: passengerId ?? this.passengerId,
+      choferId: choferId ?? this.choferId,
+      date: date ?? this.date,
+      description: description ?? this.description,
+      totalAmount: totalAmount ?? this.totalAmount,
+      paidAmount: paidAmount ?? this.paidAmount,
+      isSettled: isSettled ?? this.isSettled,
+      isSynced: isSynced ?? this.isSynced,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -4344,23 +4591,29 @@ class RecorridoSubscriptionsCompanion
     if (id.present) {
       map['id'] = drift.Variable<String>(id.value);
     }
-    if (recorridoId.present) {
-      map['recorrido_id'] = drift.Variable<String>(recorridoId.value);
+    if (passengerId.present) {
+      map['passenger_id'] = drift.Variable<String>(passengerId.value);
     }
-    if (encargadoId.present) {
-      map['encargado_id'] = drift.Variable<String>(encargadoId.value);
+    if (choferId.present) {
+      map['chofer_id'] = drift.Variable<String>(choferId.value);
     }
-    if (subscriptionName.present) {
-      map['subscription_name'] = drift.Variable<String>(subscriptionName.value);
+    if (date.present) {
+      map['date'] = drift.Variable<DateTime>(date.value);
     }
-    if (address.present) {
-      map['address'] = drift.Variable<String>(address.value);
+    if (description.present) {
+      map['description'] = drift.Variable<String>(description.value);
     }
-    if (customPrice.present) {
-      map['custom_price'] = drift.Variable<int>(customPrice.value);
+    if (totalAmount.present) {
+      map['total_amount'] = drift.Variable<int>(totalAmount.value);
     }
-    if (isActive.present) {
-      map['is_active'] = drift.Variable<bool>(isActive.value);
+    if (paidAmount.present) {
+      map['paid_amount'] = drift.Variable<int>(paidAmount.value);
+    }
+    if (isSettled.present) {
+      map['is_settled'] = drift.Variable<bool>(isSettled.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = drift.Variable<bool>(isSynced.value);
     }
     if (rowid.present) {
       map['rowid'] = drift.Variable<int>(rowid.value);
@@ -4370,14 +4623,16 @@ class RecorridoSubscriptionsCompanion
 
   @override
   String toString() {
-    return (StringBuffer('RecorridoSubscriptionsCompanion(')
+    return (StringBuffer('DebtsCompanion(')
           ..write('id: $id, ')
-          ..write('recorridoId: $recorridoId, ')
-          ..write('encargadoId: $encargadoId, ')
-          ..write('subscriptionName: $subscriptionName, ')
-          ..write('address: $address, ')
-          ..write('customPrice: $customPrice, ')
-          ..write('isActive: $isActive, ')
+          ..write('passengerId: $passengerId, ')
+          ..write('choferId: $choferId, ')
+          ..write('date: $date, ')
+          ..write('description: $description, ')
+          ..write('totalAmount: $totalAmount, ')
+          ..write('paidAmount: $paidAmount, ')
+          ..write('isSettled: $isSettled, ')
+          ..write('isSynced: $isSynced, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4396,9 +4651,8 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
   late final $EventColectivosTable eventColectivos = $EventColectivosTable(
     this,
   );
-  late final $EncargadosTable encargados = $EncargadosTable(this);
-  late final $RecorridoSubscriptionsTable recorridoSubscriptions =
-      $RecorridoSubscriptionsTable(this);
+  late final $PassengersTable passengers = $PassengersTable(this);
+  late final $DebtsTable debts = $DebtsTable(this);
   @override
   Iterable<drift.TableInfo<drift.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<drift.TableInfo<drift.Table, Object?>>();
@@ -4411,86 +4665,77 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     stops,
     eventChoferes,
     eventColectivos,
-    encargados,
-    recorridoSubscriptions,
+    passengers,
+    debts,
   ];
   @override
-  drift.StreamQueryUpdateRules get streamUpdateRules =>
-      const StreamQueryUpdateRules([
-        drift.WritePropagation(
-          on: drift.TableUpdateQuery.onTableName(
-            'events',
-            limitUpdateKind: drift.UpdateKind.delete,
-          ),
-          result: [drift.TableUpdate('stops', kind: drift.UpdateKind.delete)],
-        ),
-        drift.WritePropagation(
-          on: drift.TableUpdateQuery.onTableName(
-            'events',
-            limitUpdateKind: drift.UpdateKind.delete,
-          ),
-          result: [
-            drift.TableUpdate('event_choferes', kind: drift.UpdateKind.delete),
-          ],
-        ),
-        drift.WritePropagation(
-          on: drift.TableUpdateQuery.onTableName(
-            'choferes',
-            limitUpdateKind: drift.UpdateKind.delete,
-          ),
-          result: [
-            drift.TableUpdate('event_choferes', kind: drift.UpdateKind.delete),
-          ],
-        ),
-        drift.WritePropagation(
-          on: drift.TableUpdateQuery.onTableName(
-            'events',
-            limitUpdateKind: drift.UpdateKind.delete,
-          ),
-          result: [
-            drift.TableUpdate(
-              'event_colectivos',
-              kind: drift.UpdateKind.delete,
-            ),
-          ],
-        ),
-        drift.WritePropagation(
-          on: drift.TableUpdateQuery.onTableName(
-            'colectivos',
-            limitUpdateKind: drift.UpdateKind.delete,
-          ),
-          result: [
-            drift.TableUpdate(
-              'event_colectivos',
-              kind: drift.UpdateKind.delete,
-            ),
-          ],
-        ),
-        drift.WritePropagation(
-          on: drift.TableUpdateQuery.onTableName(
-            'recorridos',
-            limitUpdateKind: drift.UpdateKind.delete,
-          ),
-          result: [
-            drift.TableUpdate(
-              'recorrido_subscriptions',
-              kind: drift.UpdateKind.delete,
-            ),
-          ],
-        ),
-        drift.WritePropagation(
-          on: drift.TableUpdateQuery.onTableName(
-            'encargados',
-            limitUpdateKind: drift.UpdateKind.delete,
-          ),
-          result: [
-            drift.TableUpdate(
-              'recorrido_subscriptions',
-              kind: drift.UpdateKind.delete,
-            ),
-          ],
-        ),
-      ]);
+  drift.StreamQueryUpdateRules
+  get streamUpdateRules => const StreamQueryUpdateRules([
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'events',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [drift.TableUpdate('stops', kind: drift.UpdateKind.delete)],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'events',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [
+        drift.TableUpdate('event_choferes', kind: drift.UpdateKind.delete),
+      ],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'choferes',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [
+        drift.TableUpdate('event_choferes', kind: drift.UpdateKind.delete),
+      ],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'events',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [
+        drift.TableUpdate('event_colectivos', kind: drift.UpdateKind.delete),
+      ],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'colectivos',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [
+        drift.TableUpdate('event_colectivos', kind: drift.UpdateKind.delete),
+      ],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'recorridos',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [drift.TableUpdate('passengers', kind: drift.UpdateKind.delete)],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'passengers',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [drift.TableUpdate('debts', kind: drift.UpdateKind.delete)],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'choferes',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [drift.TableUpdate('debts', kind: drift.UpdateKind.delete)],
+    ),
+  ]);
 }
 
 typedef $$ChoferesTableCreateCompanionBuilder =
@@ -4543,6 +4788,25 @@ final class $$ChoferesTableReferences
     ).filter((f) => f.choferId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_eventChoferesRefsTable($_db));
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static drift.MultiTypedResultKey<$DebtsTable, List<Debt>> _debtsRefsTable(
+    _$AppDatabase db,
+  ) => drift.MultiTypedResultKey.fromTable(
+    db.debts,
+    aliasName: drift.$_aliasNameGenerator(db.choferes.id, db.debts.choferId),
+  );
+
+  $$DebtsTableProcessedTableManager get debtsRefs {
+    final manager = $$DebtsTableTableManager(
+      $_db,
+      $_db.debts,
+    ).filter((f) => f.choferId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_debtsRefsTable($_db));
     return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -4624,6 +4888,31 @@ class $$ChoferesTableFilterComposer
           }) => $$EventChoferesTableFilterComposer(
             $db: $db,
             $table: $db.eventChoferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  drift.Expression<bool> debtsRefs(
+    drift.Expression<bool> Function($$DebtsTableFilterComposer f) f,
+  ) {
+    final $$DebtsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.debts,
+      getReferencedColumn: (t) => t.choferId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DebtsTableFilterComposer(
+            $db: $db,
+            $table: $db.debts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4761,6 +5050,31 @@ class $$ChoferesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  drift.Expression<T> debtsRefs<T extends Object>(
+    drift.Expression<T> Function($$DebtsTableAnnotationComposer a) f,
+  ) {
+    final $$DebtsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.debts,
+      getReferencedColumn: (t) => t.choferId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DebtsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.debts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ChoferesTableTableManager
@@ -4776,7 +5090,7 @@ class $$ChoferesTableTableManager
           $$ChoferesTableUpdateCompanionBuilder,
           (Chofere, $$ChoferesTableReferences),
           Chofere,
-          drift.PrefetchHooks Function({bool eventChoferesRefs})
+          drift.PrefetchHooks Function({bool eventChoferesRefs, bool debtsRefs})
         > {
   $$ChoferesTableTableManager(_$AppDatabase db, $ChoferesTable table)
     : super(
@@ -4849,37 +5163,59 @@ class $$ChoferesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({eventChoferesRefs = false}) {
-            return drift.PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (eventChoferesRefs) db.eventChoferes,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (eventChoferesRefs)
-                    await drift.$_getPrefetchedData<
-                      Chofere,
-                      $ChoferesTable,
-                      EventChofere
-                    >(
-                      currentTable: table,
-                      referencedTable: $$ChoferesTableReferences
-                          ._eventChoferesRefsTable(db),
-                      managerFromTypedResult: (p0) => $$ChoferesTableReferences(
-                        db,
-                        table,
-                        p0,
-                      ).eventChoferesRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.choferId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({eventChoferesRefs = false, debtsRefs = false}) {
+                return drift.PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (eventChoferesRefs) db.eventChoferes,
+                    if (debtsRefs) db.debts,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (eventChoferesRefs)
+                        await drift.$_getPrefetchedData<
+                          Chofere,
+                          $ChoferesTable,
+                          EventChofere
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ChoferesTableReferences
+                              ._eventChoferesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ChoferesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).eventChoferesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.choferId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (debtsRefs)
+                        await drift
+                            .$_getPrefetchedData<Chofere, $ChoferesTable, Debt>(
+                              currentTable: table,
+                              referencedTable: $$ChoferesTableReferences
+                                  ._debtsRefsTable(db),
+                              managerFromTypedResult: (p0) =>
+                                  $$ChoferesTableReferences(
+                                    db,
+                                    table,
+                                    p0,
+                                  ).debtsRefs,
+                              referencedItemsForCurrentItem:
+                                  (item, referencedItems) => referencedItems
+                                      .where((e) => e.choferId == item.id),
+                              typedResults: items,
+                            ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -4896,7 +5232,7 @@ typedef $$ChoferesTableProcessedTableManager =
       $$ChoferesTableUpdateCompanionBuilder,
       (Chofere, $$ChoferesTableReferences),
       Chofere,
-      drift.PrefetchHooks Function({bool eventChoferesRefs})
+      drift.PrefetchHooks Function({bool eventChoferesRefs, bool debtsRefs})
     >;
 typedef $$ColectivosTableCreateCompanionBuilder =
     ColectivosCompanion Function({
@@ -5372,29 +5708,22 @@ final class $$RecorridosTableReferences
     );
   }
 
-  static drift.MultiTypedResultKey<
-    $RecorridoSubscriptionsTable,
-    List<RecorridoSubscription>
-  >
-  _recorridoSubscriptionsRefsTable(_$AppDatabase db) =>
-      drift.MultiTypedResultKey.fromTable(
-        db.recorridoSubscriptions,
-        aliasName: drift.$_aliasNameGenerator(
-          db.recorridos.id,
-          db.recorridoSubscriptions.recorridoId,
-        ),
-      );
+  static drift.MultiTypedResultKey<$PassengersTable, List<Passenger>>
+  _passengersRefsTable(_$AppDatabase db) => drift.MultiTypedResultKey.fromTable(
+    db.passengers,
+    aliasName: drift.$_aliasNameGenerator(
+      db.recorridos.id,
+      db.passengers.recorridoId,
+    ),
+  );
 
-  $$RecorridoSubscriptionsTableProcessedTableManager
-  get recorridoSubscriptionsRefs {
-    final manager = $$RecorridoSubscriptionsTableTableManager(
+  $$PassengersTableProcessedTableManager get passengersRefs {
+    final manager = $$PassengersTableTableManager(
       $_db,
-      $_db.recorridoSubscriptions,
+      $_db.passengers,
     ).filter((f) => f.recorridoId.id.sqlEquals($_itemColumn<String>('id')!));
 
-    final cache = $_typedResult.readTableOrNull(
-      _recorridoSubscriptionsRefsTable($_db),
-    );
+    final cache = $_typedResult.readTableOrNull(_passengersRefsTable($_db));
     return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5465,32 +5794,28 @@ class $$RecorridosTableFilterComposer
     return f(composer);
   }
 
-  drift.Expression<bool> recorridoSubscriptionsRefs(
-    drift.Expression<bool> Function(
-      $$RecorridoSubscriptionsTableFilterComposer f,
-    )
-    f,
+  drift.Expression<bool> passengersRefs(
+    drift.Expression<bool> Function($$PassengersTableFilterComposer f) f,
   ) {
-    final $$RecorridoSubscriptionsTableFilterComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.recorridoSubscriptions,
-          getReferencedColumn: (t) => t.recorridoId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
+    final $$PassengersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.passengers,
+      getReferencedColumn: (t) => t.recorridoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PassengersTableFilterComposer(
+            $db: $db,
+            $table: $db.passengers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
                 $removeJoinBuilderFromRootComposer,
-              }) => $$RecorridoSubscriptionsTableFilterComposer(
-                $db: $db,
-                $table: $db.recorridoSubscriptions,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
+          ),
+    );
     return f(composer);
   }
 }
@@ -5587,32 +5912,28 @@ class $$RecorridosTableAnnotationComposer
     return f(composer);
   }
 
-  drift.Expression<T> recorridoSubscriptionsRefs<T extends Object>(
-    drift.Expression<T> Function(
-      $$RecorridoSubscriptionsTableAnnotationComposer a,
-    )
-    f,
+  drift.Expression<T> passengersRefs<T extends Object>(
+    drift.Expression<T> Function($$PassengersTableAnnotationComposer a) f,
   ) {
-    final $$RecorridoSubscriptionsTableAnnotationComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.recorridoSubscriptions,
-          getReferencedColumn: (t) => t.recorridoId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
+    final $$PassengersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.passengers,
+      getReferencedColumn: (t) => t.recorridoId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PassengersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.passengers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
                 $removeJoinBuilderFromRootComposer,
-              }) => $$RecorridoSubscriptionsTableAnnotationComposer(
-                $db: $db,
-                $table: $db.recorridoSubscriptions,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
+          ),
+    );
     return f(composer);
   }
 }
@@ -5630,10 +5951,7 @@ class $$RecorridosTableTableManager
           $$RecorridosTableUpdateCompanionBuilder,
           (Recorrido, $$RecorridosTableReferences),
           Recorrido,
-          drift.PrefetchHooks Function({
-            bool eventsRefs,
-            bool recorridoSubscriptionsRefs,
-          })
+          drift.PrefetchHooks Function({bool eventsRefs, bool passengersRefs})
         > {
   $$RecorridosTableTableManager(_$AppDatabase db, $RecorridosTable table)
     : super(
@@ -5691,12 +6009,12 @@ class $$RecorridosTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({eventsRefs = false, recorridoSubscriptionsRefs = false}) {
+              ({eventsRefs = false, passengersRefs = false}) {
                 return drift.PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (eventsRefs) db.events,
-                    if (recorridoSubscriptionsRefs) db.recorridoSubscriptions,
+                    if (passengersRefs) db.passengers,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -5722,21 +6040,21 @@ class $$RecorridosTableTableManager
                               ),
                           typedResults: items,
                         ),
-                      if (recorridoSubscriptionsRefs)
+                      if (passengersRefs)
                         await drift.$_getPrefetchedData<
                           Recorrido,
                           $RecorridosTable,
-                          RecorridoSubscription
+                          Passenger
                         >(
                           currentTable: table,
                           referencedTable: $$RecorridosTableReferences
-                              ._recorridoSubscriptionsRefsTable(db),
+                              ._passengersRefsTable(db),
                           managerFromTypedResult: (p0) =>
                               $$RecorridosTableReferences(
                                 db,
                                 table,
                                 p0,
-                              ).recorridoSubscriptionsRefs,
+                              ).passengersRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.recorridoId == item.id,
@@ -5763,10 +6081,7 @@ typedef $$RecorridosTableProcessedTableManager =
       $$RecorridosTableUpdateCompanionBuilder,
       (Recorrido, $$RecorridosTableReferences),
       Recorrido,
-      drift.PrefetchHooks Function({
-        bool eventsRefs,
-        bool recorridoSubscriptionsRefs,
-      })
+      drift.PrefetchHooks Function({bool eventsRefs, bool passengersRefs})
     >;
 typedef $$EventsTableCreateCompanionBuilder =
     EventsCompanion Function({
@@ -7753,371 +8068,38 @@ typedef $$EventColectivosTableProcessedTableManager =
       EventColectivo,
       drift.PrefetchHooks Function({bool eventId, bool colectivoId})
     >;
-typedef $$EncargadosTableCreateCompanionBuilder =
-    EncargadosCompanion Function({
+typedef $$PassengersTableCreateCompanionBuilder =
+    PassengersCompanion Function({
       required String id,
       required String name,
-      drift.Value<String?> phone,
-      drift.Value<double> balance,
+      drift.Value<String?> managerName,
+      drift.Value<String?> managerPhone,
+      drift.Value<int> balance,
+      required String recorridoId,
+      drift.Value<bool> isActive,
       drift.Value<bool> isSynced,
       drift.Value<int> rowid,
     });
-typedef $$EncargadosTableUpdateCompanionBuilder =
-    EncargadosCompanion Function({
+typedef $$PassengersTableUpdateCompanionBuilder =
+    PassengersCompanion Function({
       drift.Value<String> id,
       drift.Value<String> name,
-      drift.Value<String?> phone,
-      drift.Value<double> balance,
+      drift.Value<String?> managerName,
+      drift.Value<String?> managerPhone,
+      drift.Value<int> balance,
+      drift.Value<String> recorridoId,
+      drift.Value<bool> isActive,
       drift.Value<bool> isSynced,
       drift.Value<int> rowid,
     });
 
-final class $$EncargadosTableReferences
-    extends drift.BaseReferences<_$AppDatabase, $EncargadosTable, Encargado> {
-  $$EncargadosTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static drift.MultiTypedResultKey<
-    $RecorridoSubscriptionsTable,
-    List<RecorridoSubscription>
-  >
-  _recorridoSubscriptionsRefsTable(_$AppDatabase db) =>
-      drift.MultiTypedResultKey.fromTable(
-        db.recorridoSubscriptions,
-        aliasName: drift.$_aliasNameGenerator(
-          db.encargados.id,
-          db.recorridoSubscriptions.encargadoId,
-        ),
-      );
-
-  $$RecorridoSubscriptionsTableProcessedTableManager
-  get recorridoSubscriptionsRefs {
-    final manager = $$RecorridoSubscriptionsTableTableManager(
-      $_db,
-      $_db.recorridoSubscriptions,
-    ).filter((f) => f.encargadoId.id.sqlEquals($_itemColumn<String>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(
-      _recorridoSubscriptionsRefsTable($_db),
-    );
-    return drift.ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-}
-
-class $$EncargadosTableFilterComposer
-    extends drift.Composer<_$AppDatabase, $EncargadosTable> {
-  $$EncargadosTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  drift.ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
-  drift.ColumnFilters<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
-  drift.ColumnFilters<String> get phone => $composableBuilder(
-    column: $table.phone,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
-  drift.ColumnFilters<double> get balance => $composableBuilder(
-    column: $table.balance,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
-  drift.ColumnFilters<bool> get isSynced => $composableBuilder(
-    column: $table.isSynced,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
-  drift.Expression<bool> recorridoSubscriptionsRefs(
-    drift.Expression<bool> Function(
-      $$RecorridoSubscriptionsTableFilterComposer f,
-    )
-    f,
-  ) {
-    final $$RecorridoSubscriptionsTableFilterComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.recorridoSubscriptions,
-          getReferencedColumn: (t) => t.encargadoId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => $$RecorridoSubscriptionsTableFilterComposer(
-                $db: $db,
-                $table: $db.recorridoSubscriptions,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return f(composer);
-  }
-}
-
-class $$EncargadosTableOrderingComposer
-    extends drift.Composer<_$AppDatabase, $EncargadosTable> {
-  $$EncargadosTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  drift.ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-
-  drift.ColumnOrderings<String> get name => $composableBuilder(
-    column: $table.name,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-
-  drift.ColumnOrderings<String> get phone => $composableBuilder(
-    column: $table.phone,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-
-  drift.ColumnOrderings<double> get balance => $composableBuilder(
-    column: $table.balance,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-
-  drift.ColumnOrderings<bool> get isSynced => $composableBuilder(
-    column: $table.isSynced,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-}
-
-class $$EncargadosTableAnnotationComposer
-    extends drift.Composer<_$AppDatabase, $EncargadosTable> {
-  $$EncargadosTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  drift.GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  drift.GeneratedColumn<String> get name =>
-      $composableBuilder(column: $table.name, builder: (column) => column);
-
-  drift.GeneratedColumn<String> get phone =>
-      $composableBuilder(column: $table.phone, builder: (column) => column);
-
-  drift.GeneratedColumn<double> get balance =>
-      $composableBuilder(column: $table.balance, builder: (column) => column);
-
-  drift.GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
-
-  drift.Expression<T> recorridoSubscriptionsRefs<T extends Object>(
-    drift.Expression<T> Function(
-      $$RecorridoSubscriptionsTableAnnotationComposer a,
-    )
-    f,
-  ) {
-    final $$RecorridoSubscriptionsTableAnnotationComposer composer =
-        $composerBuilder(
-          composer: this,
-          getCurrentColumn: (t) => t.id,
-          referencedTable: $db.recorridoSubscriptions,
-          getReferencedColumn: (t) => t.encargadoId,
-          builder:
-              (
-                joinBuilder, {
-                $addJoinBuilderToRootComposer,
-                $removeJoinBuilderFromRootComposer,
-              }) => $$RecorridoSubscriptionsTableAnnotationComposer(
-                $db: $db,
-                $table: $db.recorridoSubscriptions,
-                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-                joinBuilder: joinBuilder,
-                $removeJoinBuilderFromRootComposer:
-                    $removeJoinBuilderFromRootComposer,
-              ),
-        );
-    return f(composer);
-  }
-}
-
-class $$EncargadosTableTableManager
-    extends
-        drift.RootTableManager<
-          _$AppDatabase,
-          $EncargadosTable,
-          Encargado,
-          $$EncargadosTableFilterComposer,
-          $$EncargadosTableOrderingComposer,
-          $$EncargadosTableAnnotationComposer,
-          $$EncargadosTableCreateCompanionBuilder,
-          $$EncargadosTableUpdateCompanionBuilder,
-          (Encargado, $$EncargadosTableReferences),
-          Encargado,
-          drift.PrefetchHooks Function({bool recorridoSubscriptionsRefs})
-        > {
-  $$EncargadosTableTableManager(_$AppDatabase db, $EncargadosTable table)
-    : super(
-        drift.TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$EncargadosTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$EncargadosTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$EncargadosTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                drift.Value<String> id = const drift.Value.absent(),
-                drift.Value<String> name = const drift.Value.absent(),
-                drift.Value<String?> phone = const drift.Value.absent(),
-                drift.Value<double> balance = const drift.Value.absent(),
-                drift.Value<bool> isSynced = const drift.Value.absent(),
-                drift.Value<int> rowid = const drift.Value.absent(),
-              }) => EncargadosCompanion(
-                id: id,
-                name: name,
-                phone: phone,
-                balance: balance,
-                isSynced: isSynced,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String name,
-                drift.Value<String?> phone = const drift.Value.absent(),
-                drift.Value<double> balance = const drift.Value.absent(),
-                drift.Value<bool> isSynced = const drift.Value.absent(),
-                drift.Value<int> rowid = const drift.Value.absent(),
-              }) => EncargadosCompanion.insert(
-                id: id,
-                name: name,
-                phone: phone,
-                balance: balance,
-                isSynced: isSynced,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable(table),
-                  $$EncargadosTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({recorridoSubscriptionsRefs = false}) {
-            return drift.PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [
-                if (recorridoSubscriptionsRefs) db.recorridoSubscriptions,
-              ],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (recorridoSubscriptionsRefs)
-                    await drift.$_getPrefetchedData<
-                      Encargado,
-                      $EncargadosTable,
-                      RecorridoSubscription
-                    >(
-                      currentTable: table,
-                      referencedTable: $$EncargadosTableReferences
-                          ._recorridoSubscriptionsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$EncargadosTableReferences(
-                            db,
-                            table,
-                            p0,
-                          ).recorridoSubscriptionsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where(
-                            (e) => e.encargadoId == item.id,
-                          ),
-                      typedResults: items,
-                    ),
-                ];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$EncargadosTableProcessedTableManager =
-    drift.ProcessedTableManager<
-      _$AppDatabase,
-      $EncargadosTable,
-      Encargado,
-      $$EncargadosTableFilterComposer,
-      $$EncargadosTableOrderingComposer,
-      $$EncargadosTableAnnotationComposer,
-      $$EncargadosTableCreateCompanionBuilder,
-      $$EncargadosTableUpdateCompanionBuilder,
-      (Encargado, $$EncargadosTableReferences),
-      Encargado,
-      drift.PrefetchHooks Function({bool recorridoSubscriptionsRefs})
-    >;
-typedef $$RecorridoSubscriptionsTableCreateCompanionBuilder =
-    RecorridoSubscriptionsCompanion Function({
-      required String id,
-      required String recorridoId,
-      required String encargadoId,
-      required String subscriptionName,
-      drift.Value<String?> address,
-      drift.Value<int?> customPrice,
-      drift.Value<bool> isActive,
-      drift.Value<int> rowid,
-    });
-typedef $$RecorridoSubscriptionsTableUpdateCompanionBuilder =
-    RecorridoSubscriptionsCompanion Function({
-      drift.Value<String> id,
-      drift.Value<String> recorridoId,
-      drift.Value<String> encargadoId,
-      drift.Value<String> subscriptionName,
-      drift.Value<String?> address,
-      drift.Value<int?> customPrice,
-      drift.Value<bool> isActive,
-      drift.Value<int> rowid,
-    });
-
-final class $$RecorridoSubscriptionsTableReferences
-    extends
-        drift.BaseReferences<
-          _$AppDatabase,
-          $RecorridoSubscriptionsTable,
-          RecorridoSubscription
-        > {
-  $$RecorridoSubscriptionsTableReferences(
-    super.$_db,
-    super.$_table,
-    super.$_typedResult,
-  );
+final class $$PassengersTableReferences
+    extends drift.BaseReferences<_$AppDatabase, $PassengersTable, Passenger> {
+  $$PassengersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $RecorridosTable _recorridoIdTable(_$AppDatabase db) =>
       db.recorridos.createAlias(
-        drift.$_aliasNameGenerator(
-          db.recorridoSubscriptions.recorridoId,
-          db.recorridos.id,
-        ),
+        drift.$_aliasNameGenerator(db.passengers.recorridoId, db.recorridos.id),
       );
 
   $$RecorridosTableProcessedTableManager get recorridoId {
@@ -8134,32 +8116,32 @@ final class $$RecorridoSubscriptionsTableReferences
     );
   }
 
-  static $EncargadosTable _encargadoIdTable(_$AppDatabase db) =>
-      db.encargados.createAlias(
-        drift.$_aliasNameGenerator(
-          db.recorridoSubscriptions.encargadoId,
-          db.encargados.id,
-        ),
-      );
+  static drift.MultiTypedResultKey<$DebtsTable, List<Debt>> _debtsRefsTable(
+    _$AppDatabase db,
+  ) => drift.MultiTypedResultKey.fromTable(
+    db.debts,
+    aliasName: drift.$_aliasNameGenerator(
+      db.passengers.id,
+      db.debts.passengerId,
+    ),
+  );
 
-  $$EncargadosTableProcessedTableManager get encargadoId {
-    final $_column = $_itemColumn<String>('encargado_id')!;
-
-    final manager = $$EncargadosTableTableManager(
+  $$DebtsTableProcessedTableManager get debtsRefs {
+    final manager = $$DebtsTableTableManager(
       $_db,
-      $_db.encargados,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_encargadoIdTable($_db));
-    if (item == null) return manager;
+      $_db.debts,
+    ).filter((f) => f.passengerId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_debtsRefsTable($_db));
     return drift.ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
+      manager.$state.copyWith(prefetchedData: cache),
     );
   }
 }
 
-class $$RecorridoSubscriptionsTableFilterComposer
-    extends drift.Composer<_$AppDatabase, $RecorridoSubscriptionsTable> {
-  $$RecorridoSubscriptionsTableFilterComposer({
+class $$PassengersTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $PassengersTable> {
+  $$PassengersTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -8171,23 +8153,33 @@ class $$RecorridoSubscriptionsTableFilterComposer
     builder: (column) => drift.ColumnFilters(column),
   );
 
-  drift.ColumnFilters<String> get subscriptionName => $composableBuilder(
-    column: $table.subscriptionName,
+  drift.ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
     builder: (column) => drift.ColumnFilters(column),
   );
 
-  drift.ColumnFilters<String> get address => $composableBuilder(
-    column: $table.address,
+  drift.ColumnFilters<String> get managerName => $composableBuilder(
+    column: $table.managerName,
     builder: (column) => drift.ColumnFilters(column),
   );
 
-  drift.ColumnFilters<int> get customPrice => $composableBuilder(
-    column: $table.customPrice,
+  drift.ColumnFilters<String> get managerPhone => $composableBuilder(
+    column: $table.managerPhone,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<int> get balance => $composableBuilder(
+    column: $table.balance,
     builder: (column) => drift.ColumnFilters(column),
   );
 
   drift.ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -8214,33 +8206,35 @@ class $$RecorridoSubscriptionsTableFilterComposer
     return composer;
   }
 
-  $$EncargadosTableFilterComposer get encargadoId {
-    final $$EncargadosTableFilterComposer composer = $composerBuilder(
+  drift.Expression<bool> debtsRefs(
+    drift.Expression<bool> Function($$DebtsTableFilterComposer f) f,
+  ) {
+    final $$DebtsTableFilterComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.encargadoId,
-      referencedTable: $db.encargados,
-      getReferencedColumn: (t) => t.id,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.debts,
+      getReferencedColumn: (t) => t.passengerId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EncargadosTableFilterComposer(
+          }) => $$DebtsTableFilterComposer(
             $db: $db,
-            $table: $db.encargados,
+            $table: $db.debts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
                 $removeJoinBuilderFromRootComposer,
           ),
     );
-    return composer;
+    return f(composer);
   }
 }
 
-class $$RecorridoSubscriptionsTableOrderingComposer
-    extends drift.Composer<_$AppDatabase, $RecorridoSubscriptionsTable> {
-  $$RecorridoSubscriptionsTableOrderingComposer({
+class $$PassengersTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $PassengersTable> {
+  $$PassengersTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -8252,23 +8246,33 @@ class $$RecorridoSubscriptionsTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
-  drift.ColumnOrderings<String> get subscriptionName => $composableBuilder(
-    column: $table.subscriptionName,
+  drift.ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
     builder: (column) => drift.ColumnOrderings(column),
   );
 
-  drift.ColumnOrderings<String> get address => $composableBuilder(
-    column: $table.address,
+  drift.ColumnOrderings<String> get managerName => $composableBuilder(
+    column: $table.managerName,
     builder: (column) => drift.ColumnOrderings(column),
   );
 
-  drift.ColumnOrderings<int> get customPrice => $composableBuilder(
-    column: $table.customPrice,
+  drift.ColumnOrderings<String> get managerPhone => $composableBuilder(
+    column: $table.managerPhone,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<int> get balance => $composableBuilder(
+    column: $table.balance,
     builder: (column) => drift.ColumnOrderings(column),
   );
 
   drift.ColumnOrderings<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
     builder: (column) => drift.ColumnOrderings(column),
   );
 
@@ -8294,34 +8298,11 @@ class $$RecorridoSubscriptionsTableOrderingComposer
     );
     return composer;
   }
-
-  $$EncargadosTableOrderingComposer get encargadoId {
-    final $$EncargadosTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.encargadoId,
-      referencedTable: $db.encargados,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$EncargadosTableOrderingComposer(
-            $db: $db,
-            $table: $db.encargados,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
 }
 
-class $$RecorridoSubscriptionsTableAnnotationComposer
-    extends drift.Composer<_$AppDatabase, $RecorridoSubscriptionsTable> {
-  $$RecorridoSubscriptionsTableAnnotationComposer({
+class $$PassengersTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $PassengersTable> {
+  $$PassengersTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -8331,21 +8312,27 @@ class $$RecorridoSubscriptionsTableAnnotationComposer
   drift.GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  drift.GeneratedColumn<String> get subscriptionName => $composableBuilder(
-    column: $table.subscriptionName,
+  drift.GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get managerName => $composableBuilder(
+    column: $table.managerName,
     builder: (column) => column,
   );
 
-  drift.GeneratedColumn<String> get address =>
-      $composableBuilder(column: $table.address, builder: (column) => column);
-
-  drift.GeneratedColumn<int> get customPrice => $composableBuilder(
-    column: $table.customPrice,
+  drift.GeneratedColumn<String> get managerPhone => $composableBuilder(
+    column: $table.managerPhone,
     builder: (column) => column,
   );
+
+  drift.GeneratedColumn<int> get balance =>
+      $composableBuilder(column: $table.balance, builder: (column) => column);
 
   drift.GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  drift.GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
   $$RecorridosTableAnnotationComposer get recorridoId {
     final $$RecorridosTableAnnotationComposer composer = $composerBuilder(
@@ -8370,120 +8357,114 @@ class $$RecorridoSubscriptionsTableAnnotationComposer
     return composer;
   }
 
-  $$EncargadosTableAnnotationComposer get encargadoId {
-    final $$EncargadosTableAnnotationComposer composer = $composerBuilder(
+  drift.Expression<T> debtsRefs<T extends Object>(
+    drift.Expression<T> Function($$DebtsTableAnnotationComposer a) f,
+  ) {
+    final $$DebtsTableAnnotationComposer composer = $composerBuilder(
       composer: this,
-      getCurrentColumn: (t) => t.encargadoId,
-      referencedTable: $db.encargados,
-      getReferencedColumn: (t) => t.id,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.debts,
+      getReferencedColumn: (t) => t.passengerId,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => $$EncargadosTableAnnotationComposer(
+          }) => $$DebtsTableAnnotationComposer(
             $db: $db,
-            $table: $db.encargados,
+            $table: $db.debts,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
                 $removeJoinBuilderFromRootComposer,
           ),
     );
-    return composer;
+    return f(composer);
   }
 }
 
-class $$RecorridoSubscriptionsTableTableManager
+class $$PassengersTableTableManager
     extends
         drift.RootTableManager<
           _$AppDatabase,
-          $RecorridoSubscriptionsTable,
-          RecorridoSubscription,
-          $$RecorridoSubscriptionsTableFilterComposer,
-          $$RecorridoSubscriptionsTableOrderingComposer,
-          $$RecorridoSubscriptionsTableAnnotationComposer,
-          $$RecorridoSubscriptionsTableCreateCompanionBuilder,
-          $$RecorridoSubscriptionsTableUpdateCompanionBuilder,
-          (RecorridoSubscription, $$RecorridoSubscriptionsTableReferences),
-          RecorridoSubscription,
-          drift.PrefetchHooks Function({bool recorridoId, bool encargadoId})
+          $PassengersTable,
+          Passenger,
+          $$PassengersTableFilterComposer,
+          $$PassengersTableOrderingComposer,
+          $$PassengersTableAnnotationComposer,
+          $$PassengersTableCreateCompanionBuilder,
+          $$PassengersTableUpdateCompanionBuilder,
+          (Passenger, $$PassengersTableReferences),
+          Passenger,
+          drift.PrefetchHooks Function({bool recorridoId, bool debtsRefs})
         > {
-  $$RecorridoSubscriptionsTableTableManager(
-    _$AppDatabase db,
-    $RecorridoSubscriptionsTable table,
-  ) : super(
+  $$PassengersTableTableManager(_$AppDatabase db, $PassengersTable table)
+    : super(
         drift.TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$RecorridoSubscriptionsTableFilterComposer(
-                $db: db,
-                $table: table,
-              ),
+              $$PassengersTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$RecorridoSubscriptionsTableOrderingComposer(
-                $db: db,
-                $table: table,
-              ),
+              $$PassengersTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$RecorridoSubscriptionsTableAnnotationComposer(
-                $db: db,
-                $table: table,
-              ),
+              $$PassengersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 drift.Value<String> id = const drift.Value.absent(),
+                drift.Value<String> name = const drift.Value.absent(),
+                drift.Value<String?> managerName = const drift.Value.absent(),
+                drift.Value<String?> managerPhone = const drift.Value.absent(),
+                drift.Value<int> balance = const drift.Value.absent(),
                 drift.Value<String> recorridoId = const drift.Value.absent(),
-                drift.Value<String> encargadoId = const drift.Value.absent(),
-                drift.Value<String> subscriptionName =
-                    const drift.Value.absent(),
-                drift.Value<String?> address = const drift.Value.absent(),
-                drift.Value<int?> customPrice = const drift.Value.absent(),
                 drift.Value<bool> isActive = const drift.Value.absent(),
+                drift.Value<bool> isSynced = const drift.Value.absent(),
                 drift.Value<int> rowid = const drift.Value.absent(),
-              }) => RecorridoSubscriptionsCompanion(
+              }) => PassengersCompanion(
                 id: id,
+                name: name,
+                managerName: managerName,
+                managerPhone: managerPhone,
+                balance: balance,
                 recorridoId: recorridoId,
-                encargadoId: encargadoId,
-                subscriptionName: subscriptionName,
-                address: address,
-                customPrice: customPrice,
                 isActive: isActive,
+                isSynced: isSynced,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String id,
+                required String name,
+                drift.Value<String?> managerName = const drift.Value.absent(),
+                drift.Value<String?> managerPhone = const drift.Value.absent(),
+                drift.Value<int> balance = const drift.Value.absent(),
                 required String recorridoId,
-                required String encargadoId,
-                required String subscriptionName,
-                drift.Value<String?> address = const drift.Value.absent(),
-                drift.Value<int?> customPrice = const drift.Value.absent(),
                 drift.Value<bool> isActive = const drift.Value.absent(),
+                drift.Value<bool> isSynced = const drift.Value.absent(),
                 drift.Value<int> rowid = const drift.Value.absent(),
-              }) => RecorridoSubscriptionsCompanion.insert(
+              }) => PassengersCompanion.insert(
                 id: id,
+                name: name,
+                managerName: managerName,
+                managerPhone: managerPhone,
+                balance: balance,
                 recorridoId: recorridoId,
-                encargadoId: encargadoId,
-                subscriptionName: subscriptionName,
-                address: address,
-                customPrice: customPrice,
                 isActive: isActive,
+                isSynced: isSynced,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
                   e.readTable(table),
-                  $$RecorridoSubscriptionsTableReferences(db, table, e),
+                  $$PassengersTableReferences(db, table, e),
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({recorridoId = false, encargadoId = false}) {
+          prefetchHooksCallback: ({recorridoId = false, debtsRefs = false}) {
             return drift.PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [],
+              explicitlyWatchedTables: [if (debtsRefs) db.debts],
               addJoins:
                   <
                     T extends drift.TableManagerState<
@@ -8505,28 +8486,516 @@ class $$RecorridoSubscriptionsTableTableManager
                           state.withJoin(
                                 currentTable: table,
                                 currentColumn: table.recorridoId,
-                                referencedTable:
-                                    $$RecorridoSubscriptionsTableReferences
-                                        ._recorridoIdTable(db),
-                                referencedColumn:
-                                    $$RecorridoSubscriptionsTableReferences
-                                        ._recorridoIdTable(db)
-                                        .id,
+                                referencedTable: $$PassengersTableReferences
+                                    ._recorridoIdTable(db),
+                                referencedColumn: $$PassengersTableReferences
+                                    ._recorridoIdTable(db)
+                                    .id,
                               )
                               as T;
                     }
-                    if (encargadoId) {
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (debtsRefs)
+                    await drift.$_getPrefetchedData<
+                      Passenger,
+                      $PassengersTable,
+                      Debt
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PassengersTableReferences
+                          ._debtsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$PassengersTableReferences(db, table, p0).debtsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where(
+                            (e) => e.passengerId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PassengersTableProcessedTableManager =
+    drift.ProcessedTableManager<
+      _$AppDatabase,
+      $PassengersTable,
+      Passenger,
+      $$PassengersTableFilterComposer,
+      $$PassengersTableOrderingComposer,
+      $$PassengersTableAnnotationComposer,
+      $$PassengersTableCreateCompanionBuilder,
+      $$PassengersTableUpdateCompanionBuilder,
+      (Passenger, $$PassengersTableReferences),
+      Passenger,
+      drift.PrefetchHooks Function({bool recorridoId, bool debtsRefs})
+    >;
+typedef $$DebtsTableCreateCompanionBuilder =
+    DebtsCompanion Function({
+      required String id,
+      drift.Value<String?> passengerId,
+      drift.Value<String?> choferId,
+      required DateTime date,
+      drift.Value<String?> description,
+      required int totalAmount,
+      drift.Value<int> paidAmount,
+      drift.Value<bool> isSettled,
+      drift.Value<bool> isSynced,
+      drift.Value<int> rowid,
+    });
+typedef $$DebtsTableUpdateCompanionBuilder =
+    DebtsCompanion Function({
+      drift.Value<String> id,
+      drift.Value<String?> passengerId,
+      drift.Value<String?> choferId,
+      drift.Value<DateTime> date,
+      drift.Value<String?> description,
+      drift.Value<int> totalAmount,
+      drift.Value<int> paidAmount,
+      drift.Value<bool> isSettled,
+      drift.Value<bool> isSynced,
+      drift.Value<int> rowid,
+    });
+
+final class $$DebtsTableReferences
+    extends drift.BaseReferences<_$AppDatabase, $DebtsTable, Debt> {
+  $$DebtsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $PassengersTable _passengerIdTable(_$AppDatabase db) =>
+      db.passengers.createAlias(
+        drift.$_aliasNameGenerator(db.debts.passengerId, db.passengers.id),
+      );
+
+  $$PassengersTableProcessedTableManager? get passengerId {
+    final $_column = $_itemColumn<String>('passenger_id');
+    if ($_column == null) return null;
+    final manager = $$PassengersTableTableManager(
+      $_db,
+      $_db.passengers,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_passengerIdTable($_db));
+    if (item == null) return manager;
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $ChoferesTable _choferIdTable(_$AppDatabase db) =>
+      db.choferes.createAlias(
+        drift.$_aliasNameGenerator(db.debts.choferId, db.choferes.id),
+      );
+
+  $$ChoferesTableProcessedTableManager? get choferId {
+    final $_column = $_itemColumn<String>('chofer_id');
+    if ($_column == null) return null;
+    final manager = $$ChoferesTableTableManager(
+      $_db,
+      $_db.choferes,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_choferIdTable($_db));
+    if (item == null) return manager;
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$DebtsTableFilterComposer
+    extends drift.Composer<_$AppDatabase, $DebtsTable> {
+  $$DebtsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<int> get totalAmount => $composableBuilder(
+    column: $table.totalAmount,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<int> get paidAmount => $composableBuilder(
+    column: $table.paidAmount,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<bool> get isSettled => $composableBuilder(
+    column: $table.isSettled,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  $$PassengersTableFilterComposer get passengerId {
+    final $$PassengersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passengerId,
+      referencedTable: $db.passengers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PassengersTableFilterComposer(
+            $db: $db,
+            $table: $db.passengers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ChoferesTableFilterComposer get choferId {
+    final $$ChoferesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.choferId,
+      referencedTable: $db.choferes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChoferesTableFilterComposer(
+            $db: $db,
+            $table: $db.choferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DebtsTableOrderingComposer
+    extends drift.Composer<_$AppDatabase, $DebtsTable> {
+  $$DebtsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<DateTime> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<int> get totalAmount => $composableBuilder(
+    column: $table.totalAmount,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<int> get paidAmount => $composableBuilder(
+    column: $table.paidAmount,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<bool> get isSettled => $composableBuilder(
+    column: $table.isSettled,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  drift.ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
+  $$PassengersTableOrderingComposer get passengerId {
+    final $$PassengersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passengerId,
+      referencedTable: $db.passengers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PassengersTableOrderingComposer(
+            $db: $db,
+            $table: $db.passengers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ChoferesTableOrderingComposer get choferId {
+    final $$ChoferesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.choferId,
+      referencedTable: $db.choferes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChoferesTableOrderingComposer(
+            $db: $db,
+            $table: $db.choferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DebtsTableAnnotationComposer
+    extends drift.Composer<_$AppDatabase, $DebtsTable> {
+  $$DebtsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  drift.GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  drift.GeneratedColumn<DateTime> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<int> get totalAmount => $composableBuilder(
+    column: $table.totalAmount,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<int> get paidAmount => $composableBuilder(
+    column: $table.paidAmount,
+    builder: (column) => column,
+  );
+
+  drift.GeneratedColumn<bool> get isSettled =>
+      $composableBuilder(column: $table.isSettled, builder: (column) => column);
+
+  drift.GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  $$PassengersTableAnnotationComposer get passengerId {
+    final $$PassengersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.passengerId,
+      referencedTable: $db.passengers,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PassengersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.passengers,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$ChoferesTableAnnotationComposer get choferId {
+    final $$ChoferesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.choferId,
+      referencedTable: $db.choferes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ChoferesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.choferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$DebtsTableTableManager
+    extends
+        drift.RootTableManager<
+          _$AppDatabase,
+          $DebtsTable,
+          Debt,
+          $$DebtsTableFilterComposer,
+          $$DebtsTableOrderingComposer,
+          $$DebtsTableAnnotationComposer,
+          $$DebtsTableCreateCompanionBuilder,
+          $$DebtsTableUpdateCompanionBuilder,
+          (Debt, $$DebtsTableReferences),
+          Debt,
+          drift.PrefetchHooks Function({bool passengerId, bool choferId})
+        > {
+  $$DebtsTableTableManager(_$AppDatabase db, $DebtsTable table)
+    : super(
+        drift.TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DebtsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DebtsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DebtsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                drift.Value<String> id = const drift.Value.absent(),
+                drift.Value<String?> passengerId = const drift.Value.absent(),
+                drift.Value<String?> choferId = const drift.Value.absent(),
+                drift.Value<DateTime> date = const drift.Value.absent(),
+                drift.Value<String?> description = const drift.Value.absent(),
+                drift.Value<int> totalAmount = const drift.Value.absent(),
+                drift.Value<int> paidAmount = const drift.Value.absent(),
+                drift.Value<bool> isSettled = const drift.Value.absent(),
+                drift.Value<bool> isSynced = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
+              }) => DebtsCompanion(
+                id: id,
+                passengerId: passengerId,
+                choferId: choferId,
+                date: date,
+                description: description,
+                totalAmount: totalAmount,
+                paidAmount: paidAmount,
+                isSettled: isSettled,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                drift.Value<String?> passengerId = const drift.Value.absent(),
+                drift.Value<String?> choferId = const drift.Value.absent(),
+                required DateTime date,
+                drift.Value<String?> description = const drift.Value.absent(),
+                required int totalAmount,
+                drift.Value<int> paidAmount = const drift.Value.absent(),
+                drift.Value<bool> isSettled = const drift.Value.absent(),
+                drift.Value<bool> isSynced = const drift.Value.absent(),
+                drift.Value<int> rowid = const drift.Value.absent(),
+              }) => DebtsCompanion.insert(
+                id: id,
+                passengerId: passengerId,
+                choferId: choferId,
+                date: date,
+                description: description,
+                totalAmount: totalAmount,
+                paidAmount: paidAmount,
+                isSettled: isSettled,
+                isSynced: isSynced,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$DebtsTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: ({passengerId = false, choferId = false}) {
+            return drift.PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends drift.TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (passengerId) {
                       state =
                           state.withJoin(
                                 currentTable: table,
-                                currentColumn: table.encargadoId,
-                                referencedTable:
-                                    $$RecorridoSubscriptionsTableReferences
-                                        ._encargadoIdTable(db),
-                                referencedColumn:
-                                    $$RecorridoSubscriptionsTableReferences
-                                        ._encargadoIdTable(db)
-                                        .id,
+                                currentColumn: table.passengerId,
+                                referencedTable: $$DebtsTableReferences
+                                    ._passengerIdTable(db),
+                                referencedColumn: $$DebtsTableReferences
+                                    ._passengerIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (choferId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.choferId,
+                                referencedTable: $$DebtsTableReferences
+                                    ._choferIdTable(db),
+                                referencedColumn: $$DebtsTableReferences
+                                    ._choferIdTable(db)
+                                    .id,
                               )
                               as T;
                     }
@@ -8542,19 +9011,19 @@ class $$RecorridoSubscriptionsTableTableManager
       );
 }
 
-typedef $$RecorridoSubscriptionsTableProcessedTableManager =
+typedef $$DebtsTableProcessedTableManager =
     drift.ProcessedTableManager<
       _$AppDatabase,
-      $RecorridoSubscriptionsTable,
-      RecorridoSubscription,
-      $$RecorridoSubscriptionsTableFilterComposer,
-      $$RecorridoSubscriptionsTableOrderingComposer,
-      $$RecorridoSubscriptionsTableAnnotationComposer,
-      $$RecorridoSubscriptionsTableCreateCompanionBuilder,
-      $$RecorridoSubscriptionsTableUpdateCompanionBuilder,
-      (RecorridoSubscription, $$RecorridoSubscriptionsTableReferences),
-      RecorridoSubscription,
-      drift.PrefetchHooks Function({bool recorridoId, bool encargadoId})
+      $DebtsTable,
+      Debt,
+      $$DebtsTableFilterComposer,
+      $$DebtsTableOrderingComposer,
+      $$DebtsTableAnnotationComposer,
+      $$DebtsTableCreateCompanionBuilder,
+      $$DebtsTableUpdateCompanionBuilder,
+      (Debt, $$DebtsTableReferences),
+      Debt,
+      drift.PrefetchHooks Function({bool passengerId, bool choferId})
     >;
 
 class $AppDatabaseManager {
@@ -8574,11 +9043,8 @@ class $AppDatabaseManager {
       $$EventChoferesTableTableManager(_db, _db.eventChoferes);
   $$EventColectivosTableTableManager get eventColectivos =>
       $$EventColectivosTableTableManager(_db, _db.eventColectivos);
-  $$EncargadosTableTableManager get encargados =>
-      $$EncargadosTableTableManager(_db, _db.encargados);
-  $$RecorridoSubscriptionsTableTableManager get recorridoSubscriptions =>
-      $$RecorridoSubscriptionsTableTableManager(
-        _db,
-        _db.recorridoSubscriptions,
-      );
+  $$PassengersTableTableManager get passengers =>
+      $$PassengersTableTableManager(_db, _db.passengers);
+  $$DebtsTableTableManager get debts =>
+      $$DebtsTableTableManager(_db, _db.debts);
 }

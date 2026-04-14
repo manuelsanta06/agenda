@@ -1,6 +1,4 @@
 import 'package:drift/drift.dart';
-import 'events.dart';
-import 'users.dart';
 
 //EL RECORRIDO
 class Recorridos extends Table {
@@ -16,33 +14,16 @@ class Recorridos extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-//ENCARGADOS (Quien paga/El Padre)
-class Encargados extends Table {
-  TextColumn get id => text()();
-  TextColumn get name => text()();
-  TextColumn get phone => text().nullable()();
-  
-  RealColumn get balance => real().withDefault(const Constant(0.0))();
-  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
-
+class Passengers extends Table{
+  TextColumn get id=>text()();
+  TextColumn get name=>text()();
+  TextColumn get managerName=>text().nullable()();
+  TextColumn get managerPhone=>text().nullable()();
+  IntColumn get balance=>integer().withDefault(const Constant(0))();
+  TextColumn get recorridoId=>text().references(Recorridos,#id,onDelete:KeyAction.cascade)();
+  BoolColumn get isActive=>boolean().withDefault(const Constant(true))();
+  BoolColumn get isSynced=>boolean().withDefault(const Constant(false))();
   @override
-  Set<Column> get primaryKey => {id};
+  Set<Column> get primaryKey=>{id};
 }
 
-//SUSCRIPCIONES(El Alumno/El Pasajero real)
-class RecorridoSubscriptions extends Table {
-  TextColumn get id => text()();
-  
-  TextColumn get recorridoId => text().references(Recorridos, #id, onDelete: KeyAction.cascade)();
-  TextColumn get encargadoId => text().references(Encargados, #id, onDelete: KeyAction.cascade)();
-  
-  TextColumn get subscriptionName => text()();
-  TextColumn get address => text().nullable()();
-
-  IntColumn get customPrice => integer().nullable()();
-  
-  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
