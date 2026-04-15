@@ -41,16 +41,32 @@ type Recorrido struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type Encargado struct {
-	ID        string  `json:"id"`
-	Name      string  `json:"name"`
-	Phone     *string `json:"phone"`
-	Balance   float64 `json:"balance"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
+// --- TABLAS CON DEPENDENCIAS ---
+
+type Passenger struct {
+	ID           string    `json:"id"`
+	Name         string    `json:"name"`
+	ManagerName  *string   `json:"manager_name"`
+	ManagerPhone *string   `json:"manager_phone"`
+	CustomPrice  int       `json:"custom_price"`
+	RecorridoID  string    `json:"recorrido_id"`
+	IsActive     bool      `json:"is_active"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// --- TABLAS CON DEPENDENCIAS ---
+type Debt struct {
+	ID          string    `json:"id"`
+	PassengerID *string   `json:"passenger_id"`
+	ChoferID    *string   `json:"chofer_id"`
+	Date        time.Time `json:"date"`
+	Description *string   `json:"description"`
+	TotalAmount int       `json:"total_amount"`
+	PaidAmount  int       `json:"paid_amount"`
+	IsSettled   bool      `json:"is_settled"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
 
 type Event struct {
 	ID                    string  `json:"id"`
@@ -95,16 +111,6 @@ type RecorridoShift struct {
 
 //TABLAS INTERMEDIAS
 
-type RecorridoSubscription struct {
-	ID               string  `json:"id"`
-	RecorridoID      string  `json:"recorrido_id"`
-	EncargadoID      string  `json:"encargado_id"`
-	SubscriptionName string  `json:"subscription_name"`
-	Address          *string `json:"address"`
-	CustomPrice      *int    `json:"custom_price"`
-	IsActive         bool    `json:"is_active"`
-}
-
 type EventChofer struct {
 	EventID  string `json:"event_id"`
 	ChoferID string `json:"chofer_id"`
@@ -125,18 +131,18 @@ type ShiftColectivo struct {
 	ColectivoID string `json:"colectivo_id"`
 }
 
-// --- EL CONTENEDOR PRINCIPAL (PAYLOAD) ---
-// Este es el objeto gigante que Flutter enviará al puerto /sync
+
+//PAYLOAD
 
 type SyncPayload struct {
-	Choferes               []Chofer                 `json:"choferes"`
-	Colectivos             []Colectivo              `json:"colectivos"`
-	Recorridos             []Recorrido              `json:"recorridos"`
-	Encargados             []Encargado              `json:"encargados"`
-	Events                 []Event                  `json:"events"`
-	Stops                  []Stop                   `json:"stops"`
-	RecorridoShifts        []RecorridoShift         `json:"recorrido_shifts"`
-	RecorridoSubscriptions []RecorridoSubscription  `json:"recorrido_subscriptions"`
+	Choferes          []Chofer            `json:"choferes"`
+	Colectivos        []Colectivo         `json:"colectivos"`
+	Recorridos        []Recorrido         `json:"recorridos"`
+	Events            []Event             `json:"events"`
+	Stops             []Stop              `json:"stops"`
+	RecorridoShifts   []RecorridoShift    `json:"recorrido_shifts"`
+  Passengers        []Passenger         `json:"passengers"`
+	Debts             []Debt              `json:"debts"`
 
 	// Listas de las relaciones
 	EventChoferes   []EventChofer    `json:"event_choferes"`

@@ -142,23 +142,47 @@ func FullSync(payload models.SyncPayload)error{
 		}
 	}
 
-	//Encargados
-	for _, enc := range payload.Encargados {
+
+	//TABLAS CON DEPENDENCIAS
+
+  //Passengers
+	for _, p := range payload.Passengers {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO encargados (id, name, phone, balance)
-			VALUES ($1, $2, $3, $4)
+			INSERT INTO passengers (id, name, manager_name, manager_phone, custom_price, recorrido_id, is_active)
+			VALUES ($1, $2, $3, $4, $5, $6, $7)
 			ON CONFLICT (id) DO UPDATE SET
 				name = EXCLUDED.name,
-				phone = EXCLUDED.phone,
-				balance = EXCLUDED.balance,
+				manager_name = EXCLUDED.manager_name,
+				manager_phone = EXCLUDED.manager_phone,
+				custom_price = EXCLUDED.custom_price,
+				recorrido_id = EXCLUDED.recorrido_id,
+				is_active = EXCLUDED.is_active,
 				updated_at = CURRENT_TIMESTAMP;
-		`, enc.ID, enc.Name, enc.Phone, enc.Balance)
+		`, p.ID, p.Name, p.ManagerName, p.ManagerPhone, p.CustomPrice, p.RecorridoID, p.IsActive)
 		if err != nil {
-			return fmt.Errorf("error guardando encargado %s: %v", enc.ID, err)
+			return fmt.Errorf("error guardando passenger %s: %v", p.ID, err)
 		}
 	}
 
-	//TABLAS CON DEPENDENCIAS
+	//Debts
+	for _, d := range payload.Debts {
+		_, err := tx.Exec(ctx, `
+			INSERT INTO debts (id, passenger_id, chofer_id, date, description, total_amount, paid_amount, is_settled)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			ON CONFLICT (id) DO UPDATE SET
+				passenger_id = EXCLUDED.passenger_id,
+				chofer_id = EXCLUDED.chofer_id,
+				date = EXCLUDED.date,
+				description = EXCLUDED.description,
+				total_amount = EXCLUDED.total_amount,
+				paid_amount = EXCLUDED.paid_amount,
+				is_settled = EXCLUDED.is_settled,
+				updated_at = CURRENT_TIMESTAMP;
+		`, d.ID, d.PassengerID, d.ChoferID, d.Date, d.Description, d.TotalAmount, d.PaidAmount, d.IsSettled)
+		if err != nil {
+			return fmt.Errorf("error guardando debt %s: %v", d.ID, err)
+		}
+	}
 
 	//Events
 	for _, e := range payload.Events {
@@ -198,14 +222,6 @@ func FullSync(payload models.SyncPayload)error{
 		}
 	}
 
-	// Limpiar RecorridoSubscriptions (Dueño: Encargado)
-	for _, enc := range payload.Encargados {
-		_, err := tx.Exec(ctx, `DELETE FROM recorrido_subscriptions WHERE encargado_id = $1`, enc.ID)
-		if err != nil {
-			return fmt.Errorf("error limpiando subscriptions del encargado %s: %v", enc.ID, err)
-		}
-	}
-
 	// Limpiar EventChoferes y EventColectivos (Dueño: Event)
 	for _, e := range payload.Events {
 		_, err := tx.Exec(ctx, `DELETE FROM event_choferes WHERE event_id = $1`, e.ID)
@@ -229,24 +245,6 @@ func FullSync(payload models.SyncPayload)error{
 		`, s.ID, s.Name, s.Start, s.EventID, s.OrderIndex)
 		if err != nil {
 			return fmt.Errorf("error guardando stop %s: %v", s.ID, err)
-		}
-	}
-
-	//RecorridoSubscriptions (Dueño: Encargado)
-	for _, sub := range payload.RecorridoSubscriptions {
-		_, err := tx.Exec(ctx, `
-			INSERT INTO recorrido_subscriptions (id, recorrido_id, encargado_id, subscription_name, address, custom_price, is_active)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
-			ON CONFLICT (id) DO NOTHING;
-		`, sub.ID, sub.RecorridoID, sub.EncargadoID, sub.SubscriptionName, sub.Address, sub.CustomPrice, sub.IsActive)
-		if err != nil {
-			return fmt.Errorf("error insertando subscription %s: %v", sub.ID, err)
-		}
-
-		// Marcar al Encargado como sucio
-		_, err = tx.Exec(ctx, `UPDATE encargados SET updated_at = CURRENT_TIMESTAMP WHERE id = $1`, sub.EncargadoID)
-		if err != nil {
-			return fmt.Errorf("error marcando encargado como sucio: %v", err)
 		}
 	}
 
@@ -299,11 +297,11 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 	ctx := context.Background()
 	var payload models.SyncPayload
 
-	payload.Choferes = []models.Chofer{}
+	payload.Choferes   = []models.Chofer{}
 	payload.Colectivos = []models.Colectivo{}
 	payload.Recorridos = []models.Recorrido{}
-	payload.Encargados = []models.Encargado{}
-	payload.RecorridoSubscriptions = []models.RecorridoSubscription{}
+  payload.Passengers = []models.Passenger{}
+	payload.Debts      = []models.Debt{}
 
 	//CHOFERES
 	rowsChoferes, err := DB.Query(ctx, `
@@ -365,46 +363,46 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 		payload.Recorridos = append(payload.Recorridos, r)
 	}
 
-	//ENCARGADOS (Dueños de las Suscripciones)
-	rowsEncargados, err := DB.Query(ctx, `
-		SELECT id, name, phone, balance, created_at, updated_at 
-		FROM encargados 
+    //PASSENGERS
+	rowsPassengers, err := DB.Query(ctx, `
+		SELECT id, name, manager_name, manager_phone, custom_price, recorrido_id, is_active, created_at, updated_at 
+		FROM passengers 
 		WHERE updated_at > $1
 	`, lastSyncStr)
 	if err != nil {
-		return payload, fmt.Errorf("error consultando encargados: %v", err)
+		return payload, fmt.Errorf("error consultando passengers: %v", err)
 	}
-	defer rowsEncargados.Close()
+	defer rowsPassengers.Close()
 
-	for rowsEncargados.Next() {
-		var enc models.Encargado
-		err := rowsEncargados.Scan(&enc.ID, &enc.Name, &enc.Phone, &enc.Balance, &enc.CreatedAt, &enc.UpdatedAt)
+	for rowsPassengers.Next() {
+		var p models.Passenger
+		err := rowsPassengers.Scan(&p.ID, &p.Name, &p.ManagerName, &p.ManagerPhone, &p.CustomPrice, &p.RecorridoID, &p.IsActive, &p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
-			return payload, fmt.Errorf("error leyendo fila de encargado: %v", err)
+			return payload, fmt.Errorf("error leyendo fila de passenger: %v", err)
 		}
-		payload.Encargados = append(payload.Encargados, enc)
+		payload.Passengers = append(payload.Passengers, p)
 	}
 
-	//RECORRIDO SUBSCRIPTIONS (Dependientes de Encargados)
-	rowsSubs, err := DB.Query(ctx, `
-		SELECT rs.id, rs.recorrido_id, rs.encargado_id, rs.subscription_name, rs.address, rs.custom_price, rs.is_active
-		FROM recorrido_subscriptions rs
-		JOIN encargados e ON rs.encargado_id = e.id
-		WHERE e.updated_at > $1
+	//DEBTS
+	rowsDebts, err := DB.Query(ctx, `
+		SELECT id, passenger_id, chofer_id, date, description, total_amount, paid_amount, is_settled, created_at, updated_at
+		FROM debts
+		WHERE updated_at > $1
 	`, lastSyncStr)
 	if err != nil {
-		return payload, fmt.Errorf("error consultando recorrido_subscriptions: %v", err)
+		return payload, fmt.Errorf("error consultando debts: %v", err)
 	}
-	defer rowsSubs.Close()
+	defer rowsDebts.Close()
 
-	for rowsSubs.Next() {
-		var sub models.RecorridoSubscription
-		err := rowsSubs.Scan(&sub.ID, &sub.RecorridoID, &sub.EncargadoID, &sub.SubscriptionName, &sub.Address, &sub.CustomPrice, &sub.IsActive)
+	for rowsDebts.Next() {
+		var d models.Debt
+		err := rowsDebts.Scan(&d.ID, &d.PassengerID, &d.ChoferID, &d.Date, &d.Description, &d.TotalAmount, &d.PaidAmount, &d.IsSettled, &d.CreatedAt, &d.UpdatedAt)
 		if err != nil {
-			return payload, fmt.Errorf("error leyendo fila de recorrido_subscription: %v", err)
+			return payload, fmt.Errorf("error leyendo fila de debt: %v", err)
 		}
-		payload.RecorridoSubscriptions = append(payload.RecorridoSubscriptions, sub)
+		payload.Debts = append(payload.Debts, d)
 	}
+
 
 	return payload, nil
 }
