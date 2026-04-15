@@ -550,8 +550,8 @@ func RecorridoShiftPopulationRoutine() error {
 	}
 	if err:=rows.Err();err!=nil{return err}
 
-	now:=time.Now()
-	startDate:=time.Date(now.Year(),now.Month(),now.Day(),0,0,0,0,now.Location())
+	now:=time.Now().UTC()
+	startDate:=time.Date(now.Year(),now.Month(),now.Day(),0,0,0,0,time.UTC)
 
 	//transaction
 	tx, err := DB.Begin(ctx)
@@ -637,5 +637,91 @@ func RecorridoShiftPopulationRoutine() error {
 	}
 
 	fmt.Println("Populador ejecutado con éxito. Ventana de 16 días sincronizada.")
+	return nil
+}
+
+
+type activePassenger struct {
+	ID          string
+	CustomPrice int
+	BasePrice   int
+}
+
+func MonthlyDebtPopulationRoutine() error {
+	ctx := context.Background()
+
+	now := time.Now().UTC()
+	firstDayOfMonth := time.Date(now.Year(), now.Month(), 1, 12, 30, 0, 0, time.UTC)
+
+	queryPassengers := `
+		SELECT p.id, p.custom_price, r.base_price
+		FROM passengers p
+		JOIN recorridos r ON p.recorrido_id = r.id
+		WHERE p.is_active = TRUE AND r.is_active = TRUE
+	`
+	rows, err := DB.Query(ctx, queryPassengers)
+	if err != nil {
+		return fmt.Errorf("error obteniendo pasajeros activos: %w", err)
+	}
+	defer rows.Close()
+
+	var passengers []activePassenger
+	for rows.Next() {
+		var p activePassenger
+		if err := rows.Scan(&p.ID, &p.CustomPrice, &p.BasePrice); err != nil {
+			return fmt.Errorf("error leyendo pasajero: %w", err)
+		}
+		passengers = append(passengers, p)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	tx, err := DB.Begin(ctx)
+	if(err!=nil){
+		return fmt.Errorf("error iniciando transacción: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	for _, p := range passengers {
+		// duplications check
+		var existingID string
+		checkQuery := `
+			SELECT id FROM debts 
+			WHERE passenger_id = $1 
+			  AND date::date = $2::date 
+			  AND description = 'Cuota' 
+			LIMIT 1
+		`
+		err = tx.QueryRow(ctx, checkQuery, p.ID, firstDayOfMonth).Scan(&existingID)
+
+		if(err==nil){
+			continue
+		} else if err != pgx.ErrNoRows {
+			return fmt.Errorf("error comprobando idempotencia de deudas: %w", err)
+		}
+
+		//amount determination
+		totalAmount := p.BasePrice
+		if(p.CustomPrice!=-1){
+			totalAmount = p.CustomPrice
+		}
+
+		debtID := uuid.New().String()
+		insertDebtQuery:=`
+			INSERT INTO debts (id, passenger_id, chofer_id, date, description, total_amount, paid_amount, is_settled)
+			VALUES ($1, $2, NULL, $3, 'Cuota', $4, 0, FALSE)
+		`
+		_, err=tx.Exec(ctx, insertDebtQuery, debtID, p.ID, firstDayOfMonth, totalAmount)
+		if(err!=nil){
+			return fmt.Errorf("error insertando deuda mensual: %w", err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("error en el commit de facturación: %w", err)
+	}
+
+	fmt.Println("Facturación mensual ejecutada con éxito.")
 	return nil
 }

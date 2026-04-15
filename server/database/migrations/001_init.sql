@@ -1,3 +1,9 @@
+-- database creation
+CREATE DATABASE agendadb;
+\c agendadb
+ALTER DATABASE agendadb SET timezone TO 'UTC';
+
+--tables creation
 CREATE TABLE choferes (
   id TEXT PRIMARY KEY,
   dni TEXT,
