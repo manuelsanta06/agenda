@@ -8,10 +8,13 @@ import (
 
 	"github.com/manuelsanta06/agenda/database"
 	"github.com/manuelsanta06/agenda/handlers"
+	"github.com/manuelsanta06/agenda/scheduler"
 )
 
 func main() {
 	database.Connect()
+
+  scheduler.Start()
 
 	mux:=http.NewServeMux()
 	mux.HandleFunc("GET /ping",handlers.PingHandler)
@@ -22,6 +25,9 @@ func main() {
 
 	mux.HandleFunc("POST /populate/recorridos",handlers.RecorridoShiftPopulationHandler)
 	mux.HandleFunc("POST /populate/recorridosdebts",handlers.RecorridosDebtsPopulationHandler)
+
+  mux.HandleFunc("POST /scheduler/toggle/shifts",handlers.ToggleShiftsSchedulerHandler)
+	mux.HandleFunc("POST /scheduler/toggle/debts",handlers.ToggleDebtsSchedulerHandler)
 
 	fmt.Println("Servidor corriendo en http://localhost:8080 ...")
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080",mux))
