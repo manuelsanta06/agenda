@@ -3557,9 +3557,9 @@ class $PassengersTable extends Passengers
       drift.GeneratedColumn<String>(
         'manager_name',
         aliasedName,
-        true,
+        false,
         type: DriftSqlType.string,
-        requiredDuringInsert: false,
+        requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _managerPhoneMeta =
       const drift.VerificationMeta('managerPhone');
@@ -3568,9 +3568,9 @@ class $PassengersTable extends Passengers
       drift.GeneratedColumn<String>(
         'manager_phone',
         aliasedName,
-        true,
+        false,
         type: DriftSqlType.string,
-        requiredDuringInsert: false,
+        requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _customPriceMeta =
       const drift.VerificationMeta('customPrice');
@@ -3670,6 +3670,8 @@ class $PassengersTable extends Passengers
           _managerNameMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_managerNameMeta);
     }
     if (data.containsKey('manager_phone')) {
       context.handle(
@@ -3679,6 +3681,8 @@ class $PassengersTable extends Passengers
           _managerPhoneMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_managerPhoneMeta);
     }
     if (data.containsKey('custom_price')) {
       context.handle(
@@ -3732,11 +3736,11 @@ class $PassengersTable extends Passengers
       managerName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}manager_name'],
-      ),
+      )!,
       managerPhone: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}manager_phone'],
-      ),
+      )!,
       customPrice: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}custom_price'],
@@ -3765,8 +3769,8 @@ class $PassengersTable extends Passengers
 class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
   final String id;
   final String name;
-  final String? managerName;
-  final String? managerPhone;
+  final String managerName;
+  final String managerPhone;
   final int customPrice;
   final String recorridoId;
   final bool isActive;
@@ -3774,8 +3778,8 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
   const Passenger({
     required this.id,
     required this.name,
-    this.managerName,
-    this.managerPhone,
+    required this.managerName,
+    required this.managerPhone,
     required this.customPrice,
     required this.recorridoId,
     required this.isActive,
@@ -3786,12 +3790,8 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     final map = <String, drift.Expression>{};
     map['id'] = drift.Variable<String>(id);
     map['name'] = drift.Variable<String>(name);
-    if (!nullToAbsent || managerName != null) {
-      map['manager_name'] = drift.Variable<String>(managerName);
-    }
-    if (!nullToAbsent || managerPhone != null) {
-      map['manager_phone'] = drift.Variable<String>(managerPhone);
-    }
+    map['manager_name'] = drift.Variable<String>(managerName);
+    map['manager_phone'] = drift.Variable<String>(managerPhone);
     map['custom_price'] = drift.Variable<int>(customPrice);
     map['recorrido_id'] = drift.Variable<String>(recorridoId);
     map['is_active'] = drift.Variable<bool>(isActive);
@@ -3803,12 +3803,8 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     return PassengersCompanion(
       id: drift.Value(id),
       name: drift.Value(name),
-      managerName: managerName == null && nullToAbsent
-          ? const drift.Value.absent()
-          : drift.Value(managerName),
-      managerPhone: managerPhone == null && nullToAbsent
-          ? const drift.Value.absent()
-          : drift.Value(managerPhone),
+      managerName: drift.Value(managerName),
+      managerPhone: drift.Value(managerPhone),
       customPrice: drift.Value(customPrice),
       recorridoId: drift.Value(recorridoId),
       isActive: drift.Value(isActive),
@@ -3824,8 +3820,8 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     return Passenger(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      managerName: serializer.fromJson<String?>(json['managerName']),
-      managerPhone: serializer.fromJson<String?>(json['managerPhone']),
+      managerName: serializer.fromJson<String>(json['managerName']),
+      managerPhone: serializer.fromJson<String>(json['managerPhone']),
       customPrice: serializer.fromJson<int>(json['customPrice']),
       recorridoId: serializer.fromJson<String>(json['recorridoId']),
       isActive: serializer.fromJson<bool>(json['isActive']),
@@ -3838,8 +3834,8 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
-      'managerName': serializer.toJson<String?>(managerName),
-      'managerPhone': serializer.toJson<String?>(managerPhone),
+      'managerName': serializer.toJson<String>(managerName),
+      'managerPhone': serializer.toJson<String>(managerPhone),
       'customPrice': serializer.toJson<int>(customPrice),
       'recorridoId': serializer.toJson<String>(recorridoId),
       'isActive': serializer.toJson<bool>(isActive),
@@ -3850,8 +3846,8 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
   Passenger copyWith({
     String? id,
     String? name,
-    drift.Value<String?> managerName = const drift.Value.absent(),
-    drift.Value<String?> managerPhone = const drift.Value.absent(),
+    String? managerName,
+    String? managerPhone,
     int? customPrice,
     String? recorridoId,
     bool? isActive,
@@ -3859,8 +3855,8 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
   }) => Passenger(
     id: id ?? this.id,
     name: name ?? this.name,
-    managerName: managerName.present ? managerName.value : this.managerName,
-    managerPhone: managerPhone.present ? managerPhone.value : this.managerPhone,
+    managerName: managerName ?? this.managerName,
+    managerPhone: managerPhone ?? this.managerPhone,
     customPrice: customPrice ?? this.customPrice,
     recorridoId: recorridoId ?? this.recorridoId,
     isActive: isActive ?? this.isActive,
@@ -3930,8 +3926,8 @@ class Passenger extends drift.DataClass implements drift.Insertable<Passenger> {
 class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
   final drift.Value<String> id;
   final drift.Value<String> name;
-  final drift.Value<String?> managerName;
-  final drift.Value<String?> managerPhone;
+  final drift.Value<String> managerName;
+  final drift.Value<String> managerPhone;
   final drift.Value<int> customPrice;
   final drift.Value<String> recorridoId;
   final drift.Value<bool> isActive;
@@ -3951,8 +3947,8 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
   PassengersCompanion.insert({
     required String id,
     required String name,
-    this.managerName = const drift.Value.absent(),
-    this.managerPhone = const drift.Value.absent(),
+    required String managerName,
+    required String managerPhone,
     this.customPrice = const drift.Value.absent(),
     required String recorridoId,
     this.isActive = const drift.Value.absent(),
@@ -3960,6 +3956,8 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
     this.rowid = const drift.Value.absent(),
   }) : id = drift.Value(id),
        name = drift.Value(name),
+       managerName = drift.Value(managerName),
+       managerPhone = drift.Value(managerPhone),
        recorridoId = drift.Value(recorridoId);
   static drift.Insertable<Passenger> custom({
     drift.Expression<String>? id,
@@ -3988,8 +3986,8 @@ class PassengersCompanion extends drift.UpdateCompanion<Passenger> {
   PassengersCompanion copyWith({
     drift.Value<String>? id,
     drift.Value<String>? name,
-    drift.Value<String?>? managerName,
-    drift.Value<String?>? managerPhone,
+    drift.Value<String>? managerName,
+    drift.Value<String>? managerPhone,
     drift.Value<int>? customPrice,
     drift.Value<String>? recorridoId,
     drift.Value<bool>? isActive,
@@ -8078,8 +8076,8 @@ typedef $$PassengersTableCreateCompanionBuilder =
     PassengersCompanion Function({
       required String id,
       required String name,
-      drift.Value<String?> managerName,
-      drift.Value<String?> managerPhone,
+      required String managerName,
+      required String managerPhone,
       drift.Value<int> customPrice,
       required String recorridoId,
       drift.Value<bool> isActive,
@@ -8090,8 +8088,8 @@ typedef $$PassengersTableUpdateCompanionBuilder =
     PassengersCompanion Function({
       drift.Value<String> id,
       drift.Value<String> name,
-      drift.Value<String?> managerName,
-      drift.Value<String?> managerPhone,
+      drift.Value<String> managerName,
+      drift.Value<String> managerPhone,
       drift.Value<int> customPrice,
       drift.Value<String> recorridoId,
       drift.Value<bool> isActive,
@@ -8421,8 +8419,8 @@ class $$PassengersTableTableManager
               ({
                 drift.Value<String> id = const drift.Value.absent(),
                 drift.Value<String> name = const drift.Value.absent(),
-                drift.Value<String?> managerName = const drift.Value.absent(),
-                drift.Value<String?> managerPhone = const drift.Value.absent(),
+                drift.Value<String> managerName = const drift.Value.absent(),
+                drift.Value<String> managerPhone = const drift.Value.absent(),
                 drift.Value<int> customPrice = const drift.Value.absent(),
                 drift.Value<String> recorridoId = const drift.Value.absent(),
                 drift.Value<bool> isActive = const drift.Value.absent(),
@@ -8443,8 +8441,8 @@ class $$PassengersTableTableManager
               ({
                 required String id,
                 required String name,
-                drift.Value<String?> managerName = const drift.Value.absent(),
-                drift.Value<String?> managerPhone = const drift.Value.absent(),
+                required String managerName,
+                required String managerPhone,
                 drift.Value<int> customPrice = const drift.Value.absent(),
                 required String recorridoId,
                 drift.Value<bool> isActive = const drift.Value.absent(),

@@ -15,15 +15,15 @@ class SyncService{
   };
 
   static Future<void> performFullSync(AppDatabase db) async {
-    print("Syncing...");
+    log("Syncing...");
 
     if((await pushUnsyncedData(db)).$1){
-      print("Push successfull, Pulling..");
+      log("Push successfull, Pulling..");
       await fetchCatalogUpdates(db);
       await fetchEventsUpdates(db);
-      print("Sincronización completa.");
+      log("Sincronización completa.");
     }else{
-      print("Push failled.");
+      log("Push failled.");
     }
   }
 
@@ -32,7 +32,7 @@ class SyncService{
       final payload=await db.getUnsyncedPayload();
       if(payload.values.every((list)=>(list as List).isEmpty))return (true,"successfull");
       log(jsonEncode(payload));
-      print("paso");
+      log("paso");
 
       //request
       final uri=Uri.https(baseUrl,'/sync');
@@ -46,11 +46,11 @@ class SyncService{
         await db.markAsSynced(payload);
         return (true,"successfull");
       }else{
-        print("Error en POST /sync: ${response.statusCode}");
+        log("Error en POST /sync: ${response.statusCode}");
         return (false,"${response.statusCode}\n\n${response.body}");
       }
     }catch(e){
-      print("Error de conexión: $e");
+      log("Error de conexión: $e");
       return (false,"conection error");
     }
   }
@@ -76,10 +76,10 @@ class SyncService{
         await db.processCatalogSync(jsonData);
         await prefs.setString('last_sync_catalog', now);
       } else {
-        print("Error fetchCatalogUpdates: ${response.statusCode}");
+        log("Error fetchCatalogUpdates: ${response.statusCode}");
       }
     }catch(e){
-      print("Error en Catalog Sync: $e");
+      log("Error en Catalog Sync: $e");
     }
   }
 

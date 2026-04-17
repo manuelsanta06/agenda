@@ -1,14 +1,18 @@
-import 'package:agenda/database/tables/debt.dart';
 import 'package:intl/intl.dart';
-import 'package:agenda/widgets/cards.dart';
-import 'package:agenda/widgets/text.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
-import 'package:agenda/database/app_database.dart';
 import 'package:provider/provider.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:uuid/uuid.dart';
-import '../utilities/parsers.dart';
+
+import 'package:agenda/database/app_database.dart';
+
+import 'package:agenda/widgets/cards.dart';
+import 'package:agenda/widgets/text.dart';
+
+import 'package:agenda/utilities/parsers.dart';
+import 'package:agenda/utilities/debts.dart';
+
 
 Widget passengerToCard(BuildContext context,
   Color mainColor,
@@ -33,6 +37,11 @@ Widget passengerToCard(BuildContext context,
             break;
 
           case 'debt':
+            if((await showCreateDebtSheet(context,mainColor,passengerId:passa.id))&&context.mounted){
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content:Text("Deuda actualizada"),backgroundColor:Colors.green)
+              );
+            }
             break;
 
           case 'delete':
@@ -63,7 +72,7 @@ Widget passengerToCard(BuildContext context,
         PopupMenuItem<String>(
           value:'debt',
           child:Row(children:[
-            Icon(Icons.euro,color:Colors.green),
+            Icon(Icons.attach_money,color:Colors.green),
             SizedBox(width:8),
             Text('Añadir deuda')
           ]),
@@ -95,7 +104,14 @@ Widget passengerToCard(BuildContext context,
       SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:
         debts.map((d)=>pillText(
           "${DateFormat('MMM/yy').format(d.date)} \$${d.totalAmount}",
-          d.isSettled?Colors.green:Colors.red
+          d.isSettled?Colors.green:Colors.red,
+          onTap:()async{
+            if((await showDebtDetails(context,d,d.isSettled?Colors.green:Colors.red))&&context.mounted){
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content:Text("Deuda actualizada"),backgroundColor:Colors.green)
+              );
+            }
+          }
         )).toList()
       )),
     ])
@@ -200,8 +216,8 @@ class _CreatePassengerSheetState extends State<_CreatePassengerSheet>{
                       final p=PassengersCompanion(
                         id:drift.Value(widget.passenger?.id??const Uuid().v4()),
                         name:drift.Value(_nameC.text),
-                        managerName:drift.Value(_managerC.text.isEmpty?null:_managerC.text),
-                        managerPhone:drift.Value(_phoneC.text.isEmpty?null:phoneParser(_phoneC.text)),
+                        managerName:drift.Value(_managerC.text),
+                        managerPhone:drift.Value(_phoneC.text),
                         recorridoId:drift.Value(_selectedRecorridoId!),
                         customPrice:drift.Value(finalPrice),
                         isActive:drift.Value(widget.passenger?.isActive??true),

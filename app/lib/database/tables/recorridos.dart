@@ -17,8 +17,8 @@ class Recorridos extends Table {
 class Passengers extends Table{
   TextColumn get id=>text()();
   TextColumn get name=>text()();
-  TextColumn get managerName=>text().nullable()();
-  TextColumn get managerPhone=>text().nullable()();
+  TextColumn get managerName=>text()();
+  TextColumn get managerPhone=>text()();
   IntColumn get customPrice=>integer().withDefault(const Constant(-1))();
   TextColumn get recorridoId=>text().references(Recorridos,#id,onDelete:KeyAction.cascade)();
   BoolColumn get isActive=>boolean().withDefault(const Constant(true))();
