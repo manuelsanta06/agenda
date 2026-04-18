@@ -19,7 +19,7 @@ Future<bool> showCreateModifiColectivo(BuildContext context,{Colectivo? bus,requ
   if(result==null)return false;
   final db=Provider.of<AppDatabase>(context,listen:false);
   try{
-    await db.into(db.colectivos).insert(result,mode:drift.InsertMode.insertOrReplace);
+    await db.into(db.colectivos).insertOnConflictUpdate(result);
     SyncService.pushUnsyncedData(db);
     return true;
   }catch(e){

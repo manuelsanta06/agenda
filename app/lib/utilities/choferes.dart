@@ -263,9 +263,8 @@ Future<bool> showCreateModifiChofer(BuildContext context, Color mainColor, {Chof
   final db=Provider.of<AppDatabase>(context, listen: false);
 
   try{
-    await db.into(db.choferes).insert(
+    await db.into(db.choferes).insertOnConflictUpdate(
       result,
-      mode: drift.InsertMode.insertOrReplace,
     );
     SyncService.pushUnsyncedData(db);
     return true;

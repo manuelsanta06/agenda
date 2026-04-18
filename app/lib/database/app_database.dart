@@ -288,7 +288,7 @@ class AppDatabase extends _$AppDatabase {
       //CHOFERES
       final choferesList = json['choferes'] as List<dynamic>? ?? [];
       for(var c in choferesList){
-        await into(choferes).insert(
+        await into(choferes).insertOnConflictUpdate(
           ChoferesCompanion(
             id: drift.Value(c['id']),
             dni: drift.Value(c['dni']),
@@ -301,14 +301,13 @@ class AppDatabase extends _$AppDatabase {
             is_active: drift.Value(c['is_active'] ?? true),
             isSynced: const drift.Value(true),
           ),
-          mode: drift.InsertMode.insertOrReplace,
         );
       }
 
       //COLECTIVOS
       final colectivosList = json['colectivos'] as List<dynamic>? ?? [];
       for(var c in colectivosList) {
-        await into(colectivos).insert(
+        await into(colectivos).insertOnConflictUpdate(
           ColectivosCompanion(
             id: drift.Value(c['id']),
             plate: drift.Value(c['plate']),
@@ -322,14 +321,13 @@ class AppDatabase extends _$AppDatabase {
             is_active: drift.Value(c['is_active'] ?? true),
             isSynced: const drift.Value(true),
           ),
-          mode: drift.InsertMode.insertOrReplace,
         );
       }
 
       //RECORRIDOS
       final recorridosList = json['recorridos'] as List<dynamic>? ?? [];
       for(var r in recorridosList) {
-        await into(recorridos).insert(
+        await into(recorridos).insertOnConflictUpdate(
           RecorridosCompanion(
             id: drift.Value(r['id']),
             name: drift.Value(r['name']),
@@ -337,14 +335,13 @@ class AppDatabase extends _$AppDatabase {
             isActive: drift.Value(r['is_active'] ?? true),
             isSynced: const drift.Value(true),
           ),
-          mode: drift.InsertMode.insertOrReplace,
         );
       }
 
       //PASSENGERS
       final passengersList=json['passengers'] as List<dynamic>? ?? [];
       for(var p in passengersList){
-        await into(passengers).insert(
+        await into(passengers).insertOnConflictUpdate(
           PassengersCompanion(
             id:drift.Value(p['id']),
             name:drift.Value(p['name']),
@@ -355,14 +352,13 @@ class AppDatabase extends _$AppDatabase {
             isActive:drift.Value(p['is_active']??true),
             isSynced:const drift.Value(true),
           ),
-          mode:drift.InsertMode.insertOrReplace,
         );
       }
 
       //DEBTS
       final debtsList=json['debts'] as List<dynamic>? ?? [];
       for(var d in debtsList){
-        await into(debts).insert(
+        await into(debts).insertOnConflictUpdate(
           DebtsCompanion(
             id:drift.Value(d['id']),
             passengerId:drift.Value(d['passenger_id']),
@@ -374,7 +370,6 @@ class AppDatabase extends _$AppDatabase {
             isSettled:drift.Value(d['is_settled']??false),
             isSynced:const drift.Value(true),
           ),
-          mode:drift.InsertMode.insertOrReplace,
         );
       }
     });
@@ -388,7 +383,7 @@ class AppDatabase extends _$AppDatabase {
       for (var e in eventsList) {
         updatedEventIds.add(e['id']);
 
-        await into(events).insert(
+        await into(events).insertOnConflictUpdate(
           EventsCompanion(
             id: drift.Value(e['id']),
             name: drift.Value(e['name']),
@@ -413,7 +408,6 @@ class AppDatabase extends _$AppDatabase {
             recorridoId: drift.Value(e['recorrido_id']),
             isSynced: const drift.Value(true),
           ),
-          mode: drift.InsertMode.insertOrReplace,
         );
       }
 
@@ -428,7 +422,7 @@ class AppDatabase extends _$AppDatabase {
         // Paradas (Stops)
         final stopsList = json['stops'] as List<dynamic>? ?? [];
         for (var s in stopsList) {
-          await into(stops).insert(
+          await into(stops).insertOnConflictUpdate(
             StopsCompanion(
               id: drift.Value(s['id']),
               name: drift.Value(s['name']),
@@ -436,34 +430,59 @@ class AppDatabase extends _$AppDatabase {
               eventId: drift.Value(s['event_id']),
               orderIndex: drift.Value(s['order_index']),
             ),
-            mode: drift.InsertMode.insertOrReplace,
           );
         }
 
         // Event Choferes
         final eventChoferesList = json['event_choferes'] as List<dynamic>? ?? [];
         for (var ec in eventChoferesList) {
-          await into(eventChoferes).insert(
+          await into(eventChoferes).insertOnConflictUpdate(
             EventChoferesCompanion(
               eventId: drift.Value(ec['event_id']),
               choferId: drift.Value(ec['chofer_id']),
             ),
-            mode: drift.InsertMode.insertOrReplace,
           );
         }
 
         // Event Colectivos
         final eventColectivosList = json['event_colectivos'] as List<dynamic>? ?? [];
         for (var ec in eventColectivosList) {
-          await into(eventColectivos).insert(
+          await into(eventColectivos).insertOnConflictUpdate(
             EventColectivosCompanion(
               eventId: drift.Value(ec['event_id']),
               colectivoId: drift.Value(ec['colectivo_id']),
             ),
-            mode: drift.InsertMode.insertOrReplace,
           );
         }
       }
+    });
+  }
+
+
+  Stream<List<PassengerWithDebts>> watchChoferesWithDebts(){
+    final query=select(choferes).join([
+      leftOuterJoin(debts,debts.choferId.equalsExp(choferes.id)),
+    ]);
+    query.orderBy([
+      OrderingTerm.asc(debts.isSettled),
+      OrderingTerm.desc(debts.date)
+    ]);
+
+    return query.watch().map((rows){
+      final groupedData=<String,PassengerWithDebts>{};
+
+      for(final row in rows){
+        final passenger=row.readTable(passengers);
+        final debt=row.readTableOrNull(debts);
+
+        final item=groupedData.putIfAbsent(
+          passenger.id, 
+          ()=>PassengerWithDebts(passenger:passenger,debts:[])
+        );
+
+        if(debt!=null)item.debts.add(debt);
+      }
+      return groupedData.values.toList();
     });
   }
 

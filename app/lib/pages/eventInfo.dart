@@ -214,7 +214,7 @@ class eventInfo extends StatelessWidget{
                 final choferes=await deafDb.getChoferesWithAvailability(eve.startDateTime,eve.endDateTime,eve.id);
                 final selection=await choferCardSelectionList(context,choferes,maincolor);
                 if(selection==null)return;
-                await deafDb.into(deafDb.eventChoferes).insert(EventChoferesCompanion(
+                await deafDb.into(deafDb.eventChoferes).insertOnConflictUpdate(EventChoferesCompanion(
                   eventId: drift.Value(eve.id),
                   choferId: drift.Value(selection.id),
                 ));
@@ -260,7 +260,7 @@ class eventInfo extends StatelessWidget{
                 final colectivos=await deafDb.getColectivosWithAvailability(eve.startDateTime,eve.endDateTime,eve.id);
                 final selection=await colectivoCardSelectionList(context,colectivos,maincolor);
                 if(selection==null)return;
-                await deafDb.into(deafDb.eventColectivos).insert(EventColectivosCompanion(
+                await deafDb.into(deafDb.eventColectivos).insertOnConflictUpdate(EventColectivosCompanion(
                   eventId: drift.Value(eve.id),
                   colectivoId: drift.Value(selection.id),
                 ));

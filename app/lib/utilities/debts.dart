@@ -24,9 +24,8 @@ Future<bool> showDebtDetails(BuildContext context,Debt debt,Color mainColor)asyn
   final db=Provider.of<AppDatabase>(context,listen:false);
 
   try{
-    await db.into(db.debts).insert(
+    await db.into(db.debts).insertOnConflictUpdate(
       result,
-      mode:drift.InsertMode.insertOrReplace,
     );
      SyncService.pushUnsyncedData(db);
     return true;
@@ -191,7 +190,7 @@ Future<bool> showCreateDebtSheet(
   final db=Provider.of<AppDatabase>(context,listen:false);
 
   try{
-    await db.into(db.debts).insert(result);
+    await db.into(db.debts).insertOnConflictUpdate(result);
     //SyncService.pushUnsyncedData(db);
     return true;
   }catch(e){

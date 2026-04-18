@@ -90,19 +90,14 @@ Widget passengerToCard(BuildContext context,
     onPressed:onPressed,
     onLongPressed:onLongPressed,
     child:Column(crossAxisAlignment: CrossAxisAlignment.start,children:[
-      Row(children:[
-        Expanded(child:Text(passa.name)),
-        //Text("\$${numberParser(passa.balance.toInt())}",
-        //  style:TextStyle(color:passa.balance>=0?mainColor:Colors.red)),
-        SizedBox(width:25),
-      ]),
+      Text(passa.name),
       Text(
         "${passa.managerName} - ${passa.managerPhone}",
         style:TextStyle(color:Colors.grey,fontSize:12),
       ),
       if(debts!=null&&debts.isNotEmpty)
       SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:
-        debts.map((d)=>pillText(
+        debts.map((d)=>Padding(padding:const EdgeInsets.only(right:10.0),child:pillText(
           "${DateFormat('MMM/yy').format(d.date)} \$${d.totalAmount}",
           d.isSettled?Colors.green:Colors.red,
           onTap:()async{
@@ -112,7 +107,7 @@ Widget passengerToCard(BuildContext context,
               );
             }
           }
-        )).toList()
+        ))).toList(),
       )),
     ])
   );
@@ -134,10 +129,7 @@ Future<bool> showCreateModifiPassenger(BuildContext context,Color mainColor,{Pas
   final db=Provider.of<AppDatabase>(context,listen:false);
 
   try{
-    await db.into(db.passengers).insert(
-      result,
-      mode:drift.InsertMode.insertOrReplace,
-    );
+    await db.into(db.passengers).insertOnConflictUpdate(result);
     return true;
   }catch(e){
     print("Error saving passenger: $e");

@@ -146,7 +146,7 @@ class _homePageState extends State<homePage>{
                     _fabKey.currentState?.toggleMenu();
                     final newRecorrido=await showCreateRecorridoSheet(context,homePage.mainColor);
                     if(newRecorrido==null)return;
-                    await deafDb.into(deafDb.recorridos).insert(newRecorrido);
+                    await deafDb.into(deafDb.recorridos).insertOnConflictUpdate(newRecorrido);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(backgroundColor:Colors.green,content:Text("Recorrido guardado")),
                     );

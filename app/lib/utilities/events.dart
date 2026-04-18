@@ -243,7 +243,7 @@ Future<bool> showCreateTripSheet(BuildContext context,{
           ..where((t)=>t.id.equals(eventCompanion.id.value))
         ).write(eventCompanion);
       }else{
-        await db.into(db.events).insert(eventCompanion);
+        await db.into(db.events).insertOnConflictUpdate(eventCompanion);
       }
       //BORRAR LAS PARADAS ELIMINADAS
       if(toDeleteIds.isNotEmpty){
@@ -261,7 +261,7 @@ Future<bool> showCreateTripSheet(BuildContext context,{
              ..where((t)=>t.id.equals(stopCompanion.id.value))
            ).write(stopCompanion);
          }else{
-           await db.into(db.stops).insert(stopCompanion);
+           await db.into(db.stops).insertOnConflictUpdate(stopCompanion);
          }
       }
     });

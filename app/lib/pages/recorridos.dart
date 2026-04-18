@@ -69,7 +69,7 @@ class _recorridosPage extends State<recorridosPage>{
         onPressed:()async{
           final newRecorrido=await showCreateRecorridoSheet(context,recorridosPage.mainColor);
           if(newRecorrido==null)return;
-          await deafDb.into(deafDb.recorridos).insert(newRecorrido);
+          await deafDb.into(deafDb.recorridos).insertOnConflictUpdate(newRecorrido);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(backgroundColor:Colors.green,content: Text("Recorrido '${newRecorrido.name.value}' creado")),
           );
