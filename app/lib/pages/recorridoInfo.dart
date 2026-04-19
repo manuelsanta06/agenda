@@ -14,16 +14,24 @@ import 'package:agenda/utilities/passegers.dart';
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/parsers.dart';
 
-class recorridoInfo extends StatelessWidget{
+
+class recorridoInfo extends StatefulWidget{
   final Recorrido reco;
   final Color maincolor;
-  String searchQuery="";
   
-  recorridoInfo({
+  const recorridoInfo({
     super.key,
     required this.reco,
-    required this.maincolor
+    required this.maincolor,
   });
+
+  @override
+  State<recorridoInfo> createState()=>_recorridoInfoState();
+}
+
+
+class _recorridoInfoState extends State<recorridoInfo>{
+  String searchQuery="";
 
   void snack(BuildContext context,bool succes){
     if(succes){
@@ -53,22 +61,22 @@ class recorridoInfo extends StatelessWidget{
             children:[
               Expanded(
                 child:Text(
-                  reco.name,
+                  widget.reco.name,
                   style:const TextStyle(fontWeight:FontWeight.bold,fontSize:18),
                   overflow:TextOverflow.ellipsis,
                 ),
               ),
-              pillText("\$${numberParser(reco.basePrice)}",maincolor),
+              pillText("\$${numberParser(widget.reco.basePrice)}",widget.maincolor),
             ],
           ),
 
           //BOTONES
           bottom: TabBar(
-            labelColor: maincolor,
+            labelColor:widget.maincolor,
             unselectedLabelColor: Colors.grey,
-            indicatorColor: maincolor,
-            indicatorWeight: 3,
-            tabs: const [
+            indicatorColor:widget.maincolor,
+            indicatorWeight:3,
+            tabs:const[
               Tab( text: "Horarios",  icon:Icon(Icons.access_time),),
               Tab( text: "Info",      icon:Icon(Icons.info_outline),),
               Tab( text: "Pasajeros", icon:Icon(Icons.groups),),
@@ -89,10 +97,10 @@ class recorridoInfo extends StatelessWidget{
   }
 
 
-  Widget _buildHorariosTab(BuildContext context) {
+  Widget _buildHorariosTab(BuildContext context){
     final db = Provider.of<AppDatabase>(context);
     return StreamBuilder<List<EventWithStops>>(
-      stream:db.watchShiftsWithStops(reco.id),
+      stream:db.watchShiftsWithStops(widget.reco.id),
       builder:(context,snapshot){
         if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
         if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
@@ -102,7 +110,7 @@ class recorridoInfo extends StatelessWidget{
           padding: const EdgeInsets.all(16),
           children:[
             ...List.generate(shifts.length,(index)=>EventCard(
-              maincolor:maincolor,
+              maincolor:widget.maincolor,
               eve:shifts[index].event,
               sto:shifts[index].stops,
             )),
@@ -115,12 +123,12 @@ class recorridoInfo extends StatelessWidget{
               child: InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap:()async=>snack(context,(await showCreateTripSheet(context,
-                  mainColor:maincolor,
+                  mainColor:widget.maincolor,
                   isTrip:false,
                   isShift:true,
-                  recoId:reco.id,
+                  recoId:widget.reco.id,
                   startDate: DateTime(2000,1,1),
-                ))??false),
+                ))),
                 child: Container(
                   width:double.infinity,
                   padding:const EdgeInsets.symmetric(vertical:7,horizontal:5),
@@ -144,15 +152,15 @@ class recorridoInfo extends StatelessWidget{
         BasicCard(
           child: ListTile(
             title: const Text("Editar Nombre"),
-            subtitle: Text(reco.name),
-            trailing: Icon(Icons.edit, color: maincolor),
+            subtitle: Text(widget.reco.name),
+            trailing: Icon(Icons.edit,color:widget.maincolor),
           ),
           onPressed:()async{
-            final newVal=await quickChangeDialog(context,'nombre',def:reco.name);
+            final newVal=await quickChangeDialog(context,'nombre',def:widget.reco.name);
             if(newVal==null)return;
             final deafDb=Provider.of<AppDatabase>(context,listen:false);
             await (deafDb.update(deafDb.recorridos)
-              ..where((tbl)=>tbl.id.equals(reco.id)))
+              ..where((tbl)=>tbl.id.equals(widget.reco.id)))
               .write(RecorridosCompanion(name:drift.Value(newVal),isSynced:drift.Value(false)));
           },
         ),
@@ -160,15 +168,15 @@ class recorridoInfo extends StatelessWidget{
         BasicCard(
           child: ListTile(
             title: const Text("Editar Precio Base"),
-            subtitle: Text("\$ ${reco.basePrice}"),
-            trailing: Icon(Icons.attach_money, color: maincolor),
+            subtitle: Text("\$ ${widget.reco.basePrice}"),
+            trailing: Icon(Icons.attach_money,color:widget.maincolor),
           ),
           onPressed:()async{
-            final newVal=await quickChangeDialog(context,'precio',def:reco.basePrice.toString());
+            final newVal=await quickChangeDialog(context,'precio',def:widget.reco.basePrice.toString());
             if(newVal==null)return;
             final deafDb=Provider.of<AppDatabase>(context,listen:false);
             await (deafDb.update(deafDb.recorridos)
-              ..where((tbl)=>tbl.id.equals(reco.id)))
+              ..where((tbl)=>tbl.id.equals(widget.reco.id)))
               .write(RecorridosCompanion(basePrice:drift.Value(int.parse(newVal)),isSynced:drift.Value(false)));
           },
         ),
@@ -177,22 +185,21 @@ class recorridoInfo extends StatelessWidget{
   }
 
   Widget _buildPasajerosTab(BuildContext context) {
-    final db = Provider.of<AppDatabase>(context);
+    final db=Provider.of<AppDatabase>(context);
     return Scaffold(
       body:Column(children:[
         SizedBox(height:6),
-        mySearchBar(onChanged:(value){searchQuery=value.toLowerCase();}),
+        mySearchBar(onChanged:(value)=>setState((){searchQuery=value.toLowerCase();})),
         Expanded(child:StreamBuilder<List<PassengerWithDebts>>(
-          stream:db.watchPassengersWithDebts(reco.id),
+          stream:db.watchPassengersWithDebts(widget.reco.id),
           builder:(context,snapshot){
             if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
             if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
             final List<PassengerWithDebts> allData=snapshot.data!;
-            //if(allData.isEmpty)return Center(child:Text("..."));
             final filtered=allData.where((s){
               return s.passenger.name.toLowerCase().contains(searchQuery)||
-                (s.passenger.managerPhone?.toLowerCase().contains(searchQuery)??false)||
-                (s.passenger.managerName?.toLowerCase().contains(searchQuery)??false);
+                (s.passenger.managerPhone.toLowerCase().contains(searchQuery))||
+                (s.passenger.managerName.toLowerCase().contains(searchQuery));
             }).toList();
             return ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -207,7 +214,12 @@ class recorridoInfo extends StatelessWidget{
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
                     onTap:()async=>
-                      snack(context,(await showCreateModifiPassenger(context,maincolor,recoId:reco.id))),
+                      snack(context,(await showCreateModifiPassenger(context,
+                        widget.maincolor,
+                        recoId:widget.reco.id,
+                        nameDef:phoneParser(searchQuery).length<5?searchQuery:null,
+                        phoneDef:phoneParser(searchQuery).length<5?null:phoneParser(searchQuery),
+                      ))),
                     child: Container(
                       width:double.infinity,
                       padding:const EdgeInsets.symmetric(vertical:7,horizontal:5),
@@ -222,7 +234,7 @@ class recorridoInfo extends StatelessWidget{
                   context,
                   recorridosPage.mainColor,
                   filtered[index].passenger,
-                  reco.id,
+                  widget.reco.id,
                   debts:filtered[index].debts,
                 );
               },

@@ -114,7 +114,14 @@ Widget passengerToCard(BuildContext context,
 }
 
 // Wrapper to handle the modal logic and database insertion
-Future<bool> showCreateModifiPassenger(BuildContext context,Color mainColor,{Passenger? passenger,String? recoId})async{
+Future<bool> showCreateModifiPassenger(
+  BuildContext context,
+  Color mainColor,{
+  Passenger? passenger,
+  String? nameDef,
+  String? phoneDef,
+  String? recoId
+})async{
   final result=await showModalBottomSheet<PassengersCompanion>(
     context:context,
     isScrollControlled:true,
@@ -122,6 +129,8 @@ Future<bool> showCreateModifiPassenger(BuildContext context,Color mainColor,{Pas
       mainColor:mainColor,
       passenger:passenger,
       initialRecorridoId:recoId,
+      nameDef:nameDef,
+      phoneDef:phoneDef,
     ),
   );
 
@@ -141,7 +150,9 @@ class _CreatePassengerSheet extends StatefulWidget{
   final Color mainColor;
   final Passenger? passenger;
   final String? initialRecorridoId;
-  const _CreatePassengerSheet({required this.mainColor,this.passenger,this.initialRecorridoId});
+  final String? nameDef;
+  final String? phoneDef;
+  const _CreatePassengerSheet({required this.mainColor,this.passenger,this.initialRecorridoId,this.phoneDef,this.nameDef});
 
   @override
   State<_CreatePassengerSheet> createState()=>_CreatePassengerSheetState();
@@ -158,9 +169,9 @@ class _CreatePassengerSheetState extends State<_CreatePassengerSheet>{
   @override
   void initState(){
     super.initState();
-    _nameC=TextEditingController(text:widget.passenger?.name??"");
+    _nameC=TextEditingController(text:widget.passenger?.name??widget.nameDef??"");
     _managerC=TextEditingController(text:widget.passenger?.managerName??"");
-    _phoneC=TextEditingController(text:widget.passenger?.managerPhone??"");
+    _phoneC=TextEditingController(text:widget.passenger?.managerPhone??widget.phoneDef??"");
     
     // If customPrice is -1, we show an empty string in the UI
     final int currentPrice=widget.passenger?.customPrice??-1;
