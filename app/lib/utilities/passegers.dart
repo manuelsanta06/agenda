@@ -209,7 +209,7 @@ class _CreatePassengerSheetState extends State<_CreatePassengerSheet>{
                         id:drift.Value(widget.passenger?.id??const Uuid().v4()),
                         name:drift.Value(_nameC.text),
                         managerName:drift.Value(_managerC.text),
-                        managerPhone:drift.Value(_phoneC.text),
+                        managerPhone:drift.Value(phoneParser(_phoneC.text)),
                         recorridoId:drift.Value(_selectedRecorridoId!),
                         customPrice:drift.Value(finalPrice),
                         isActive:drift.Value(widget.passenger?.isActive??true),

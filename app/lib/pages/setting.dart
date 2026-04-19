@@ -75,7 +75,7 @@ class PantallaAjustes extends StatelessWidget{
             title:const Text("Sincronizar base de datos"),
             onTap:()async{
               final deafDb=Provider.of<AppDatabase>(context, listen: false);
-              var returned=await (SyncService.pushUnsyncedData(deafDb));
+              var returned=await (SyncService.performFullSync(deafDb));
               if(returned.$1){
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content:Text('Sincronizado correctamente'),backgroundColor:Colors.green),

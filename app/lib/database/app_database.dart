@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'dart:developer';
+import 'package:agenda/utilities/choferes.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
@@ -24,6 +26,11 @@ class PassengerWithDebts{
   final Passenger passenger;
   final List<Debt> debts;
   PassengerWithDebts({required this.passenger,required this.debts});
+}
+class ChoferesWithDebts{
+  final Chofer chofer;
+  final List<Debt> debts;
+  ChoferesWithDebts({required this.chofer,required this.debts});
 }
 
 @DriftDatabase(tables: [
@@ -86,75 +93,66 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> markAllAsUnsynced() async {
-    await transaction(() async {
-      await update(choferes).write(const ChoferesCompanion(isSynced: Value(false)));
-      await update(colectivos).write(const ColectivosCompanion(isSynced: Value(false)));
-      await update(recorridos).write(const RecorridosCompanion(isSynced: Value(false)));
-      await update(passengers).write(const PassengersCompanion(isSynced: Value(false)));
-      await update(debts).write(const DebtsCompanion(isSynced: Value(false)));
-      await update(events).write(const EventsCompanion(isSynced: Value(false)));
-      //await update(recorridoShifts).write(const RecorridoShiftsCompanion(isSynced: Value(false)));
+    await transaction(()async{
+      await update(choferes).write(const ChoferesCompanion(isSynced:Value(false)));
+      await update(colectivos).write(const ColectivosCompanion(isSynced:Value(false)));
+      await update(recorridos).write(const RecorridosCompanion(isSynced:Value(false)));
+      await update(passengers).write(const PassengersCompanion(isSynced:Value(false)));
+      await update(debts).write(const DebtsCompanion(isSynced:Value(false)));
+      await update(events).write(const EventsCompanion(isSynced:Value(false)));
     });
   }
 
-  Future<void> markAsSynced(Map<String, dynamic> sentPayload) async {
-    await transaction(()async{
-      //Choferes
-      final choferIds = (sentPayload['choferes'] as List)
-          .map((e) => e['id'] as String).toList();
-      if (choferIds.isNotEmpty) {
-        await (update(choferes)..where((t) => t.id.isIn(choferIds)))
-            .write(const ChoferesCompanion(isSynced:Value(true)));
-      }
+  Future<bool> markAsSynced(Map<String, dynamic> sentPayload) async {
+    try{
+      await transaction(()async{
+        //Choferes
+        final choferIds=(sentPayload['choferes'] as List).map((e) => e['id'] as String).toList();
+        if (choferIds.isNotEmpty){
+          await (update(choferes)..where((t) => t.id.isIn(choferIds)))
+              .write(const ChoferesCompanion(isSynced:Value(true)));
+        }
 
-      //Colectivos
-      final colectivoIds = (sentPayload['colectivos'] as List)
-          .map((e) => e['id'] as String).toList();
-      if (colectivoIds.isNotEmpty) {
-        await (update(colectivos)..where((t) => t.id.isIn(colectivoIds)))
-            .write(const ColectivosCompanion(isSynced:Value(true)));
-      }
+        //Colectivos
+        final colectivoIds=(sentPayload['colectivos'] as List).map((e) => e['id'] as String).toList();
+        if (colectivoIds.isNotEmpty){
+          await (update(colectivos)..where((t) => t.id.isIn(colectivoIds)))
+              .write(const ColectivosCompanion(isSynced:Value(true)));
+        }
 
-      //Recorridos
-      final recorridoIds = (sentPayload['recorridos'] as List)
-          .map((e) => e['id'] as String).toList();
-      if (recorridoIds.isNotEmpty) {
-        await (update(recorridos)..where((t) => t.id.isIn(recorridoIds)))
-            .write(const RecorridosCompanion(isSynced:Value(true)));
-      }
+        //Recorridos
+        final recorridoIds=(sentPayload['recorridos'] as List).map((e) => e['id'] as String).toList();
+        if (recorridoIds.isNotEmpty){
+          await (update(recorridos)..where((t) => t.id.isIn(recorridoIds)))
+              .write(const RecorridosCompanion(isSynced:Value(true)));
+        }
 
-      //Encargados
-      final passengersIds=(sentPayload['encargados'] as List)
-          .map((e)=>e['id'] as String).toList();
-      if(passengersIds.isNotEmpty){
-        await (update(passengers)..where((t)=>t.id.isIn(passengersIds)))
-            .write(const PassengersCompanion(isSynced:Value(true)));
-      }
+        //Passengers
+        final passengersIds=(sentPayload['passengers'] as List).map((e)=>e['id'] as String).toList();
+        if(passengersIds.isNotEmpty){
+          await (update(passengers)..where((t)=>t.id.isIn(passengersIds)))
+              .write(const PassengersCompanion(isSynced:Value(true)));
+        }
 
-      //Debts
-      final debtsIds=(sentPayload['encargados'] as List)
-          .map((e)=>e['id'] as String).toList();
-      if(debtsIds.isNotEmpty){
-        await (update(debts)..where((t)=>t.id.isIn(debtsIds)))
-            .write(const DebtsCompanion(isSynced:Value(true)));
-      }
+        //Debts
+        final debtsIds=(sentPayload['debts'] as List).map((e)=>e['id'] as String).toList();
+        if(debtsIds.isNotEmpty){
+          await (update(debts)..where((t)=>t.id.isIn(debtsIds)))
+              .write(const DebtsCompanion(isSynced:Value(true)));
+        }
 
-      //Events
-      final eventIds = (sentPayload['events'] as List)
-          .map((e) => e['id'] as String).toList();
-      if (eventIds.isNotEmpty) {
-        await (update(events)..where((t) => t.id.isIn(eventIds)))
-            .write(const EventsCompanion(isSynced:Value(true)));
-      }
-
-      //Recorrido Shifts
-      //final shiftIds = (sentPayload['recorrido_shifts'] as List)
-      //    .map((e) => e['id'] as String).toList();
-      //if (shiftIds.isNotEmpty) {
-      //  await (update(recorridoShifts)..where((t) => t.id.isIn(shiftIds)))
-      //      .write(const RecorridoShiftsCompanion(isSynced:Value(true)));
-      //}
-    });
+        //Events
+        final eventIds=(sentPayload['events'] as List).map((e)=>e['id'] as String).toList();
+        if(eventIds.isNotEmpty){
+          await (update(events)..where((t)=>t.id.isIn(eventIds)))
+              .write(const EventsCompanion(isSynced:Value(true)));
+        }
+      });
+      return true;
+    }catch(e){
+      log("Error marcando como sincronizado: $e");
+      return false;
+    }
   }
 
   Stream<(int, int)> watchVtvStatus() {
@@ -364,7 +362,7 @@ class AppDatabase extends _$AppDatabase {
             passengerId:drift.Value(d['passenger_id']),
             choferId:drift.Value(d['chofer_id']),
             date:drift.Value(DateTime.parse(d['date']).toLocal()),
-            description:drift.Value(d['description']),
+            description:drift.Value(d['description']??""),
             totalAmount:drift.Value(d['total_amount']),
             paidAmount:drift.Value(d['paid_amount']??0),
             isSettled:drift.Value(d['is_settled']??false),
@@ -459,7 +457,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
 
-  Stream<List<PassengerWithDebts>> watchChoferesWithDebts(){
+  Stream<List<ChoferesWithDebts>> watchChoferesWithDebts(){
     final query=select(choferes).join([
       leftOuterJoin(debts,debts.choferId.equalsExp(choferes.id)),
     ]);
@@ -469,20 +467,32 @@ class AppDatabase extends _$AppDatabase {
     ]);
 
     return query.watch().map((rows){
-      final groupedData=<String,PassengerWithDebts>{};
+      final groupedData=<String,ChoferesWithDebts>{};
 
       for(final row in rows){
-        final passenger=row.readTable(passengers);
+        final choferess=row.readTable(choferes);
         final debt=row.readTableOrNull(debts);
 
         final item=groupedData.putIfAbsent(
-          passenger.id, 
-          ()=>PassengerWithDebts(passenger:passenger,debts:[])
+          choferess.id, 
+          ()=>ChoferesWithDebts(chofer:choferess,debts:[])
         );
 
         if(debt!=null)item.debts.add(debt);
       }
-      return groupedData.values.toList();
+      final resultList=groupedData.values.toList();
+
+      resultList.sort((a,b){
+        final unpaidA=a.debts.where((d)=>!d.isSettled).length;
+        final unpaidB=b.debts.where((d)=>!d.isSettled).length;
+
+        if(unpaidA!=unpaidB)return unpaidB.compareTo(unpaidA); 
+        return (a.chofer.alias??a.chofer.name??a.chofer.surname)!.toLowerCase().compareTo(
+               (b.chofer.alias??b.chofer.name??b.chofer.surname)!.toLowerCase()
+        );
+      });
+
+      return resultList;
     });
   }
 

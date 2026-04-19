@@ -338,7 +338,7 @@ class _CreateDebtSheetState extends State<_CreateDebtSheet>{
                     passengerId:drift.Value(_isPassenger?_selectedOwnerId:null),
                     choferId:drift.Value(!_isPassenger?_selectedOwnerId:null),
                     date:drift.Value(_date),
-                    description:drift.Value(_descC.text.isEmpty?null:_descC.text),
+                    description:drift.Value(_descC.text),
                     totalAmount:drift.Value(amount),
                     paidAmount:const drift.Value(0),
                     isSettled:const drift.Value(false),

@@ -9,7 +9,7 @@ class Debts extends Table{
   TextColumn get choferId=>text().nullable().references(Choferes,#id,onDelete:KeyAction.cascade)();
   
   DateTimeColumn get date=>dateTime()();
-  TextColumn get description=>text().nullable()();
+  TextColumn get description=>text()();
   IntColumn get totalAmount=>integer()();
   IntColumn get paidAmount=>integer().withDefault(const Constant(0))();
   BoolColumn get isSettled=>boolean().withDefault(const Constant(false))();

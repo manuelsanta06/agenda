@@ -1,17 +1,21 @@
 import 'package:agenda/database/app_database.dart';
-import 'package:agenda/widgets/cards.dart';
-import 'package:agenda/widgets/text.dart';
+import 'package:intl/intl.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../widgets/imageImput.dart';
-import '../widgets/searchBar.dart';
 import 'package:flutter/material.dart';
-import '../utilities/parsers.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart' as drift; 
 import 'dart:io';
-import '../utilities/syncService.dart';
+
+import 'package:agenda/utilities/parsers.dart';
+import 'package:agenda/utilities/syncService.dart';
+import 'package:agenda/utilities/debts.dart';
+
+import 'package:agenda/widgets/imageImput.dart';
+import 'package:agenda/widgets/searchBar.dart';
+import 'package:agenda/widgets/cards.dart';
+import 'package:agenda/widgets/text.dart';
 
 typedef Chofer=Chofere;
 
@@ -102,6 +106,7 @@ Widget choferToCard(
   BuildContext context,
   Chofer chofe,
   Color mainColor, {
+  List<Debt>? debts,
   bool busy=false,
   bool hideOptions=false,
   VoidCallback? onPressed,
@@ -136,6 +141,11 @@ Widget choferToCard(
                 break;
 
               case 'debt':
+                if((await showCreateDebtSheet(context,mainColor,choferId:chofe.id))&&context.mounted){
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content:Text("Deuda actualizada"),backgroundColor:Colors.green)
+                  );
+                }
                 break;
 
               case 'delete':
@@ -185,28 +195,44 @@ Widget choferToCard(
           ]
         ),
 
-      child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[
-        buildAvatar(chofe, mainColor),
-        const SizedBox(width: 14),
-        Expanded(child:Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children:[
-            Text(
-              (chofe.alias?.isNotEmpty??false)?
-                chofe.alias!
-                :'${chofe.name?.split(" ").first??""} ${chofe.surname?.split(" ").first??""}',
-              style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w600,),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DataLine(text:"DNI: ${chofe.dni}",mainColor:mainColor),
-                DataLine(text:"Tel: ${chofe.mobileNumber}",mainColor:mainColor),
-              ],
-            ),
-          ],
-        ),),
-      ]),
+      child:Column(children:[
+        Row(children:[
+          buildAvatar(chofe, mainColor),
+          const SizedBox(width: 14),
+          Expanded(child:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children:[
+              Text(
+                (chofe.alias?.isNotEmpty??false)?
+                  chofe.alias!
+                  :'${chofe.name?.split(" ").first??""} ${chofe.surname?.split(" ").first??""}',
+                style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w600,),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DataLine(text:"DNI: ${chofe.dni}",mainColor:mainColor),
+                  DataLine(text:"Tel: ${chofe.mobileNumber}",mainColor:mainColor),
+                ],
+              ),
+            ],
+          )),
+        ]),
+        if(debts!=null&&debts.isNotEmpty)
+        SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:
+          debts.map((d)=>Padding(padding:const EdgeInsets.only(right:10,top:10),child:pillText(
+            "${DateFormat('MMM/yy').format(d.date)} \$${d.totalAmount}",
+            d.isSettled?Colors.green:Colors.red,
+            onTap:()async{
+              if((await showDebtDetails(context,d,d.isSettled?Colors.green:Colors.red))&&context.mounted){
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content:Text("Deuda actualizada"),backgroundColor:Colors.green)
+                );
+              }
+            }
+          ))).toList(),
+        )),
+      ])
     ),
   );
 }

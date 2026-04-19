@@ -14,10 +14,11 @@ class SyncService{
     'Authorization':'Bearer $apiKey',
   };
 
-  static Future<void> performFullSync(AppDatabase db) async {
+  static Future<(bool,String)> performFullSync(AppDatabase db) async {
     log("Syncing...");
+    final data=await pushUnsyncedData(db);
 
-    if((await pushUnsyncedData(db)).$1){
+    if(data.$1){
       log("Push successfull, Pulling..");
       await fetchCatalogUpdates(db);
       await fetchEventsUpdates(db);
@@ -25,6 +26,7 @@ class SyncService{
     }else{
       log("Push failled.");
     }
+    return data;
   }
 
   static Future<(bool,String)> pushUnsyncedData(AppDatabase db)async{
@@ -32,7 +34,6 @@ class SyncService{
       final payload=await db.getUnsyncedPayload();
       if(payload.values.every((list)=>(list as List).isEmpty))return (true,"successfull");
       log(jsonEncode(payload));
-      log("paso");
 
       //request
       final uri=Uri.https(baseUrl,'/sync');
@@ -43,8 +44,7 @@ class SyncService{
       );
 
       if(response.statusCode==200){
-        await db.markAsSynced(payload);
-        return (true,"successfull");
+        return (await db.markAsSynced(payload),"successfull");
       }else{
         log("Error en POST /sync: ${response.statusCode}");
         return (false,"${response.statusCode}\n\n${response.body}");

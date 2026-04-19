@@ -51,22 +51,24 @@ class _peoplePageState extends State<peoplePage>{
           ),
 
           Expanded(
-            child: StreamBuilder<List<Chofere>>(
-              stream: db.select(db.choferes).watch(), 
+            child: StreamBuilder<List<ChoferesWithDebts>>(
+              stream: db.watchChoferesWithDebts(), 
               builder:(context, snapshot){
                 if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
                 if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
 
-                final listaChoferes=snapshot.data!.where((tbl)=>showInactives?!tbl.is_active:tbl.is_active).toList();
+                final listaChoferes=snapshot.data!.where((tbl)=>
+                  showInactives?!tbl.chofer.is_active:tbl.chofer.is_active)
+                .toList();
 
                 // Aplicar filtro de búsqueda
                 final filtered = searchQuery.isEmpty
                   ? listaChoferes
                   : listaChoferes.where((c){
-                    return (c.name?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
-                      (c.dni?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
-                      (c.surname?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
-                      (c.mobileNumber?.toString().contains(searchQuery)??false);
+                    return (c.chofer.name?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
+                      (c.chofer.dni?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
+                      (c.chofer.surname?.toLowerCase().contains(searchQuery.toLowerCase())??false) ||
+                      (c.chofer.mobileNumber?.toString().contains(searchQuery)??false);
                   }).toList();
                 if(filtered.isEmpty)return const Center(child:Text("???"));
 
@@ -74,11 +76,12 @@ class _peoplePageState extends State<peoplePage>{
                   itemCount: filtered.length,
                   itemBuilder:(context, index){
                     return choferToCard(
-                      context,filtered[index],peoplePage.mainColor,
-                      onPressed: ()=>{},
-                      onLongPress: (filtered[index].is_active)?
-                        ()=>removeChoferDialog(context,filtered[index],false):
-                        ()=>removeChoferDialog(context,filtered[index],true)
+                      context,filtered[index].chofer,peoplePage.mainColor,
+                      debts:filtered[index].debts,
+                      onPressed:()=>{},
+                      onLongPress:(filtered[index].chofer.is_active)?
+                        ()=>removeChoferDialog(context,filtered[index].chofer,false):
+                        ()=>removeChoferDialog(context,filtered[index].chofer,true)
                     );
                   },
                 );

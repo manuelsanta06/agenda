@@ -4120,9 +4120,9 @@ class $DebtsTable extends Debts with drift.TableInfo<$DebtsTable, Debt> {
       drift.GeneratedColumn<String>(
         'description',
         aliasedName,
-        true,
+        false,
         type: DriftSqlType.string,
-        requiredDuringInsert: false,
+        requiredDuringInsert: true,
       );
   static const drift.VerificationMeta _totalAmountMeta =
       const drift.VerificationMeta('totalAmount');
@@ -4235,6 +4235,8 @@ class $DebtsTable extends Debts with drift.TableInfo<$DebtsTable, Debt> {
           _descriptionMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_descriptionMeta);
     }
     if (data.containsKey('total_amount')) {
       context.handle(
@@ -4293,7 +4295,7 @@ class $DebtsTable extends Debts with drift.TableInfo<$DebtsTable, Debt> {
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}description'],
-      ),
+      )!,
       totalAmount: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}total_amount'],
@@ -4324,7 +4326,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
   final String? passengerId;
   final String? choferId;
   final DateTime date;
-  final String? description;
+  final String description;
   final int totalAmount;
   final int paidAmount;
   final bool isSettled;
@@ -4334,7 +4336,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
     this.passengerId,
     this.choferId,
     required this.date,
-    this.description,
+    required this.description,
     required this.totalAmount,
     required this.paidAmount,
     required this.isSettled,
@@ -4351,9 +4353,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
       map['chofer_id'] = drift.Variable<String>(choferId);
     }
     map['date'] = drift.Variable<DateTime>(date);
-    if (!nullToAbsent || description != null) {
-      map['description'] = drift.Variable<String>(description);
-    }
+    map['description'] = drift.Variable<String>(description);
     map['total_amount'] = drift.Variable<int>(totalAmount);
     map['paid_amount'] = drift.Variable<int>(paidAmount);
     map['is_settled'] = drift.Variable<bool>(isSettled);
@@ -4371,9 +4371,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
           ? const drift.Value.absent()
           : drift.Value(choferId),
       date: drift.Value(date),
-      description: description == null && nullToAbsent
-          ? const drift.Value.absent()
-          : drift.Value(description),
+      description: drift.Value(description),
       totalAmount: drift.Value(totalAmount),
       paidAmount: drift.Value(paidAmount),
       isSettled: drift.Value(isSettled),
@@ -4391,7 +4389,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
       passengerId: serializer.fromJson<String?>(json['passengerId']),
       choferId: serializer.fromJson<String?>(json['choferId']),
       date: serializer.fromJson<DateTime>(json['date']),
-      description: serializer.fromJson<String?>(json['description']),
+      description: serializer.fromJson<String>(json['description']),
       totalAmount: serializer.fromJson<int>(json['totalAmount']),
       paidAmount: serializer.fromJson<int>(json['paidAmount']),
       isSettled: serializer.fromJson<bool>(json['isSettled']),
@@ -4406,7 +4404,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
       'passengerId': serializer.toJson<String?>(passengerId),
       'choferId': serializer.toJson<String?>(choferId),
       'date': serializer.toJson<DateTime>(date),
-      'description': serializer.toJson<String?>(description),
+      'description': serializer.toJson<String>(description),
       'totalAmount': serializer.toJson<int>(totalAmount),
       'paidAmount': serializer.toJson<int>(paidAmount),
       'isSettled': serializer.toJson<bool>(isSettled),
@@ -4419,7 +4417,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
     drift.Value<String?> passengerId = const drift.Value.absent(),
     drift.Value<String?> choferId = const drift.Value.absent(),
     DateTime? date,
-    drift.Value<String?> description = const drift.Value.absent(),
+    String? description,
     int? totalAmount,
     int? paidAmount,
     bool? isSettled,
@@ -4429,7 +4427,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
     passengerId: passengerId.present ? passengerId.value : this.passengerId,
     choferId: choferId.present ? choferId.value : this.choferId,
     date: date ?? this.date,
-    description: description.present ? description.value : this.description,
+    description: description ?? this.description,
     totalAmount: totalAmount ?? this.totalAmount,
     paidAmount: paidAmount ?? this.paidAmount,
     isSettled: isSettled ?? this.isSettled,
@@ -4505,7 +4503,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
   final drift.Value<String?> passengerId;
   final drift.Value<String?> choferId;
   final drift.Value<DateTime> date;
-  final drift.Value<String?> description;
+  final drift.Value<String> description;
   final drift.Value<int> totalAmount;
   final drift.Value<int> paidAmount;
   final drift.Value<bool> isSettled;
@@ -4528,7 +4526,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
     this.passengerId = const drift.Value.absent(),
     this.choferId = const drift.Value.absent(),
     required DateTime date,
-    this.description = const drift.Value.absent(),
+    required String description,
     required int totalAmount,
     this.paidAmount = const drift.Value.absent(),
     this.isSettled = const drift.Value.absent(),
@@ -4536,6 +4534,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
     this.rowid = const drift.Value.absent(),
   }) : id = drift.Value(id),
        date = drift.Value(date),
+       description = drift.Value(description),
        totalAmount = drift.Value(totalAmount);
   static drift.Insertable<Debt> custom({
     drift.Expression<String>? id,
@@ -4568,7 +4567,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
     drift.Value<String?>? passengerId,
     drift.Value<String?>? choferId,
     drift.Value<DateTime>? date,
-    drift.Value<String?>? description,
+    drift.Value<String>? description,
     drift.Value<int>? totalAmount,
     drift.Value<int>? paidAmount,
     drift.Value<bool>? isSettled,
@@ -8550,7 +8549,7 @@ typedef $$DebtsTableCreateCompanionBuilder =
       drift.Value<String?> passengerId,
       drift.Value<String?> choferId,
       required DateTime date,
-      drift.Value<String?> description,
+      required String description,
       required int totalAmount,
       drift.Value<int> paidAmount,
       drift.Value<bool> isSettled,
@@ -8563,7 +8562,7 @@ typedef $$DebtsTableUpdateCompanionBuilder =
       drift.Value<String?> passengerId,
       drift.Value<String?> choferId,
       drift.Value<DateTime> date,
-      drift.Value<String?> description,
+      drift.Value<String> description,
       drift.Value<int> totalAmount,
       drift.Value<int> paidAmount,
       drift.Value<bool> isSettled,
@@ -8911,7 +8910,7 @@ class $$DebtsTableTableManager
                 drift.Value<String?> passengerId = const drift.Value.absent(),
                 drift.Value<String?> choferId = const drift.Value.absent(),
                 drift.Value<DateTime> date = const drift.Value.absent(),
-                drift.Value<String?> description = const drift.Value.absent(),
+                drift.Value<String> description = const drift.Value.absent(),
                 drift.Value<int> totalAmount = const drift.Value.absent(),
                 drift.Value<int> paidAmount = const drift.Value.absent(),
                 drift.Value<bool> isSettled = const drift.Value.absent(),
@@ -8935,7 +8934,7 @@ class $$DebtsTableTableManager
                 drift.Value<String?> passengerId = const drift.Value.absent(),
                 drift.Value<String?> choferId = const drift.Value.absent(),
                 required DateTime date,
-                drift.Value<String?> description = const drift.Value.absent(),
+                required String description,
                 required int totalAmount,
                 drift.Value<int> paidAmount = const drift.Value.absent(),
                 drift.Value<bool> isSettled = const drift.Value.absent(),
