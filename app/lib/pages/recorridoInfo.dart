@@ -47,7 +47,7 @@ class _recorridoInfoState extends State<recorridoInfo>{
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
+    return SafeArea(child:DefaultTabController(
       length:3,
       initialIndex:1,
       child:Scaffold(
@@ -93,7 +93,7 @@ class _recorridoInfoState extends State<recorridoInfo>{
           ],
         ),
       ),
-    );
+    ));
   }
 
 
