@@ -77,9 +77,9 @@ class _recorridoInfoState extends State<recorridoInfo>{
             indicatorColor:widget.maincolor,
             indicatorWeight:3,
             tabs:const[
-              Tab( text: "Horarios",  icon:Icon(Icons.access_time),),
-              Tab( text: "Info",      icon:Icon(Icons.info_outline),),
-              Tab( text: "Pasajeros", icon:Icon(Icons.groups),),
+              Tab(text:"Horarios", icon:Icon(Icons.access_time),),
+              Tab(text:"Info",     icon:Icon(Icons.info_outline),),
+              Tab(text:"Pasajeros",icon:Icon(Icons.groups),),
             ],
           ),
         ),
@@ -146,39 +146,67 @@ class _recorridoInfoState extends State<recorridoInfo>{
   }
 
   Widget _buildInfoTab(BuildContext context) {
+    final db=Provider.of<AppDatabase>(context, listen: false);
+
     return ListView(
       padding:const EdgeInsets.all(16),
-      children: [
+      children:[
+
+        subtitleLine("General",widget.maincolor),
         BasicCard(
-          child: ListTile(
-            title: const Text("Editar Nombre"),
-            subtitle: Text(widget.reco.name),
-            trailing: Icon(Icons.edit,color:widget.maincolor),
+          child:ListTile(
+            title:const Text("Nombre"),
+            subtitle:Text(widget.reco.name),
+            trailing:Icon(Icons.edit, color: widget.maincolor),
           ),
           onPressed:()async{
             final newVal=await quickChangeDialog(context,'nombre',def:widget.reco.name);
             if(newVal==null)return;
-            final deafDb=Provider.of<AppDatabase>(context,listen:false);
-            await (deafDb.update(deafDb.recorridos)
-              ..where((tbl)=>tbl.id.equals(widget.reco.id)))
-              .write(RecorridosCompanion(name:drift.Value(newVal),isSynced:drift.Value(false)));
+            await (db.update(db.recorridos)
+              ..where((t)=>t.id.equals(widget.reco.id)))
+              .write(RecorridosCompanion(
+                name:drift.Value(newVal),
+                isSynced:drift.Value(false),
+              ));
           },
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         BasicCard(
-          child: ListTile(
-            title: const Text("Editar Precio Base"),
-            subtitle: Text("\$ ${widget.reco.basePrice}"),
-            trailing: Icon(Icons.attach_money,color:widget.maincolor),
+          child:ListTile(
+            title:const Text("Precio Base"),
+            subtitle:Text("\$ ${numberParser(widget.reco.basePrice)}"),
+            trailing:Icon(Icons.attach_money, color: widget.maincolor),
           ),
-          onPressed:()async{
+          onPressed: () async {
             final newVal=await quickChangeDialog(context,'precio',def:widget.reco.basePrice.toString());
-            if(newVal==null)return;
-            final deafDb=Provider.of<AppDatabase>(context,listen:false);
-            await (deafDb.update(deafDb.recorridos)
-              ..where((tbl)=>tbl.id.equals(widget.reco.id)))
-              .write(RecorridosCompanion(basePrice:drift.Value(int.parse(newVal)),isSynced:drift.Value(false)));
+            if(newVal == null) return;
+            final parsed = int.tryParse(newVal);
+            if(parsed==null) return;
+            await (db.update(db.recorridos)
+              ..where((t)=>t.id.equals(widget.reco.id)))
+              .write(RecorridosCompanion(
+                basePrice:drift.Value(parsed),
+                isSynced:drift.Value(false),
+              ));
           },
+        ),
+        const SizedBox(height:20),
+        subtitleLine("Estado",widget.maincolor),
+        BasicCard(
+          child:SwitchListTile(
+            title:const Text("Recorrido activo"),
+            subtitle:Text(widget.reco.isActive ? "Visible y operativo" : "Oculto / pausado"),
+            value:widget.reco.isActive,
+            activeThumbColor:widget.maincolor,
+            onChanged:(val)async{
+              await (db.update(db.recorridos)
+                ..where((t)=>t.id.equals(widget.reco.id)))
+                .write(RecorridosCompanion(
+                  isActive:drift.Value(val),
+                  isSynced:drift.Value(false),
+                ));
+            },
+          ),
         ),
       ],
     );
