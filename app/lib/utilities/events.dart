@@ -99,6 +99,18 @@ class EventCard extends StatelessWidget{
                   startDate:eve.startDateTime,
                 );
                 break;
+              case 'duplicate':
+                await showCreateTripSheet(context,
+                  isTrip:eve.isTrip,
+                  isShift:eve.type==EventTypes.SHIFT,
+                  isDuplicate:true,
+                  mainColor:maincolor,
+                  event:eve,stops:sto,
+                  recoId:eve.recorridoId,
+                  startDate:eve.startDateTime,
+                );
+                break;
+
               case 'delete':
                 await showDialog<void>(
                   context: context,
@@ -150,6 +162,14 @@ class EventCard extends StatelessWidget{
               ]),
             ),
             PopupMenuItem<String>(
+              value:'duplicate',
+              child:Row(children:[
+                Icon(Icons.control_point_duplicate),
+                SizedBox(width:8),
+                Text('Duplicar')
+              ]),
+            ),
+            PopupMenuItem<String>(
               value:'chat',
               child:Row(children:[
                 Icon(Icons.phone),
@@ -160,7 +180,7 @@ class EventCard extends StatelessWidget{
             PopupMenuItem<String>(
               value:'delete',
               child:Row(children:[
-                Icon(Icons.delete, color: Colors.red), 
+                Icon(Icons.delete,color:Colors.red), 
                 SizedBox(width: 8), 
                 Text('Borrar',style:TextStyle(color:Colors.red)),
               ]),
@@ -197,14 +217,13 @@ class EventCard extends StatelessWidget{
   }
 }
 
-// Recuerda asegurarte de tener importado 'package:provider/provider.dart';
-
 Future<bool> showCreateTripSheet(BuildContext context,{
   Event? event,
   List<Stop>? stops,
   bool isShift=false,
+  bool isDuplicate=false,
+  bool isTrip=false,
   final String? recoId,
-  required bool isTrip,
   required Color mainColor,
   required DateTime startDate,
 })async{
@@ -222,6 +241,7 @@ Future<bool> showCreateTripSheet(BuildContext context,{
       recoId:recoId,
       isTrip: isTrip,
       isShift: isShift,
+      isDuplicate:isDuplicate,
       startDate: startDate,
     ),
   );
@@ -233,7 +253,6 @@ Future<bool> showCreateTripSheet(BuildContext context,{
 
   try{
     await db.transaction(() async {
-      //GUARDAR O ACTUALIZAR EL EVENTO
       final existingEvent=await(db.select(db.events)
         ..where((t)=>t.id.equals(eventCompanion.id.value))
       ).getSingleOrNull();
@@ -245,24 +264,22 @@ Future<bool> showCreateTripSheet(BuildContext context,{
       }else{
         await db.into(db.events).insertOnConflictUpdate(eventCompanion);
       }
-      //BORRAR LAS PARADAS ELIMINADAS
       if(toDeleteIds.isNotEmpty){
-        await(db.delete(db.stops)
-          ..where((t)=>t.id.isIn(toDeleteIds))
-        ).go();
+      await(db.delete(db.stops)
+        ..where((t)=>t.id.isIn(toDeleteIds))
+      ).go();
       }
-      //GUARDAR O ACTUALIZAR LAS PARADAS
-      for (final stopCompanion in stopsCompanions) {
-         final existingStop=await(db.select(db.stops)
+      for(final stopCompanion in stopsCompanions){
+       final existingStop=await(db.select(db.stops)
+         ..where((t)=>t.id.equals(stopCompanion.id.value))
+       ).getSingleOrNull();
+       if (existingStop != null) {
+         await(db.update(db.stops)
            ..where((t)=>t.id.equals(stopCompanion.id.value))
-         ).getSingleOrNull();
-         if (existingStop != null) {
-           await(db.update(db.stops)
-             ..where((t)=>t.id.equals(stopCompanion.id.value))
-           ).write(stopCompanion);
-         }else{
-           await db.into(db.stops).insertOnConflictUpdate(stopCompanion);
-         }
+         ).write(stopCompanion);
+       }else{
+         await db.into(db.stops).insertOnConflictUpdate(stopCompanion);
+       }
       }
     });
     SyncService.pushUnsyncedData(db);
@@ -280,10 +297,11 @@ class TempStop{
   TempStop({this.originalId, required this.stopDate});
 }
 
-//Return a cuple EventsCompanion/StopsCompanion
+//Returns a cuple EventsCompanion/StopsCompanion
 class _CreateTripSheet extends StatefulWidget {
   final bool isTrip;
   final bool isShift;
+  final bool isDuplicate;
   final String? recoId;
   final Event? eve;
   final List<Stop>? sto;
@@ -296,8 +314,9 @@ class _CreateTripSheet extends StatefulWidget {
     this.eve,
     this.sto,
     this.recoId,
+    this.isTrip=false,
     this.isShift=false,
-    required this.isTrip,
+    this.isDuplicate=false,
     required this.startDate
   });
 
@@ -313,10 +332,10 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
   late Set<WeekDays> weekDays;
   bool repeat=false;
 
-  late List<TempStop> _tempStops=[];
-  final List<String> _toDeleteIds = [];
+  final List<TempStop> _tempStops=[];
+  final List<String> _toDeleteIds=[];
   @override
-  void initState() {
+  void initState(){
     super.initState();
 
 
@@ -336,8 +355,6 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
     _contactNameC.text=widget.eve?.contactName??"";
     _contactC.text=widget.eve?.contact??"";
 
-    //_stopControllers=[];
-    //_stopDateTime=[];
     for(int i=0; i<widget.sto!.length; i++){
       final temp = TempStop(
         originalId: widget.sto![i].id,
@@ -373,13 +390,11 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
   void _getDateTime(BuildContext context,int index)async{
     if((!repeat||index==0)&&!widget.isShift){
       DateTime? selected=await getDatetime(context,_tempStops[index].stopDate);
-      if(selected!=null){
-        _tempStops[index].stopDate=selected;
-      }
+      if(selected!=null)_tempStops[index].stopDate=selected;
     }else{
       final tmp=await getTime(context);
       if(tmp==null)return;
-      _tempStops[index].stopDate = DateTime(
+      _tempStops[index].stopDate=DateTime(
         _tempStops.first.stopDate.year,
         _tempStops.first.stopDate.month,
         _tempStops.first.stopDate.day,
@@ -391,43 +406,42 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
   }
 
   void _onSave(BuildContext context){
-    if(_formKey.currentState?.validate()??false){
-      final newTrip=EventsCompanion(
-        id:drift.Value(widget.eve?.id??Uuid().v4()),
-        name:drift.Value(_nameC.text),
-        contactName:drift.Value(_contactNameC.text),
-        contact:drift.Value(phoneParser(_contactC.text)),
-        repeat:drift.Value(repeat),
-        days:drift.Value(repeat||widget.isShift?weekDays.toList():[]),
-        startDateTime:drift.Value(_tempStops.first.stopDate),
-        endDateTime:drift.Value(_tempStops.last.stopDate),
-        //stoprepeatingdatetime
-        isTrip:drift.Value(widget.isTrip),
-        isSynced:drift.Value(false),
-        state:drift.Value(widget.eve?.state??EventStates.INCOMPLETE),
-        type:drift.Value(widget.eve?.type??(widget.isTrip?
-          EventTypes.EVENT:widget.isShift?
-            EventTypes.SHIFT:EventTypes.REMINDER)),
-        recorridoId:drift.Value(widget.recoId),
-        shiftId:drift.Value(null),
-      );
+    if(!(_formKey.currentState?.validate()??false))return;
+    final newTrip=EventsCompanion(
+      id:drift.Value(widget.isDuplicate?Uuid().v4():widget.eve?.id??Uuid().v4()),
+      name:drift.Value(_nameC.text),
+      contactName:drift.Value(_contactNameC.text),
+      contact:drift.Value(phoneParser(_contactC.text)),
+      repeat:drift.Value(repeat),
+      days:drift.Value(repeat||widget.isShift?weekDays.toList():[]),
+      startDateTime:drift.Value(_tempStops.first.stopDate),
+      endDateTime:drift.Value(_tempStops.last.stopDate),
+      //stoprepeatingdatetime
+      isTrip:drift.Value(widget.isTrip),
+      isSynced:drift.Value(false),
+      state:drift.Value(widget.eve?.state??EventStates.INCOMPLETE),
+      type:drift.Value(widget.eve?.type??(widget.isTrip?
+        EventTypes.EVENT:widget.isShift?
+          EventTypes.SHIFT:EventTypes.REMINDER)),
+      recorridoId:drift.Value(widget.recoId),
+      shiftId:drift.Value(null),
+    );
 
-      final List<StopsCompanion> newStops=[];
-      int currentOrder=0;
-      for(final temp in _tempStops){
-        if(temp.nameC.text.isEmpty)continue;
-        
-        newStops.add(StopsCompanion(
-          id: drift.Value(temp.originalId??const Uuid().v4()),
-          name: drift.Value(temp.nameC.text),
-          start: drift.Value(temp.stopDate), 
-          eventId: newTrip.id,
-          orderIndex: drift.Value(currentOrder++),
-        ));
-      }
+    final List<StopsCompanion> newStops=[];
+    int currentOrder=0;
+    for(final temp in _tempStops){
+      if(temp.nameC.text.isEmpty)continue;
       
-      Navigator.of(context).pop((newTrip, newStops, _toDeleteIds));
+      newStops.add(StopsCompanion(
+        id: drift.Value(widget.isDuplicate?Uuid().v4():temp.originalId??const Uuid().v4()),
+        name: drift.Value(temp.nameC.text),
+        start: drift.Value(temp.stopDate), 
+        eventId: newTrip.id,
+        orderIndex: drift.Value(currentOrder++),
+      ));
     }
+    
+    Navigator.of(context).pop((newTrip, newStops, _toDeleteIds));
   }
   
   @override
@@ -574,7 +588,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
               const SizedBox(height: 5),
 
               // STOPS
-              Text( widget.isTrip?"Paradas":"lugar",
+              Text("Paradas/lugares",
                 style:TextStyle(fontSize:16, fontWeight:FontWeight.bold),
               ),
               Expanded(child:ListView.builder(
@@ -626,7 +640,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
                         Expanded(child:TextFormField(
                           controller:_tempStops[index].nameC,
                           decoration:InputDecoration(
-                            labelText:widget.isTrip?'Parada ${index + 1}':"Lugar",
+                            labelText:'Parada ${index+1}',
                             //border:const OutlineInputBorder(),
                             border: OutlineInputBorder(borderRadius:BorderRadius.circular(12)),
                             focusedBorder: OutlineInputBorder(
