@@ -12,6 +12,7 @@ import 'tables/events.dart';
 import 'tables/recorridos.dart';
 import 'tables/debt.dart';
 
+import 'package:uuid/uuid.dart';
 export 'tables/events.dart';
 
 part 'app_database.g.dart';
@@ -32,6 +33,11 @@ class ChoferesWithDebts{
   final List<Debt> debts;
   ChoferesWithDebts({required this.chofer,required this.debts});
 }
+class EventWithDebts{
+  final Event event;
+  final List<Debt> debts;
+  EventWithDebts({required this.event,required this.debts});
+}
 
 @DriftDatabase(tables: [
   Choferes, 
@@ -49,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase():super(_openConnection());
 
   @override
-  int get schemaVersion=>6;
+  int get schemaVersion=>7;
 
   @override
   MigrationStrategy get migration{
@@ -75,7 +81,7 @@ class AppDatabase extends _$AppDatabase {
             newColumns: [events.recorridoId], 
           ));
         }if(from<5){
-          await m.addColumn(events,events.price);
+          await customStatement('ALTER TABLE events ADD COLUMN price INTEGER NOT NULL DEFAULT 0;');
           await m.addColumn(events,events.data);
           await m.addColumn(colectivos,colectivos.vtv);
         }if(from<6){
@@ -84,6 +90,27 @@ class AppDatabase extends _$AppDatabase {
 
           await m.createTable(passengers);
           await m.createTable(debts);
+        }if(from<7){
+          await m.alterTable(TableMigration(debts,newColumns:[debts.eventId]));
+
+          final oldEvents=await customSelect('SELECT id, price, start_date_time, name FROM events WHERE price>0').get();
+
+          for(final row in oldEvents){
+            final dynamic rawDate=row.read<dynamic>('start_date_time');
+            final dateObj=row.read<DateTime>('start_date_time');
+
+            await into(debts).insert(DebtsCompanion(
+              id:drift.Value(const Uuid().v4()),
+              eventId:drift.Value(row.read<String>('id')),
+              date:drift.Value(dateObj),
+              description:drift.Value('Precio del evento: ${row.read<String>('name')}'),
+              totalAmount:drift.Value(row.read<int>('price')),
+              paidAmount:const drift.Value(0),
+              isSettled:const drift.Value(false),
+              isSynced:const drift.Value(false),
+            ));
+          }
+          await m.alterTable(TableMigration(events));
         }
       },
       beforeOpen:(details)async{
@@ -92,7 +119,7 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
-  Future<void> markAllAsUnsynced() async {
+  Future<void> markAllAsUnsynced()async{
     await transaction(()async{
       await update(choferes).write(const ChoferesCompanion(isSynced:Value(false)));
       await update(colectivos).write(const ColectivosCompanion(isSynced:Value(false)));
@@ -103,7 +130,7 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  Future<bool> markAsSynced(Map<String, dynamic> sentPayload) async {
+  Future<bool> markAsSynced(Map<String, dynamic> sentPayload)async{
     try{
       await transaction(()async{
         //Choferes
@@ -159,7 +186,7 @@ class AppDatabase extends _$AppDatabase {
     final hoy=DateTime.now();
     final limite=hoy.add(const Duration(days:20));
 
-    return (select(colectivos)..where((t)=>t.is_active)).watch().map((lista) {
+    return (select(colectivos)..where((t)=>t.is_active)).watch().map((lista){
       return(
         lista.where((c)=>!c.vtv.isAfter(hoy)).length,
         lista.where((c)=>c.vtv.isAfter(hoy)&&!c.vtv.isAfter(limite)).length
@@ -234,6 +261,7 @@ class AppDatabase extends _$AppDatabase {
         "id":d.id,
         "passenger_id":d.passengerId,
         "chofer_id":d.choferId,
+        "event_id":d.eventId,
         "date":d.date.toUtc().toIso8601String(),
         "description":d.description,
         "total_amount":d.totalAmount,
@@ -244,7 +272,6 @@ class AppDatabase extends _$AppDatabase {
       "events": unsyncedEvents.map((e)=>{
         "id": e.id,
         "name": e.name,
-        "price":e.price,
         "data":e.data,
         "contact_name": e.contactName,
         "contact": e.contact,
@@ -361,6 +388,7 @@ class AppDatabase extends _$AppDatabase {
             id:drift.Value(d['id']),
             passengerId:drift.Value(d['passenger_id']),
             choferId:drift.Value(d['chofer_id']),
+            eventId:drift.Value(d['event_id']),
             date:drift.Value(DateTime.parse(d['date']).toLocal()),
             description:drift.Value(d['description']??""),
             totalAmount:drift.Value(d['total_amount']),
@@ -385,7 +413,6 @@ class AppDatabase extends _$AppDatabase {
           EventsCompanion(
             id: drift.Value(e['id']),
             name: drift.Value(e['name']),
-            price: drift.Value((e['price'] as num).toInt()),
             data: drift.Value(e['data']),
             contactName: drift.Value(e['contact_name'] as String?),
             contact: drift.Value(e['contact'] as String?),
@@ -457,6 +484,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
 
+
   Stream<List<ChoferesWithDebts>> watchChoferesWithDebts(){
     final query=select(choferes).join([
       leftOuterJoin(debts,debts.choferId.equalsExp(choferes.id)),
@@ -525,6 +553,26 @@ class AppDatabase extends _$AppDatabase {
       return groupedData.values.toList();
     });
   }
+
+  Stream<EventWithDebts> watchEventWithDebts(String eventId){
+    final query=select(events).join([
+      leftOuterJoin(debts,debts.eventId.equalsExp(events.id)),
+    ]);
+    query.where(events.id.equals(eventId));
+    return query.watch().map((rows){
+      if(rows.isEmpty){
+        throw Exception('Event not found');
+      }
+      final debtList=<Debt>[];
+      for(final row in rows){
+        final debt=row.readTableOrNull(debts);
+        if(debt!=null)debtList.add(debt);
+      }
+
+      return EventWithDebts(event:rows.first.readTable(events),debts:debtList);
+    });
+  }
+
 
   Future<List<(Colectivo, bool)>> getColectivosWithAvailability(
     DateTime start, 
@@ -724,12 +772,10 @@ class AppDatabase extends _$AppDatabase {
   }
 }
 
-// Función para abrir la conexión de manera segura en Android/iOS/Linux
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
-    //looks forthe place to put the files
+    //looks for the place to put the files
     final dbFolder=await getApplicationDocumentsDirectory();
-    //Names the file
     final file=File(p.join(dbFolder.path, 'mi_base_de_datos.sqlite'));
     
     //starts the database

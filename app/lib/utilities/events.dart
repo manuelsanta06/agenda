@@ -252,7 +252,7 @@ Future<bool> showCreateTripSheet(BuildContext context,{
   final db=Provider.of<AppDatabase>(context,listen:false);
 
   try{
-    await db.transaction(() async {
+    await db.transaction(()async{
       final existingEvent=await(db.select(db.events)
         ..where((t)=>t.id.equals(eventCompanion.id.value))
       ).getSingleOrNull();
@@ -262,8 +262,22 @@ Future<bool> showCreateTripSheet(BuildContext context,{
           ..where((t)=>t.id.equals(eventCompanion.id.value))
         ).write(eventCompanion);
       }else{
-        await db.into(db.events).insertOnConflictUpdate(eventCompanion);
+        await db.into(db.events).insert(eventCompanion);
       }
+
+      if((await(db.select(db.debts)..where((t)=>t.eventId.equals(eventCompanion.id.value))).get()).isEmpty){
+        await db.into(db.debts).insert(DebtsCompanion(
+          id:drift.Value(const Uuid().v4()),
+          eventId:drift.Value(eventCompanion.id.value),
+          date:drift.Value(eventCompanion.startDateTime.value),
+          description:drift.Value(""),
+          totalAmount:const drift.Value(0),
+          paidAmount:const drift.Value(0),
+          isSettled:const drift.Value(false),
+          isSynced:const drift.Value(false),
+        ));
+      }
+
       if(toDeleteIds.isNotEmpty){
       await(db.delete(db.stops)
         ..where((t)=>t.id.isIn(toDeleteIds))

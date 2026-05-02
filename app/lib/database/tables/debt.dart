@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'recorridos.dart';
+import 'events.dart';
 import 'users.dart';
 
 class Debts extends Table{
@@ -7,6 +8,7 @@ class Debts extends Table{
   // Nullable references to handle polymorphism
   TextColumn get passengerId=>text().nullable().references(Passengers,#id,onDelete:KeyAction.cascade)();
   TextColumn get choferId=>text().nullable().references(Choferes,#id,onDelete:KeyAction.cascade)();
+  TextColumn get eventId=>text().nullable().references(Events,#id,onDelete:KeyAction.cascade)();
   
   DateTimeColumn get date=>dateTime()();
   TextColumn get description=>text()();
@@ -20,7 +22,6 @@ class Debts extends Table{
 
   @override
   List<String> get customConstraints=>[
-    'CHECK ((passenger_id IS NULL)!=(chofer_id IS NULL))'
+    'CHECK ((passenger_id IS NOT NULL)+(chofer_id IS NOT NULL)+(event_id IS NOT NULL)=1)'
   ];
 }
-

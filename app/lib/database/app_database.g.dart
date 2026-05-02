@@ -1725,18 +1725,6 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const drift.VerificationMeta _priceMeta = const drift.VerificationMeta(
-    'price',
-  );
-  @override
-  late final drift.GeneratedColumn<int> price = drift.GeneratedColumn<int>(
-    'price',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const drift.Constant(0),
-  );
   static const drift.VerificationMeta _dataMeta = const drift.VerificationMeta(
     'data',
   );
@@ -1904,7 +1892,6 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
   List<drift.GeneratedColumn> get $columns => [
     id,
     name,
-    price,
     data,
     contactName,
     contact,
@@ -1944,12 +1931,6 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
       );
     } else if (isInserting) {
       context.missing(_nameMeta);
-    }
-    if (data.containsKey('price')) {
-      context.handle(
-        _priceMeta,
-        price.isAcceptableOrUnknown(data['price']!, _priceMeta),
-      );
     }
     if (data.containsKey('data')) {
       context.handle(
@@ -2055,10 +2036,6 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
-      price: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}price'],
-      )!,
       data: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}data'],
@@ -2142,7 +2119,6 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
 class Event extends drift.DataClass implements drift.Insertable<Event> {
   final String id;
   final String name;
-  final int price;
   final String data;
   final String? contactName;
   final String? contact;
@@ -2160,7 +2136,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
   const Event({
     required this.id,
     required this.name,
-    required this.price,
     required this.data,
     this.contactName,
     this.contact,
@@ -2181,7 +2156,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     final map = <String, drift.Expression>{};
     map['id'] = drift.Variable<String>(id);
     map['name'] = drift.Variable<String>(name);
-    map['price'] = drift.Variable<int>(price);
     map['data'] = drift.Variable<String>(data);
     if (!nullToAbsent || contactName != null) {
       map['contact_name'] = drift.Variable<String>(contactName);
@@ -2227,7 +2201,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     return EventsCompanion(
       id: drift.Value(id),
       name: drift.Value(name),
-      price: drift.Value(price),
       data: drift.Value(data),
       contactName: contactName == null && nullToAbsent
           ? const drift.Value.absent()
@@ -2265,7 +2238,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     return Event(
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      price: serializer.fromJson<int>(json['price']),
       data: serializer.fromJson<String>(json['data']),
       contactName: serializer.fromJson<String?>(json['contactName']),
       contact: serializer.fromJson<String?>(json['contact']),
@@ -2294,7 +2266,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
-      'price': serializer.toJson<int>(price),
       'data': serializer.toJson<String>(data),
       'contactName': serializer.toJson<String?>(contactName),
       'contact': serializer.toJson<String?>(contact),
@@ -2319,7 +2290,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
   Event copyWith({
     String? id,
     String? name,
-    int? price,
     String? data,
     drift.Value<String?> contactName = const drift.Value.absent(),
     drift.Value<String?> contact = const drift.Value.absent(),
@@ -2337,7 +2307,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
   }) => Event(
     id: id ?? this.id,
     name: name ?? this.name,
-    price: price ?? this.price,
     data: data ?? this.data,
     contactName: contactName.present ? contactName.value : this.contactName,
     contact: contact.present ? contact.value : this.contact,
@@ -2359,7 +2328,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     return Event(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
-      price: data.price.present ? data.price.value : this.price,
       data: data.data.present ? data.data.value : this.data,
       contactName: data.contactName.present
           ? data.contactName.value
@@ -2392,7 +2360,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     return (StringBuffer('Event(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('price: $price, ')
           ..write('data: $data, ')
           ..write('contactName: $contactName, ')
           ..write('contact: $contact, ')
@@ -2415,7 +2382,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
   int get hashCode => Object.hash(
     id,
     name,
-    price,
     data,
     contactName,
     contact,
@@ -2437,7 +2403,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
       (other is Event &&
           other.id == this.id &&
           other.name == this.name &&
-          other.price == this.price &&
           other.data == this.data &&
           other.contactName == this.contactName &&
           other.contact == this.contact &&
@@ -2457,7 +2422,6 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
 class EventsCompanion extends drift.UpdateCompanion<Event> {
   final drift.Value<String> id;
   final drift.Value<String> name;
-  final drift.Value<int> price;
   final drift.Value<String> data;
   final drift.Value<String?> contactName;
   final drift.Value<String?> contact;
@@ -2476,7 +2440,6 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
   const EventsCompanion({
     this.id = const drift.Value.absent(),
     this.name = const drift.Value.absent(),
-    this.price = const drift.Value.absent(),
     this.data = const drift.Value.absent(),
     this.contactName = const drift.Value.absent(),
     this.contact = const drift.Value.absent(),
@@ -2496,7 +2459,6 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
   EventsCompanion.insert({
     required String id,
     required String name,
-    this.price = const drift.Value.absent(),
     this.data = const drift.Value.absent(),
     this.contactName = const drift.Value.absent(),
     this.contact = const drift.Value.absent(),
@@ -2522,7 +2484,6 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
   static drift.Insertable<Event> custom({
     drift.Expression<String>? id,
     drift.Expression<String>? name,
-    drift.Expression<int>? price,
     drift.Expression<String>? data,
     drift.Expression<String>? contactName,
     drift.Expression<String>? contact,
@@ -2542,7 +2503,6 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     return drift.RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
-      if (price != null) 'price': price,
       if (data != null) 'data': data,
       if (contactName != null) 'contact_name': contactName,
       if (contact != null) 'contact': contact,
@@ -2565,7 +2525,6 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
   EventsCompanion copyWith({
     drift.Value<String>? id,
     drift.Value<String>? name,
-    drift.Value<int>? price,
     drift.Value<String>? data,
     drift.Value<String?>? contactName,
     drift.Value<String?>? contact,
@@ -2585,7 +2544,6 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     return EventsCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
-      price: price ?? this.price,
       data: data ?? this.data,
       contactName: contactName ?? this.contactName,
       contact: contact ?? this.contact,
@@ -2613,9 +2571,6 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     }
     if (name.present) {
       map['name'] = drift.Variable<String>(name.value);
-    }
-    if (price.present) {
-      map['price'] = drift.Variable<int>(price.value);
     }
     if (data.present) {
       map['data'] = drift.Variable<String>(data.value);
@@ -2678,7 +2633,6 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     return (StringBuffer('EventsCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('price: $price, ')
           ..write('data: $data, ')
           ..write('contactName: $contactName, ')
           ..write('contact: $contact, ')
@@ -4101,6 +4055,20 @@ class $DebtsTable extends Debts with drift.TableInfo<$DebtsTable, Debt> {
           'REFERENCES choferes (id) ON DELETE CASCADE',
         ),
       );
+  static const drift.VerificationMeta _eventIdMeta =
+      const drift.VerificationMeta('eventId');
+  @override
+  late final drift.GeneratedColumn<String> eventId =
+      drift.GeneratedColumn<String>(
+        'event_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'REFERENCES events (id) ON DELETE CASCADE',
+        ),
+      );
   static const drift.VerificationMeta _dateMeta = const drift.VerificationMeta(
     'date',
   );
@@ -4180,6 +4148,7 @@ class $DebtsTable extends Debts with drift.TableInfo<$DebtsTable, Debt> {
     id,
     passengerId,
     choferId,
+    eventId,
     date,
     description,
     totalAmount,
@@ -4217,6 +4186,12 @@ class $DebtsTable extends Debts with drift.TableInfo<$DebtsTable, Debt> {
       context.handle(
         _choferIdMeta,
         choferId.isAcceptableOrUnknown(data['chofer_id']!, _choferIdMeta),
+      );
+    }
+    if (data.containsKey('event_id')) {
+      context.handle(
+        _eventIdMeta,
+        eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta),
       );
     }
     if (data.containsKey('date')) {
@@ -4288,6 +4263,10 @@ class $DebtsTable extends Debts with drift.TableInfo<$DebtsTable, Debt> {
         DriftSqlType.string,
         data['${effectivePrefix}chofer_id'],
       ),
+      eventId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}event_id'],
+      ),
       date: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
@@ -4325,6 +4304,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
   final String id;
   final String? passengerId;
   final String? choferId;
+  final String? eventId;
   final DateTime date;
   final String description;
   final int totalAmount;
@@ -4335,6 +4315,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
     required this.id,
     this.passengerId,
     this.choferId,
+    this.eventId,
     required this.date,
     required this.description,
     required this.totalAmount,
@@ -4351,6 +4332,9 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
     }
     if (!nullToAbsent || choferId != null) {
       map['chofer_id'] = drift.Variable<String>(choferId);
+    }
+    if (!nullToAbsent || eventId != null) {
+      map['event_id'] = drift.Variable<String>(eventId);
     }
     map['date'] = drift.Variable<DateTime>(date);
     map['description'] = drift.Variable<String>(description);
@@ -4370,6 +4354,9 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
       choferId: choferId == null && nullToAbsent
           ? const drift.Value.absent()
           : drift.Value(choferId),
+      eventId: eventId == null && nullToAbsent
+          ? const drift.Value.absent()
+          : drift.Value(eventId),
       date: drift.Value(date),
       description: drift.Value(description),
       totalAmount: drift.Value(totalAmount),
@@ -4388,6 +4375,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
       id: serializer.fromJson<String>(json['id']),
       passengerId: serializer.fromJson<String?>(json['passengerId']),
       choferId: serializer.fromJson<String?>(json['choferId']),
+      eventId: serializer.fromJson<String?>(json['eventId']),
       date: serializer.fromJson<DateTime>(json['date']),
       description: serializer.fromJson<String>(json['description']),
       totalAmount: serializer.fromJson<int>(json['totalAmount']),
@@ -4403,6 +4391,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
       'id': serializer.toJson<String>(id),
       'passengerId': serializer.toJson<String?>(passengerId),
       'choferId': serializer.toJson<String?>(choferId),
+      'eventId': serializer.toJson<String?>(eventId),
       'date': serializer.toJson<DateTime>(date),
       'description': serializer.toJson<String>(description),
       'totalAmount': serializer.toJson<int>(totalAmount),
@@ -4416,6 +4405,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
     String? id,
     drift.Value<String?> passengerId = const drift.Value.absent(),
     drift.Value<String?> choferId = const drift.Value.absent(),
+    drift.Value<String?> eventId = const drift.Value.absent(),
     DateTime? date,
     String? description,
     int? totalAmount,
@@ -4426,6 +4416,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
     id: id ?? this.id,
     passengerId: passengerId.present ? passengerId.value : this.passengerId,
     choferId: choferId.present ? choferId.value : this.choferId,
+    eventId: eventId.present ? eventId.value : this.eventId,
     date: date ?? this.date,
     description: description ?? this.description,
     totalAmount: totalAmount ?? this.totalAmount,
@@ -4440,6 +4431,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
           ? data.passengerId.value
           : this.passengerId,
       choferId: data.choferId.present ? data.choferId.value : this.choferId,
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
       date: data.date.present ? data.date.value : this.date,
       description: data.description.present
           ? data.description.value
@@ -4461,6 +4453,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
           ..write('id: $id, ')
           ..write('passengerId: $passengerId, ')
           ..write('choferId: $choferId, ')
+          ..write('eventId: $eventId, ')
           ..write('date: $date, ')
           ..write('description: $description, ')
           ..write('totalAmount: $totalAmount, ')
@@ -4476,6 +4469,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
     id,
     passengerId,
     choferId,
+    eventId,
     date,
     description,
     totalAmount,
@@ -4490,6 +4484,7 @@ class Debt extends drift.DataClass implements drift.Insertable<Debt> {
           other.id == this.id &&
           other.passengerId == this.passengerId &&
           other.choferId == this.choferId &&
+          other.eventId == this.eventId &&
           other.date == this.date &&
           other.description == this.description &&
           other.totalAmount == this.totalAmount &&
@@ -4502,6 +4497,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
   final drift.Value<String> id;
   final drift.Value<String?> passengerId;
   final drift.Value<String?> choferId;
+  final drift.Value<String?> eventId;
   final drift.Value<DateTime> date;
   final drift.Value<String> description;
   final drift.Value<int> totalAmount;
@@ -4513,6 +4509,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
     this.id = const drift.Value.absent(),
     this.passengerId = const drift.Value.absent(),
     this.choferId = const drift.Value.absent(),
+    this.eventId = const drift.Value.absent(),
     this.date = const drift.Value.absent(),
     this.description = const drift.Value.absent(),
     this.totalAmount = const drift.Value.absent(),
@@ -4525,6 +4522,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
     required String id,
     this.passengerId = const drift.Value.absent(),
     this.choferId = const drift.Value.absent(),
+    this.eventId = const drift.Value.absent(),
     required DateTime date,
     required String description,
     required int totalAmount,
@@ -4540,6 +4538,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
     drift.Expression<String>? id,
     drift.Expression<String>? passengerId,
     drift.Expression<String>? choferId,
+    drift.Expression<String>? eventId,
     drift.Expression<DateTime>? date,
     drift.Expression<String>? description,
     drift.Expression<int>? totalAmount,
@@ -4552,6 +4551,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
       if (id != null) 'id': id,
       if (passengerId != null) 'passenger_id': passengerId,
       if (choferId != null) 'chofer_id': choferId,
+      if (eventId != null) 'event_id': eventId,
       if (date != null) 'date': date,
       if (description != null) 'description': description,
       if (totalAmount != null) 'total_amount': totalAmount,
@@ -4566,6 +4566,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
     drift.Value<String>? id,
     drift.Value<String?>? passengerId,
     drift.Value<String?>? choferId,
+    drift.Value<String?>? eventId,
     drift.Value<DateTime>? date,
     drift.Value<String>? description,
     drift.Value<int>? totalAmount,
@@ -4578,6 +4579,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
       id: id ?? this.id,
       passengerId: passengerId ?? this.passengerId,
       choferId: choferId ?? this.choferId,
+      eventId: eventId ?? this.eventId,
       date: date ?? this.date,
       description: description ?? this.description,
       totalAmount: totalAmount ?? this.totalAmount,
@@ -4599,6 +4601,9 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
     }
     if (choferId.present) {
       map['chofer_id'] = drift.Variable<String>(choferId.value);
+    }
+    if (eventId.present) {
+      map['event_id'] = drift.Variable<String>(eventId.value);
     }
     if (date.present) {
       map['date'] = drift.Variable<DateTime>(date.value);
@@ -4630,6 +4635,7 @@ class DebtsCompanion extends drift.UpdateCompanion<Debt> {
           ..write('id: $id, ')
           ..write('passengerId: $passengerId, ')
           ..write('choferId: $choferId, ')
+          ..write('eventId: $eventId, ')
           ..write('date: $date, ')
           ..write('description: $description, ')
           ..write('totalAmount: $totalAmount, ')
@@ -4734,6 +4740,13 @@ abstract class _$AppDatabase extends drift.GeneratedDatabase {
     drift.WritePropagation(
       on: drift.TableUpdateQuery.onTableName(
         'choferes',
+        limitUpdateKind: drift.UpdateKind.delete,
+      ),
+      result: [drift.TableUpdate('debts', kind: drift.UpdateKind.delete)],
+    ),
+    drift.WritePropagation(
+      on: drift.TableUpdateQuery.onTableName(
+        'events',
         limitUpdateKind: drift.UpdateKind.delete,
       ),
       result: [drift.TableUpdate('debts', kind: drift.UpdateKind.delete)],
@@ -6090,7 +6103,6 @@ typedef $$EventsTableCreateCompanionBuilder =
     EventsCompanion Function({
       required String id,
       required String name,
-      drift.Value<int> price,
       drift.Value<String> data,
       drift.Value<String?> contactName,
       drift.Value<String?> contact,
@@ -6111,7 +6123,6 @@ typedef $$EventsTableUpdateCompanionBuilder =
     EventsCompanion Function({
       drift.Value<String> id,
       drift.Value<String> name,
-      drift.Value<int> price,
       drift.Value<String> data,
       drift.Value<String?> contactName,
       drift.Value<String?> contact,
@@ -6234,6 +6245,25 @@ final class $$EventsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static drift.MultiTypedResultKey<$DebtsTable, List<Debt>> _debtsRefsTable(
+    _$AppDatabase db,
+  ) => drift.MultiTypedResultKey.fromTable(
+    db.debts,
+    aliasName: drift.$_aliasNameGenerator(db.events.id, db.debts.eventId),
+  );
+
+  $$DebtsTableProcessedTableManager get debtsRefs {
+    final manager = $$DebtsTableTableManager(
+      $_db,
+      $_db.debts,
+    ).filter((f) => f.eventId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_debtsRefsTable($_db));
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$EventsTableFilterComposer
@@ -6252,11 +6282,6 @@ class $$EventsTableFilterComposer
 
   drift.ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => drift.ColumnFilters(column),
-  );
-
-  drift.ColumnFilters<int> get price => $composableBuilder(
-    column: $table.price,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -6443,6 +6468,31 @@ class $$EventsTableFilterComposer
     );
     return f(composer);
   }
+
+  drift.Expression<bool> debtsRefs(
+    drift.Expression<bool> Function($$DebtsTableFilterComposer f) f,
+  ) {
+    final $$DebtsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.debts,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DebtsTableFilterComposer(
+            $db: $db,
+            $table: $db.debts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EventsTableOrderingComposer
@@ -6461,11 +6511,6 @@ class $$EventsTableOrderingComposer
 
   drift.ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
-    builder: (column) => drift.ColumnOrderings(column),
-  );
-
-  drift.ColumnOrderings<int> get price => $composableBuilder(
-    column: $table.price,
     builder: (column) => drift.ColumnOrderings(column),
   );
 
@@ -6591,9 +6636,6 @@ class $$EventsTableAnnotationComposer
 
   drift.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
-
-  drift.GeneratedColumn<int> get price =>
-      $composableBuilder(column: $table.price, builder: (column) => column);
 
   drift.GeneratedColumn<String> get data =>
       $composableBuilder(column: $table.data, builder: (column) => column);
@@ -6760,6 +6802,31 @@ class $$EventsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  drift.Expression<T> debtsRefs<T extends Object>(
+    drift.Expression<T> Function($$DebtsTableAnnotationComposer a) f,
+  ) {
+    final $$DebtsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.debts,
+      getReferencedColumn: (t) => t.eventId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$DebtsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.debts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$EventsTableTableManager
@@ -6781,6 +6848,7 @@ class $$EventsTableTableManager
             bool stopsRefs,
             bool eventChoferesRefs,
             bool eventColectivosRefs,
+            bool debtsRefs,
           })
         > {
   $$EventsTableTableManager(_$AppDatabase db, $EventsTable table)
@@ -6798,7 +6866,6 @@ class $$EventsTableTableManager
               ({
                 drift.Value<String> id = const drift.Value.absent(),
                 drift.Value<String> name = const drift.Value.absent(),
-                drift.Value<int> price = const drift.Value.absent(),
                 drift.Value<String> data = const drift.Value.absent(),
                 drift.Value<String?> contactName = const drift.Value.absent(),
                 drift.Value<String?> contact = const drift.Value.absent(),
@@ -6819,7 +6886,6 @@ class $$EventsTableTableManager
               }) => EventsCompanion(
                 id: id,
                 name: name,
-                price: price,
                 data: data,
                 contactName: contactName,
                 contact: contact,
@@ -6840,7 +6906,6 @@ class $$EventsTableTableManager
               ({
                 required String id,
                 required String name,
-                drift.Value<int> price = const drift.Value.absent(),
                 drift.Value<String> data = const drift.Value.absent(),
                 drift.Value<String?> contactName = const drift.Value.absent(),
                 drift.Value<String?> contact = const drift.Value.absent(),
@@ -6860,7 +6925,6 @@ class $$EventsTableTableManager
               }) => EventsCompanion.insert(
                 id: id,
                 name: name,
-                price: price,
                 data: data,
                 contactName: contactName,
                 contact: contact,
@@ -6890,6 +6954,7 @@ class $$EventsTableTableManager
                 stopsRefs = false,
                 eventChoferesRefs = false,
                 eventColectivosRefs = false,
+                debtsRefs = false,
               }) {
                 return drift.PrefetchHooks(
                   db: db,
@@ -6897,6 +6962,7 @@ class $$EventsTableTableManager
                     if (stopsRefs) db.stops,
                     if (eventChoferesRefs) db.eventChoferes,
                     if (eventColectivosRefs) db.eventColectivos,
+                    if (debtsRefs) db.debts,
                   ],
                   addJoins:
                       <
@@ -7004,6 +7070,23 @@ class $$EventsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (debtsRefs)
+                        await drift
+                            .$_getPrefetchedData<Event, $EventsTable, Debt>(
+                              currentTable: table,
+                              referencedTable: $$EventsTableReferences
+                                  ._debtsRefsTable(db),
+                              managerFromTypedResult: (p0) =>
+                                  $$EventsTableReferences(
+                                    db,
+                                    table,
+                                    p0,
+                                  ).debtsRefs,
+                              referencedItemsForCurrentItem:
+                                  (item, referencedItems) => referencedItems
+                                      .where((e) => e.eventId == item.id),
+                              typedResults: items,
+                            ),
                     ];
                   },
                 );
@@ -7030,6 +7113,7 @@ typedef $$EventsTableProcessedTableManager =
         bool stopsRefs,
         bool eventChoferesRefs,
         bool eventColectivosRefs,
+        bool debtsRefs,
       })
     >;
 typedef $$StopsTableCreateCompanionBuilder =
@@ -8548,6 +8632,7 @@ typedef $$DebtsTableCreateCompanionBuilder =
       required String id,
       drift.Value<String?> passengerId,
       drift.Value<String?> choferId,
+      drift.Value<String?> eventId,
       required DateTime date,
       required String description,
       required int totalAmount,
@@ -8561,6 +8646,7 @@ typedef $$DebtsTableUpdateCompanionBuilder =
       drift.Value<String> id,
       drift.Value<String?> passengerId,
       drift.Value<String?> choferId,
+      drift.Value<String?> eventId,
       drift.Value<DateTime> date,
       drift.Value<String> description,
       drift.Value<int> totalAmount,
@@ -8606,6 +8692,24 @@ final class $$DebtsTableReferences
       $_db.choferes,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_choferIdTable($_db));
+    if (item == null) return manager;
+    return drift.ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $EventsTable _eventIdTable(_$AppDatabase db) => db.events.createAlias(
+    drift.$_aliasNameGenerator(db.debts.eventId, db.events.id),
+  );
+
+  $$EventsTableProcessedTableManager? get eventId {
+    final $_column = $_itemColumn<String>('event_id');
+    if ($_column == null) return null;
+    final manager = $$EventsTableTableManager(
+      $_db,
+      $_db.events,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_eventIdTable($_db));
     if (item == null) return manager;
     return drift.ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -8694,6 +8798,29 @@ class $$DebtsTableFilterComposer
           }) => $$ChoferesTableFilterComposer(
             $db: $db,
             $table: $db.choferes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$EventsTableFilterComposer get eventId {
+    final $$EventsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.eventId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableFilterComposer(
+            $db: $db,
+            $table: $db.events,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -8793,6 +8920,29 @@ class $$DebtsTableOrderingComposer
     );
     return composer;
   }
+
+  $$EventsTableOrderingComposer get eventId {
+    final $$EventsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.eventId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableOrderingComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$DebtsTableAnnotationComposer
@@ -8876,6 +9026,29 @@ class $$DebtsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$EventsTableAnnotationComposer get eventId {
+    final $$EventsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.eventId,
+      referencedTable: $db.events,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$EventsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.events,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$DebtsTableTableManager
@@ -8891,7 +9064,11 @@ class $$DebtsTableTableManager
           $$DebtsTableUpdateCompanionBuilder,
           (Debt, $$DebtsTableReferences),
           Debt,
-          drift.PrefetchHooks Function({bool passengerId, bool choferId})
+          drift.PrefetchHooks Function({
+            bool passengerId,
+            bool choferId,
+            bool eventId,
+          })
         > {
   $$DebtsTableTableManager(_$AppDatabase db, $DebtsTable table)
     : super(
@@ -8909,6 +9086,7 @@ class $$DebtsTableTableManager
                 drift.Value<String> id = const drift.Value.absent(),
                 drift.Value<String?> passengerId = const drift.Value.absent(),
                 drift.Value<String?> choferId = const drift.Value.absent(),
+                drift.Value<String?> eventId = const drift.Value.absent(),
                 drift.Value<DateTime> date = const drift.Value.absent(),
                 drift.Value<String> description = const drift.Value.absent(),
                 drift.Value<int> totalAmount = const drift.Value.absent(),
@@ -8920,6 +9098,7 @@ class $$DebtsTableTableManager
                 id: id,
                 passengerId: passengerId,
                 choferId: choferId,
+                eventId: eventId,
                 date: date,
                 description: description,
                 totalAmount: totalAmount,
@@ -8933,6 +9112,7 @@ class $$DebtsTableTableManager
                 required String id,
                 drift.Value<String?> passengerId = const drift.Value.absent(),
                 drift.Value<String?> choferId = const drift.Value.absent(),
+                drift.Value<String?> eventId = const drift.Value.absent(),
                 required DateTime date,
                 required String description,
                 required int totalAmount,
@@ -8944,6 +9124,7 @@ class $$DebtsTableTableManager
                 id: id,
                 passengerId: passengerId,
                 choferId: choferId,
+                eventId: eventId,
                 date: date,
                 description: description,
                 totalAmount: totalAmount,
@@ -8958,60 +9139,74 @@ class $$DebtsTableTableManager
                     (e.readTable(table), $$DebtsTableReferences(db, table, e)),
               )
               .toList(),
-          prefetchHooksCallback: ({passengerId = false, choferId = false}) {
-            return drift.PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends drift.TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (passengerId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.passengerId,
-                                referencedTable: $$DebtsTableReferences
-                                    ._passengerIdTable(db),
-                                referencedColumn: $$DebtsTableReferences
-                                    ._passengerIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
-                    if (choferId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.choferId,
-                                referencedTable: $$DebtsTableReferences
-                                    ._choferIdTable(db),
-                                referencedColumn: $$DebtsTableReferences
-                                    ._choferIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({passengerId = false, choferId = false, eventId = false}) {
+                return drift.PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends drift.TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (passengerId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.passengerId,
+                                    referencedTable: $$DebtsTableReferences
+                                        ._passengerIdTable(db),
+                                    referencedColumn: $$DebtsTableReferences
+                                        ._passengerIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (choferId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.choferId,
+                                    referencedTable: $$DebtsTableReferences
+                                        ._choferIdTable(db),
+                                    referencedColumn: $$DebtsTableReferences
+                                        ._choferIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (eventId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.eventId,
+                                    referencedTable: $$DebtsTableReferences
+                                        ._eventIdTable(db),
+                                    referencedColumn: $$DebtsTableReferences
+                                        ._eventIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -9028,7 +9223,11 @@ typedef $$DebtsTableProcessedTableManager =
       $$DebtsTableUpdateCompanionBuilder,
       (Debt, $$DebtsTableReferences),
       Debt,
-      drift.PrefetchHooks Function({bool passengerId, bool choferId})
+      drift.PrefetchHooks Function({
+        bool passengerId,
+        bool choferId,
+        bool eventId,
+      })
     >;
 
 class $AppDatabaseManager {

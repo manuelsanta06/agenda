@@ -16,6 +16,7 @@ import 'package:agenda/utilities/colectivos.dart';
 import 'package:agenda/utilities/choferes.dart';
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/parsers.dart';
+import 'package:agenda/utilities/debts.dart';
 
 
 class eventInfo extends StatelessWidget{
@@ -44,14 +45,14 @@ class eventInfo extends StatelessWidget{
 
     return SafeArea(top:false,child:Scaffold(
       extendBodyBehindAppBar: true,
-      body:StreamBuilder<Event>(
-        stream:(deafDb.select(deafDb.events)..where((t) => t.id.equals(initialEvent.id))).watchSingle(),
-        initialData:initialEvent,
-        builder:(context, snapshot){
-          if(snapshot.hasError||snapshot.data==null){
-            return const Center(child: Text("El evento ya no existe"));
-          }
-          final eve=snapshot.data!;
+      body:StreamBuilder<EventWithDebts>(
+        stream:db.watchEventWithDebts(initialEvent.id),
+        initialData:EventWithDebts(event:initialEvent,debts:[]),
+        builder:(context,snapshot){
+          if(snapshot.hasError||snapshot.data==null)
+            return Center(child:Text("El evento ya no existe ${snapshot.hasError} ${snapshot.data==null}"));
+          final eve=snapshot.data!.event;
+          final debts=snapshot.data!.debts;
           final maincolor=getMainColor(eve.state);
 
           return ListView(padding:const EdgeInsets.symmetric(horizontal:5),children:[
@@ -82,7 +83,6 @@ class eventInfo extends StatelessWidget{
                     }
                   ),
                 ]),
-                const SizedBox(height:10),
                 GestureDetector(
                   onTap:()async{
                     String? newVal=(await quickChangeDialog(context,"nombre",def:eve.name));
@@ -97,20 +97,24 @@ class eventInfo extends StatelessWidget{
                   ),
                 ),
                 
-                Row(children:[
-                  pillText('\$'+eve.price.toString(),maincolor,onTap:()async{
-                    String? newVal=await quickChangeDialog(context,"precio",def:eve.price.toString());
-                    if(newVal==null||newVal.isEmpty)return;
-                    await (deafDb.update(deafDb.events)
-                      ..where((tbl) => tbl.id.equals(eve.id)))
-                      .write(EventsCompanion(price:drift.Value(int.tryParse(newVal)??eve.price),isSynced:drift.Value(false)));
-                  }),
-                  const SizedBox(width:10),
-                  if(eve.repeat)
-                  weekDaysDots(eve.days,maincolor)
-                  else
-                  Text(DateFormat('MMMM d','es_ES').format(eve.startDateTime))
-                ]),
+                SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:
+                  debts.map((d)=>Padding(padding:const EdgeInsets.only(right:10,top:10),child:pillText(
+                    "${DateFormat('MMM/yy').format(d.date)} \$${d.totalAmount}",
+                    d.isSettled?Colors.green:Colors.red,
+                    onTap:()async{
+                      if((await showDebtDetails(context,d,d.isSettled?Colors.green:Colors.red))&&context.mounted){
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content:Text("Deuda actualizada"),backgroundColor:Colors.green)
+                        );
+                      }
+                    }
+                  ))).toList(),
+                )),
+                const SizedBox(height:5),
+                if(eve.days?.isNotEmpty??false)
+                weekDaysDots(eve.days,maincolor)
+                else
+                Text(DateFormat('MMMM d','es_ES').format(eve.startDateTime)),
               ]),
             ),
             

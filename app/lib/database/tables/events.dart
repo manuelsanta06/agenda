@@ -85,7 +85,6 @@ String eventStateToString(EventStates type){
 class Events extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
-  IntColumn get price => integer().withDefault(const Constant(0))();
   TextColumn get data => text().withDefault(const Constant(''))();
 
   TextColumn get contactName => text().nullable()();

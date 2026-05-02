@@ -3,11 +3,13 @@ import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart' as drift; 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../database/app_database.dart';
-import '../widgets/searchBar.dart';
+import 'package:agenda/database/app_database.dart';
+
+import 'package:agenda/widgets/searchBar.dart';
 import 'package:agenda/widgets/cards.dart';
 import 'package:agenda/widgets/text.dart';
-import '../utilities/syncService.dart';
+
+import 'package:agenda/utilities/syncService.dart';
 
 
 Future<bool> showCreateModifiColectivo(BuildContext context,{Colectivo? bus,required Color mainColor})async{
