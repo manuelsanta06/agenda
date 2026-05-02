@@ -167,19 +167,20 @@ func FullSync(payload models.SyncPayload)error{
 	//Debts
 	for _, d := range payload.Debts {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO debts (id, passenger_id, chofer_id, date, description, total_amount, paid_amount, is_settled)
+			INSERT INTO debts (id, passenger_id, chofer_id, event_id, date, description, total_amount, paid_amount, is_settled)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 			ON CONFLICT (id) DO UPDATE SET
 				passenger_id = EXCLUDED.passenger_id,
 				chofer_id = EXCLUDED.chofer_id,
+        event_id = EXCLUDED.event_id,
 				date = EXCLUDED.date,
 				description = EXCLUDED.description,
 				total_amount = EXCLUDED.total_amount,
 				paid_amount = EXCLUDED.paid_amount,
 				is_settled = EXCLUDED.is_settled,
 				updated_at = CURRENT_TIMESTAMP;
-		`, d.ID, d.PassengerID, d.ChoferID, d.Date, d.Description, d.TotalAmount, d.PaidAmount, d.IsSettled)
-		if err != nil {
+		`,d.ID,d.PassengerID,d.ChoferID,d.EventID,d.Date,d.Description,d.TotalAmount,d.PaidAmount,d.IsSettled)
+		if err!=nil{
 			return fmt.Errorf("error guardando debt %s: %v", d.ID, err)
 		}
 	}
@@ -187,11 +188,10 @@ func FullSync(payload models.SyncPayload)error{
 	//Events
 	for _, e := range payload.Events {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO events (id, name, price, data, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id)
+			INSERT INTO events (id, name, data, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 			ON CONFLICT (id) DO UPDATE SET
 				name = EXCLUDED.name,
-				price = EXCLUDED.price,
 				data = EXCLUDED.data,
 				contact_name = EXCLUDED.contact_name,
 				contact = EXCLUDED.contact,
@@ -206,7 +206,7 @@ func FullSync(payload models.SyncPayload)error{
 				shift_id = EXCLUDED.shift_id,
         recorrido_id = EXCLUDED.recorrido_id,
 				updated_at = CURRENT_TIMESTAMP;
-		`, e.ID, e.Name, e.Price, e.Data, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.ShiftID, e.RecorridoID)
+		`, e.ID, e.Name, e.Data, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.ShiftID, e.RecorridoID)
 		if err != nil {
 			return fmt.Errorf("error guardando event %s: %v", e.ID, err)
 		}
@@ -385,7 +385,7 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 
 	//DEBTS
 	rowsDebts, err := DB.Query(ctx, `
-		SELECT id, passenger_id, chofer_id, date, description, total_amount, paid_amount, is_settled, created_at, updated_at
+		SELECT id, passenger_id, chofer_id, event_id, date, description, total_amount, paid_amount, is_settled, created_at, updated_at
 		FROM debts
 		WHERE updated_at > $1
 	`, lastSyncStr)
@@ -396,8 +396,8 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 
 	for rowsDebts.Next() {
 		var d models.Debt
-		err := rowsDebts.Scan(&d.ID, &d.PassengerID, &d.ChoferID, &d.Date, &d.Description, &d.TotalAmount, &d.PaidAmount, &d.IsSettled, &d.CreatedAt, &d.UpdatedAt)
-		if err != nil {
+		err := rowsDebts.Scan(&d.ID,&d.PassengerID,&d.ChoferID,&d.EventID,&d.Date,&d.Description,&d.TotalAmount,&d.PaidAmount,&d.IsSettled,&d.CreatedAt,&d.UpdatedAt)
+		if err!=nil{
 			return payload, fmt.Errorf("error leyendo fila de debt: %v", err)
 		}
 		payload.Debts = append(payload.Debts, d)
@@ -418,7 +418,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 
 	//EVENTOS
 	rowsEvents, err := DB.Query(ctx, `
-		SELECT id, name, price, data, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id, created_at, updated_at
+		SELECT id, name, data, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id, created_at, updated_at
 		FROM events
 		WHERE updated_at > $1 
 		AND (start_date_time >= NOW() - INTERVAL '30 days' OR type = 4)
@@ -431,7 +431,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 
 	for rowsEvents.Next() {
 		var e models.Event
-		err := rowsEvents.Scan(&e.ID, &e.Name, &e.Price, &e.Data, &e.ContactName, &e.Contact, &e.Repeat, &e.Days, &e.StartDateTime, &e.EndDateTime, &e.StopRepeatingDateTime, &e.State, &e.Type, &e.IsTrip, &e.ShiftID, &e.RecorridoID, &e.CreatedAt, &e.UpdatedAt)
+		err := rowsEvents.Scan(&e.ID, &e.Name, &e.Data, &e.ContactName, &e.Contact, &e.Repeat, &e.Days, &e.StartDateTime, &e.EndDateTime, &e.StopRepeatingDateTime, &e.State, &e.Type, &e.IsTrip, &e.ShiftID, &e.RecorridoID, &e.CreatedAt, &e.UpdatedAt)
 		if err != nil {
 			return payload, fmt.Errorf("error leyendo fila de event: %v", err)
 		}
@@ -516,14 +516,13 @@ type activeTemplate struct {
 	EndTime       time.Time
 	RecorridoName string
   RecorridoID   string
-  Price         int
 	Data          string
 }
 
 func RecorridoShiftPopulationRoutine() error {
 	ctx := context.Background()
 	queryTemplates:=`
-		SELECT e.id, e.days, e.start_date_time, e.end_date_time, e.name, r.name, e.recorrido_id, e.price, e.data
+		SELECT e.id, e.days, e.start_date_time, e.end_date_time, e.name, r.name, e.recorrido_id, e.data
 		FROM events e
 		JOIN recorridos r ON e.recorrido_id = r.id
 		WHERE e.type = 4 AND e.state != 1 AND r.is_active = TRUE
@@ -538,7 +537,7 @@ func RecorridoShiftPopulationRoutine() error {
 	for rows.Next(){
 		var t activeTemplate
 		var daysPtr *string
-		if err:=rows.Scan(&t.ID,&daysPtr,&t.StartTime,&t.EndTime,&t.Name,&t.RecorridoName,&t.RecorridoID, &t.Price, &t.Data);err!=nil{
+		if err:=rows.Scan(&t.ID,&daysPtr,&t.StartTime,&t.EndTime,&t.Name,&t.RecorridoName,&t.RecorridoID,&t.Data);err!=nil{
 			return fmt.Errorf("error leyendo template: %w",err)
 		}
 		if daysPtr!=nil{
@@ -591,10 +590,10 @@ func RecorridoShiftPopulationRoutine() error {
 				template.EndTime.Hour(),template.EndTime.Minute(),template.EndTime.Second(), 0, targetDate.Location())
 
 			insertEventQuery:=`
-				INSERT INTO events (id, name, price, data, start_date_time, end_date_time, state, type, is_trip, shift_id, recorrido_id)
-				VALUES ($1, $2, $3, $4, $5, $6, 0, 3, true, $7, $8)
+				INSERT INTO events (id, name, data, start_date_time, end_date_time, state, type, is_trip, shift_id, recorrido_id)
+				VALUES ($1, $2, $3, $4, $5, 0, 3, true, $6, $7)
 			`
-			_,err=tx.Exec(ctx,insertEventQuery,eventID,template.RecorridoName+" - "+template.Name, template.Price, template.Data, startDT,endDT,template.ID,template.RecorridoID)
+			_,err=tx.Exec(ctx,insertEventQuery,eventID,template.RecorridoName+" - "+template.Name, template.Data, startDT,endDT,template.ID,template.RecorridoID)
 			if err!=nil{
 				return fmt.Errorf("error insertando evento base: %w", err)
 			}

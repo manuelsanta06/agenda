@@ -59,6 +59,7 @@ type Debt struct {
 	ID          string    `json:"id"`
 	PassengerID *string   `json:"passenger_id"`
 	ChoferID    *string   `json:"chofer_id"`
+  EventID     *string   `json:"event_id"`
 	Date        time.Time `json:"date"`
 	Description *string   `json:"description"`
 	TotalAmount int       `json:"total_amount"`
@@ -71,7 +72,6 @@ type Debt struct {
 type Event struct {
 	ID                    string  `json:"id"`
 	Name                  string  `json:"name"`
-	Price                 int     `json:"price"`
 	Data                  string  `json:"data"`
 	ContactName           *string `json:"contact_name"`
 	Contact               *string `json:"contact"`
