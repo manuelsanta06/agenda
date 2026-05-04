@@ -96,19 +96,7 @@ Widget passengerToCard(BuildContext context,
         style:TextStyle(color:Colors.grey,fontSize:12),
       ),
       if(debts!=null&&debts.isNotEmpty)
-      SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:
-        debts.map((d)=>Padding(padding:const EdgeInsets.only(right:10.0),child:pillText(
-          "${DateFormat('MMM/yy').format(d.date)} \$${d.totalAmount}",
-          d.isSettled?Colors.green:Colors.red,
-          onTap:()async{
-            if((await showDebtDetails(context,d,d.isSettled?Colors.green:Colors.red))&&context.mounted){
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content:Text("Deuda actualizada"),backgroundColor:Colors.green)
-              );
-            }
-          }
-        ))).toList(),
-      )),
+      horizontalDebts(debts:debts),
     ])
   );
 }

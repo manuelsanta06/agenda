@@ -13,6 +13,45 @@ import 'package:agenda/widgets/cards.dart';
 import 'package:agenda/widgets/text.dart';
 import 'package:agenda/widgets/timeinputs.dart';
 
+
+class debtPill extends StatelessWidget{
+  final Debt deb;
+  final bool dated;
+  const debtPill({super.key,required this.deb,this.dated=true});
+
+  @override
+  Widget build(BuildContext context){
+    final Color color=deb.isSettled?Colors.green:Colors.red;
+    return pillProgress(
+      text:"${dated?DateFormat('MMM/yy ').format(deb.date):""}\$${deb.totalAmount}",
+      mainColor:color,
+      value:deb.paidAmount/deb.totalAmount,
+      onTap:()async{
+        if((await showDebtDetails(context,deb,color))&&context.mounted){
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content:Text("Deuda actualizada"),backgroundColor:Colors.green)
+          );
+        }
+      }
+    );
+  }
+}
+
+class horizontalDebts extends StatelessWidget{
+  final List<Debt> debts;
+  final bool dated;
+  const horizontalDebts({super.key,required this.debts,this.dated=true});
+
+  @override
+  Widget build(BuildContext context){
+    return SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:
+      debts.map((d)=>Padding(padding:const EdgeInsets.only(right:10.0),child:
+        debtPill(deb:d,dated:dated,))).toList(),
+    ));
+  }
+}
+
+
 Future<bool> showDebtDetails(BuildContext context,Debt debt,Color mainColor)async{
   final result=await showModalBottomSheet<DebtsCompanion>(
     context:context,
@@ -151,6 +190,7 @@ class _DebtDetailsSheetState extends State<_DebtDetailsSheet>{
               id:drift.Value(widget.debt.id),
               passengerId:drift.Value(widget.debt.passengerId),
               choferId:drift.Value(widget.debt.choferId),
+              eventId:drift.Value(widget.debt.eventId),
               date:drift.Value(widget.debt.date),
               description:drift.Value(_desc),
               totalAmount:drift.Value(_total),

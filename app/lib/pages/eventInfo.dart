@@ -97,19 +97,8 @@ class eventInfo extends StatelessWidget{
                   ),
                 ),
                 
-                SingleChildScrollView(scrollDirection:Axis.horizontal,child:Row(children:
-                  debts.map((d)=>Padding(padding:const EdgeInsets.only(right:10,top:10),child:pillText(
-                    "${DateFormat('MMM/yy').format(d.date)} \$${d.totalAmount}",
-                    d.isSettled?Colors.green:Colors.red,
-                    onTap:()async{
-                      if((await showDebtDetails(context,d,d.isSettled?Colors.green:Colors.red))&&context.mounted){
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content:Text("Deuda actualizada"),backgroundColor:Colors.green)
-                        );
-                      }
-                    }
-                  ))).toList(),
-                )),
+                const SizedBox(height:5),
+                horizontalDebts(debts:debts,dated:false),
                 const SizedBox(height:5),
                 if(eve.days?.isNotEmpty??false)
                 weekDaysDots(eve.days,maincolor)
