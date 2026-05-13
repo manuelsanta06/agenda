@@ -93,10 +93,9 @@ class AppDatabase extends _$AppDatabase {
         }if(from<7){
           await m.alterTable(TableMigration(debts,newColumns:[debts.eventId]));
 
-          final oldEvents=await customSelect('SELECT id, price, start_date_time, name FROM events WHERE price>0').get();
+          final oldEvents=await customSelect('SELECT id, price, start_date_time, name FROM events').get();
 
           for(final row in oldEvents){
-            final dynamic rawDate=row.read<dynamic>('start_date_time');
             final dateObj=row.read<DateTime>('start_date_time');
 
             await into(debts).insert(DebtsCompanion(
