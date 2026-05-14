@@ -168,6 +168,93 @@ class eventInfo extends StatelessWidget{
               },
             ),
 
+            //COLECTIVOS card
+            const SizedBox(height:20),
+            Row(children:[
+              subtitleLine("Colectivos",maincolor),
+              Expanded(child:SizedBox()),
+              Container(
+                padding:const EdgeInsets.symmetric(horizontal:10,vertical:4),
+                margin:const EdgeInsets.only(right:2,bottom:10),
+                decoration: BoxDecoration(
+                  color:maincolor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color:maincolor.withOpacity(0.5)),
+                ),
+                child:Row(spacing:20,children:[
+                  GestureDetector(
+                    child:Text("-",style:TextStyle(color:maincolor,fontSize:20,fontWeight:FontWeight.bold)),
+                    onTap:()async{
+                      if(eve.busAmount>0){
+                        final db=Provider.of<AppDatabase>(context,listen:false);
+                        await (db.update(db.events)..where((t)=>t.id.equals(eve.id))).write(
+                          EventsCompanion(
+                            busAmount:drift.Value(eve.busAmount-1),
+                            isSynced:const drift.Value(false),
+                          )
+                        );
+                      }
+                    },
+                  ),
+                  Text(eve.busAmount.toString(),style:TextStyle(color:maincolor,fontSize:16,fontWeight:FontWeight.bold)),
+                  GestureDetector(
+                    child:Text("+",style:TextStyle(color:maincolor,fontSize:20,fontWeight:FontWeight.bold)),
+                    onTap:()async{
+                      final db=Provider.of<AppDatabase>(context,listen:false);
+                      await (db.update(db.events)..where((t)=>t.id.equals(eve.id))).write(
+                        EventsCompanion(
+                          busAmount:drift.Value(eve.busAmount+1),
+                          isSynced:const drift.Value(false),
+                        )
+                      );
+                    },
+                  ),
+                ])
+              ),
+            ]),
+            BasicCard(child:Column(children: [
+              StreamBuilder(
+                stream:db.watchColectivosAvailability(
+                  eve.startDateTime,eve.endDateTime,eve.id,
+                  onlyForEventId:eve.id
+                ),
+                builder:(context,snapshot){
+                  if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
+                  if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
+
+                  final listaColectivos = snapshot.data ?? [];
+                  if(listaColectivos.isEmpty){return Text(
+                    "No hay colectivos asignados",
+                    style:TextStyle(color:Colors.grey)
+                  );}
+                  return Column(
+                    children:listaColectivos.map((sel){return colectivoToCard(
+                      context,sel.$1,maincolor,
+                      fullInfo:false,
+                      busy:sel.$2,
+                      hideOptions:true,
+                      onLongPress:()async{
+                        await (db.delete(db.eventColectivos)
+                          ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.colectivoId.equals(sel.$1.id))).go();
+                        await updateFullEventState(deafDb,eve);
+                      },
+                    );}).toList(),
+                  );
+                },
+              ),
+              const SizedBox(height:20),
+              _buildAddButton("Agregar colectivo",()async{
+                final colectivos=await deafDb.getColectivosWithAvailability(eve.startDateTime,eve.endDateTime,eve.id);
+                final selection=await colectivoCardSelectionList(context,colectivos,maincolor);
+                if(selection==null)return;
+                await deafDb.into(deafDb.eventColectivos).insertOnConflictUpdate(EventColectivosCompanion(
+                  eventId: drift.Value(eve.id),
+                  colectivoId: drift.Value(selection.id),
+                ));
+                await updateFullEventState(deafDb,eve);
+              }),
+            ],)),
+
             //CHOFERES card
             const SizedBox(height:20),
             subtitleLine("Choferes",maincolor),
@@ -214,52 +301,6 @@ class eventInfo extends StatelessWidget{
                 await updateFullEventState(deafDb,eve);
               })
             ])),
-
-            //COLECTIVOS card
-            const SizedBox(height:20),
-            subtitleLine("Colectivos",maincolor),
-            BasicCard(child:Column(children: [
-              StreamBuilder(
-                stream:db.watchColectivosAvailability(
-                  eve.startDateTime,eve.endDateTime,eve.id,
-                  onlyForEventId:eve.id
-                ),
-                builder:(context,snapshot){
-                  if(snapshot.hasError)return ManuErrorWidget(snapshot:snapshot);
-                  if(!snapshot.hasData)return const Center(child: CircularProgressIndicator());
-
-                  final listaColectivos = snapshot.data ?? [];
-                  if(listaColectivos.isEmpty){return Text(
-                    "No hay colectivos asignados",
-                    style:TextStyle(color:Colors.grey)
-                  );}
-                  return Column(
-                    children:listaColectivos.map((sel){return colectivoToCard(
-                      context,sel.$1,maincolor,
-                      fullInfo:false,
-                      busy:sel.$2,
-                      hideOptions:true,
-                      onLongPress:()async{
-                        await (db.delete(db.eventColectivos)
-                          ..where((tbl)=>tbl.eventId.equals(eve.id)&tbl.colectivoId.equals(sel.$1.id))).go();
-                        await updateFullEventState(deafDb,eve);
-                      },
-                    );}).toList(),
-                  );
-                },
-              ),
-              const SizedBox(height:20),
-              _buildAddButton("Agregar colectivo",()async{
-                final colectivos=await deafDb.getColectivosWithAvailability(eve.startDateTime,eve.endDateTime,eve.id);
-                final selection=await colectivoCardSelectionList(context,colectivos,maincolor);
-                if(selection==null)return;
-                await deafDb.into(deafDb.eventColectivos).insertOnConflictUpdate(EventColectivosCompanion(
-                  eventId: drift.Value(eve.id),
-                  colectivoId: drift.Value(selection.id),
-                ));
-                await updateFullEventState(deafDb,eve);
-              }),
-            ],)),
 
 
             const SizedBox(height:20),

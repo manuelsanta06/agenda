@@ -188,11 +188,12 @@ func FullSync(payload models.SyncPayload)error{
 	//Events
 	for _, e := range payload.Events {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO events (id, name, data, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id)
+			INSERT INTO events (id, name, data, bus_amount, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 			ON CONFLICT (id) DO UPDATE SET
 				name = EXCLUDED.name,
 				data = EXCLUDED.data,
+        bus_amount = EXCLUDED.bus_amount,
 				contact_name = EXCLUDED.contact_name,
 				contact = EXCLUDED.contact,
 				repeat = EXCLUDED.repeat,
@@ -206,7 +207,7 @@ func FullSync(payload models.SyncPayload)error{
 				shift_id = EXCLUDED.shift_id,
         recorrido_id = EXCLUDED.recorrido_id,
 				updated_at = CURRENT_TIMESTAMP;
-		`, e.ID, e.Name, e.Data, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.ShiftID, e.RecorridoID)
+		`, e.ID, e.Name, e.Data, e.BusAmount, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.ShiftID, e.RecorridoID)
 		if err != nil {
 			return fmt.Errorf("error guardando event %s: %v", e.ID, err)
 		}
@@ -418,7 +419,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 
 	//EVENTOS
 	rowsEvents, err := DB.Query(ctx, `
-		SELECT id, name, data, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id, created_at, updated_at
+		SELECT id, name, data, bus_amount, contact_name, contact, repeat, days, start_date_time, end_date_time, stop_repeating_date_time, state, type, is_trip, shift_id, recorrido_id, created_at, updated_at
 		FROM events
 		WHERE updated_at > $1 
 		AND (start_date_time >= NOW() - INTERVAL '30 days' OR type = 4)
@@ -431,7 +432,7 @@ func FetchEventsSince(lastSyncStr string) (models.SyncPayload, error){
 
 	for rowsEvents.Next() {
 		var e models.Event
-		err := rowsEvents.Scan(&e.ID, &e.Name, &e.Data, &e.ContactName, &e.Contact, &e.Repeat, &e.Days, &e.StartDateTime, &e.EndDateTime, &e.StopRepeatingDateTime, &e.State, &e.Type, &e.IsTrip, &e.ShiftID, &e.RecorridoID, &e.CreatedAt, &e.UpdatedAt)
+		err := rowsEvents.Scan(&e.ID, &e.Name, &e.Data,&e.BusAmount, &e.ContactName, &e.Contact, &e.Repeat, &e.Days, &e.StartDateTime, &e.EndDateTime, &e.StopRepeatingDateTime, &e.State, &e.Type, &e.IsTrip, &e.ShiftID, &e.RecorridoID, &e.CreatedAt, &e.UpdatedAt)
 		if err != nil {
 			return payload, fmt.Errorf("error leyendo fila de event: %v", err)
 		}
@@ -517,12 +518,13 @@ type activeTemplate struct {
 	RecorridoName string
   RecorridoID   string
 	Data          string
+  BusAmount     int
 }
 
 func RecorridoShiftPopulationRoutine() error {
 	ctx := context.Background()
 	queryTemplates:=`
-		SELECT e.id, e.days, e.start_date_time, e.end_date_time, e.name, r.name, e.recorrido_id, e.data
+		SELECT e.id,e.days,e.start_date_time,e.end_date_time,e.name,r.name,e.recorrido_id,e.data,e.bus_amount
 		FROM events e
 		JOIN recorridos r ON e.recorrido_id = r.id
 		WHERE e.type = 4 AND e.state != 1 AND r.is_active = TRUE
@@ -537,7 +539,7 @@ func RecorridoShiftPopulationRoutine() error {
 	for rows.Next(){
 		var t activeTemplate
 		var daysPtr *string
-		if err:=rows.Scan(&t.ID,&daysPtr,&t.StartTime,&t.EndTime,&t.Name,&t.RecorridoName,&t.RecorridoID,&t.Data);err!=nil{
+		if err:=rows.Scan(&t.ID,&daysPtr,&t.StartTime,&t.EndTime,&t.Name,&t.RecorridoName,&t.RecorridoID,&t.Data,&t.BusAmount);err!=nil{
 			return fmt.Errorf("error leyendo template: %w",err)
 		}
 		if daysPtr!=nil{
@@ -589,11 +591,11 @@ func RecorridoShiftPopulationRoutine() error {
 			endDT:=time.Date(targetDate.Year(),targetDate.Month(),targetDate.Day(),
 				template.EndTime.Hour(),template.EndTime.Minute(),template.EndTime.Second(), 0, targetDate.Location())
 
-			insertEventQuery:=`
-				INSERT INTO events (id, name, data, start_date_time, end_date_time, state, type, is_trip, shift_id, recorrido_id)
-				VALUES ($1, $2, $3, $4, $5, 0, 3, true, $6, $7)
+insertEventQuery:=`
+				INSERT INTO events (id, name, data, bus_amount, start_date_time, end_date_time, state, type, is_trip, shift_id, recorrido_id)
+				VALUES ($1, $2, $3, $4, $5, $6, 0, 3, true, $7, $8)
 			`
-			_,err=tx.Exec(ctx,insertEventQuery,eventID,template.RecorridoName+" - "+template.Name, template.Data, startDT,endDT,template.ID,template.RecorridoID)
+			_,err=tx.Exec(ctx,insertEventQuery,eventID,template.RecorridoName+" - "+template.Name,template.Data,template.BusAmount,startDT,endDT,template.ID,template.RecorridoID)
 			if err!=nil{
 				return fmt.Errorf("error insertando evento base: %w", err)
 			}

@@ -19,7 +19,7 @@ Future<EventStates> getEventCompletitionState(AppDatabase db,Event eve)async{
   final choferesCount = await (db.select(db.eventChoferes)
     ..where((tbl) => tbl.eventId.equals(eve.id))
   ).get().then((list) => list.length);
-  return colectivosCount==0||choferesCount==0||choferesCount!=colectivosCount?
+  return colectivosCount==0||choferesCount==0||colectivosCount<eve.busAmount||choferesCount!=colectivosCount?
     EventStates.INCOMPLETE:
     EventStates.NONE;
 }

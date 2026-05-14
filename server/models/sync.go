@@ -73,6 +73,7 @@ type Event struct {
 	ID                    string  `json:"id"`
 	Name                  string  `json:"name"`
 	Data                  string  `json:"data"`
+	BusAmount             int     `json:"bus_amount"`
 	ContactName           *string `json:"contact_name"`
 	Contact               *string `json:"contact"`
 	Repeat                bool    `json:"repeat"`

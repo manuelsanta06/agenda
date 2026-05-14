@@ -1737,6 +1737,17 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
     requiredDuringInsert: false,
     defaultValue: const drift.Constant(''),
   );
+  static const drift.VerificationMeta _busAmountMeta =
+      const drift.VerificationMeta('busAmount');
+  @override
+  late final drift.GeneratedColumn<int> busAmount = drift.GeneratedColumn<int>(
+    'bus_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const drift.Constant(0),
+  );
   static const drift.VerificationMeta _contactNameMeta =
       const drift.VerificationMeta('contactName');
   @override
@@ -1893,6 +1904,7 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
     id,
     name,
     data,
+    busAmount,
     contactName,
     contact,
     repeat,
@@ -1936,6 +1948,12 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
       context.handle(
         _dataMeta,
         this.data.isAcceptableOrUnknown(data['data']!, _dataMeta),
+      );
+    }
+    if (data.containsKey('bus_amount')) {
+      context.handle(
+        _busAmountMeta,
+        busAmount.isAcceptableOrUnknown(data['bus_amount']!, _busAmountMeta),
       );
     }
     if (data.containsKey('contact_name')) {
@@ -2040,6 +2058,10 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
         DriftSqlType.string,
         data['${effectivePrefix}data'],
       )!,
+      busAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bus_amount'],
+      )!,
       contactName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}contact_name'],
@@ -2120,6 +2142,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
   final String id;
   final String name;
   final String data;
+  final int busAmount;
   final String? contactName;
   final String? contact;
   final bool repeat;
@@ -2137,6 +2160,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     required this.id,
     required this.name,
     required this.data,
+    required this.busAmount,
     this.contactName,
     this.contact,
     required this.repeat,
@@ -2157,6 +2181,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     map['id'] = drift.Variable<String>(id);
     map['name'] = drift.Variable<String>(name);
     map['data'] = drift.Variable<String>(data);
+    map['bus_amount'] = drift.Variable<int>(busAmount);
     if (!nullToAbsent || contactName != null) {
       map['contact_name'] = drift.Variable<String>(contactName);
     }
@@ -2202,6 +2227,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
       id: drift.Value(id),
       name: drift.Value(name),
       data: drift.Value(data),
+      busAmount: drift.Value(busAmount),
       contactName: contactName == null && nullToAbsent
           ? const drift.Value.absent()
           : drift.Value(contactName),
@@ -2239,6 +2265,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       data: serializer.fromJson<String>(json['data']),
+      busAmount: serializer.fromJson<int>(json['busAmount']),
       contactName: serializer.fromJson<String?>(json['contactName']),
       contact: serializer.fromJson<String?>(json['contact']),
       repeat: serializer.fromJson<bool>(json['repeat']),
@@ -2267,6 +2294,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'data': serializer.toJson<String>(data),
+      'busAmount': serializer.toJson<int>(busAmount),
       'contactName': serializer.toJson<String?>(contactName),
       'contact': serializer.toJson<String?>(contact),
       'repeat': serializer.toJson<bool>(repeat),
@@ -2291,6 +2319,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     String? id,
     String? name,
     String? data,
+    int? busAmount,
     drift.Value<String?> contactName = const drift.Value.absent(),
     drift.Value<String?> contact = const drift.Value.absent(),
     bool? repeat,
@@ -2308,6 +2337,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     id: id ?? this.id,
     name: name ?? this.name,
     data: data ?? this.data,
+    busAmount: busAmount ?? this.busAmount,
     contactName: contactName.present ? contactName.value : this.contactName,
     contact: contact.present ? contact.value : this.contact,
     repeat: repeat ?? this.repeat,
@@ -2329,6 +2359,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       data: data.data.present ? data.data.value : this.data,
+      busAmount: data.busAmount.present ? data.busAmount.value : this.busAmount,
       contactName: data.contactName.present
           ? data.contactName.value
           : this.contactName,
@@ -2361,6 +2392,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('data: $data, ')
+          ..write('busAmount: $busAmount, ')
           ..write('contactName: $contactName, ')
           ..write('contact: $contact, ')
           ..write('repeat: $repeat, ')
@@ -2383,6 +2415,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
     id,
     name,
     data,
+    busAmount,
     contactName,
     contact,
     repeat,
@@ -2404,6 +2437,7 @@ class Event extends drift.DataClass implements drift.Insertable<Event> {
           other.id == this.id &&
           other.name == this.name &&
           other.data == this.data &&
+          other.busAmount == this.busAmount &&
           other.contactName == this.contactName &&
           other.contact == this.contact &&
           other.repeat == this.repeat &&
@@ -2423,6 +2457,7 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
   final drift.Value<String> id;
   final drift.Value<String> name;
   final drift.Value<String> data;
+  final drift.Value<int> busAmount;
   final drift.Value<String?> contactName;
   final drift.Value<String?> contact;
   final drift.Value<bool> repeat;
@@ -2441,6 +2476,7 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     this.id = const drift.Value.absent(),
     this.name = const drift.Value.absent(),
     this.data = const drift.Value.absent(),
+    this.busAmount = const drift.Value.absent(),
     this.contactName = const drift.Value.absent(),
     this.contact = const drift.Value.absent(),
     this.repeat = const drift.Value.absent(),
@@ -2460,6 +2496,7 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     required String id,
     required String name,
     this.data = const drift.Value.absent(),
+    this.busAmount = const drift.Value.absent(),
     this.contactName = const drift.Value.absent(),
     this.contact = const drift.Value.absent(),
     this.repeat = const drift.Value.absent(),
@@ -2485,6 +2522,7 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     drift.Expression<String>? id,
     drift.Expression<String>? name,
     drift.Expression<String>? data,
+    drift.Expression<int>? busAmount,
     drift.Expression<String>? contactName,
     drift.Expression<String>? contact,
     drift.Expression<bool>? repeat,
@@ -2504,6 +2542,7 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
       if (id != null) 'id': id,
       if (name != null) 'name': name,
       if (data != null) 'data': data,
+      if (busAmount != null) 'bus_amount': busAmount,
       if (contactName != null) 'contact_name': contactName,
       if (contact != null) 'contact': contact,
       if (repeat != null) 'repeat': repeat,
@@ -2526,6 +2565,7 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     drift.Value<String>? id,
     drift.Value<String>? name,
     drift.Value<String>? data,
+    drift.Value<int>? busAmount,
     drift.Value<String?>? contactName,
     drift.Value<String?>? contact,
     drift.Value<bool>? repeat,
@@ -2545,6 +2585,7 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
       id: id ?? this.id,
       name: name ?? this.name,
       data: data ?? this.data,
+      busAmount: busAmount ?? this.busAmount,
       contactName: contactName ?? this.contactName,
       contact: contact ?? this.contact,
       repeat: repeat ?? this.repeat,
@@ -2574,6 +2615,9 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
     }
     if (data.present) {
       map['data'] = drift.Variable<String>(data.value);
+    }
+    if (busAmount.present) {
+      map['bus_amount'] = drift.Variable<int>(busAmount.value);
     }
     if (contactName.present) {
       map['contact_name'] = drift.Variable<String>(contactName.value);
@@ -2634,6 +2678,7 @@ class EventsCompanion extends drift.UpdateCompanion<Event> {
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('data: $data, ')
+          ..write('busAmount: $busAmount, ')
           ..write('contactName: $contactName, ')
           ..write('contact: $contact, ')
           ..write('repeat: $repeat, ')
@@ -6104,6 +6149,7 @@ typedef $$EventsTableCreateCompanionBuilder =
       required String id,
       required String name,
       drift.Value<String> data,
+      drift.Value<int> busAmount,
       drift.Value<String?> contactName,
       drift.Value<String?> contact,
       drift.Value<bool> repeat,
@@ -6124,6 +6170,7 @@ typedef $$EventsTableUpdateCompanionBuilder =
       drift.Value<String> id,
       drift.Value<String> name,
       drift.Value<String> data,
+      drift.Value<int> busAmount,
       drift.Value<String?> contactName,
       drift.Value<String?> contact,
       drift.Value<bool> repeat,
@@ -6287,6 +6334,11 @@ class $$EventsTableFilterComposer
 
   drift.ColumnFilters<String> get data => $composableBuilder(
     column: $table.data,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<int> get busAmount => $composableBuilder(
+    column: $table.busAmount,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -6519,6 +6571,11 @@ class $$EventsTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
+  drift.ColumnOrderings<int> get busAmount => $composableBuilder(
+    column: $table.busAmount,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
   drift.ColumnOrderings<String> get contactName => $composableBuilder(
     column: $table.contactName,
     builder: (column) => drift.ColumnOrderings(column),
@@ -6639,6 +6696,9 @@ class $$EventsTableAnnotationComposer
 
   drift.GeneratedColumn<String> get data =>
       $composableBuilder(column: $table.data, builder: (column) => column);
+
+  drift.GeneratedColumn<int> get busAmount =>
+      $composableBuilder(column: $table.busAmount, builder: (column) => column);
 
   drift.GeneratedColumn<String> get contactName => $composableBuilder(
     column: $table.contactName,
@@ -6867,6 +6927,7 @@ class $$EventsTableTableManager
                 drift.Value<String> id = const drift.Value.absent(),
                 drift.Value<String> name = const drift.Value.absent(),
                 drift.Value<String> data = const drift.Value.absent(),
+                drift.Value<int> busAmount = const drift.Value.absent(),
                 drift.Value<String?> contactName = const drift.Value.absent(),
                 drift.Value<String?> contact = const drift.Value.absent(),
                 drift.Value<bool> repeat = const drift.Value.absent(),
@@ -6887,6 +6948,7 @@ class $$EventsTableTableManager
                 id: id,
                 name: name,
                 data: data,
+                busAmount: busAmount,
                 contactName: contactName,
                 contact: contact,
                 repeat: repeat,
@@ -6907,6 +6969,7 @@ class $$EventsTableTableManager
                 required String id,
                 required String name,
                 drift.Value<String> data = const drift.Value.absent(),
+                drift.Value<int> busAmount = const drift.Value.absent(),
                 drift.Value<String?> contactName = const drift.Value.absent(),
                 drift.Value<String?> contact = const drift.Value.absent(),
                 drift.Value<bool> repeat = const drift.Value.absent(),
@@ -6926,6 +6989,7 @@ class $$EventsTableTableManager
                 id: id,
                 name: name,
                 data: data,
+                busAmount: busAmount,
                 contactName: contactName,
                 contact: contact,
                 repeat: repeat,

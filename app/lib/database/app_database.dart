@@ -55,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase():super(_openConnection());
 
   @override
-  int get schemaVersion=>7;
+  int get schemaVersion=>8;
 
   @override
   MigrationStrategy get migration{
@@ -110,6 +110,8 @@ class AppDatabase extends _$AppDatabase {
             ));
           }
           await m.alterTable(TableMigration(events));
+        }if(from<8){
+          await m.addColumn(events,events.busAmount);
         }
       },
       beforeOpen:(details)async{
@@ -272,6 +274,7 @@ class AppDatabase extends _$AppDatabase {
         "id": e.id,
         "name": e.name,
         "data":e.data,
+        "bus_amount":e.busAmount,
         "contact_name": e.contactName,
         "contact": e.contact,
         "repeat": e.repeat,
@@ -413,6 +416,7 @@ class AppDatabase extends _$AppDatabase {
             id: drift.Value(e['id']),
             name: drift.Value(e['name']),
             data: drift.Value(e['data']),
+            busAmount: drift.Value(e['bus_amount']??0),
             contactName: drift.Value(e['contact_name'] as String?),
             contact: drift.Value(e['contact'] as String?),
             repeat: drift.Value(e['repeat'] ?? false),

@@ -54,11 +54,11 @@ enum EventTypes{
 }
 String eventTypeToString(EventTypes type){
   switch(type){
-    case EventTypes.NONE: return "Error";
-    case EventTypes.EVENT: return "Viaje";
+    case EventTypes.NONE:     return "Error";
+    case EventTypes.EVENT:    return "Viaje";
     case EventTypes.REMINDER: return "Recordatorio";
-    case EventTypes.SCHOOL: return "Recorrido";
-    case EventTypes.SHIFT: return "Turno";
+    case EventTypes.SCHOOL:   return "Recorrido";
+    case EventTypes.SHIFT:    return "Turno";
   }
 }
 enum EventStates{
@@ -86,6 +86,7 @@ class Events extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
   TextColumn get data => text().withDefault(const Constant(''))();
+  IntColumn get busAmount=>integer().withDefault(const Constant(0))();
 
   TextColumn get contactName => text().nullable()();
   TextColumn get contact => text().nullable()();
