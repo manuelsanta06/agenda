@@ -164,27 +164,6 @@ func FullSync(payload models.SyncPayload)error{
 		}
 	}
 
-	//Debts
-	for _, d := range payload.Debts {
-		_, err := tx.Exec(ctx, `
-			INSERT INTO debts (id, passenger_id, chofer_id, event_id, date, description, total_amount, paid_amount, is_settled)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-			ON CONFLICT (id) DO UPDATE SET
-				passenger_id = EXCLUDED.passenger_id,
-				chofer_id = EXCLUDED.chofer_id,
-        event_id = EXCLUDED.event_id,
-				date = EXCLUDED.date,
-				description = EXCLUDED.description,
-				total_amount = EXCLUDED.total_amount,
-				paid_amount = EXCLUDED.paid_amount,
-				is_settled = EXCLUDED.is_settled,
-				updated_at = CURRENT_TIMESTAMP;
-		`,d.ID,d.PassengerID,d.ChoferID,d.EventID,d.Date,d.Description,d.TotalAmount,d.PaidAmount,d.IsSettled)
-		if err!=nil{
-			return fmt.Errorf("error guardando debt %s: %v", d.ID, err)
-		}
-	}
-
 	//Events
 	for _, e := range payload.Events {
 		_, err := tx.Exec(ctx, `
@@ -210,6 +189,27 @@ func FullSync(payload models.SyncPayload)error{
 		`, e.ID, e.Name, e.Data, e.BusAmount, e.ContactName, e.Contact, e.Repeat, e.Days, e.StartDateTime, e.EndDateTime, e.StopRepeatingDateTime, e.State, e.Type, e.IsTrip, e.ShiftID, e.RecorridoID)
 		if err != nil {
 			return fmt.Errorf("error guardando event %s: %v", e.ID, err)
+		}
+	}
+
+	//Debts
+	for _, d := range payload.Debts {
+		_, err := tx.Exec(ctx, `
+			INSERT INTO debts (id, passenger_id, chofer_id, event_id, date, description, total_amount, paid_amount, is_settled)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			ON CONFLICT (id) DO UPDATE SET
+				passenger_id = EXCLUDED.passenger_id,
+				chofer_id = EXCLUDED.chofer_id,
+        event_id = EXCLUDED.event_id,
+				date = EXCLUDED.date,
+				description = EXCLUDED.description,
+				total_amount = EXCLUDED.total_amount,
+				paid_amount = EXCLUDED.paid_amount,
+				is_settled = EXCLUDED.is_settled,
+				updated_at = CURRENT_TIMESTAMP;
+		`,d.ID,d.PassengerID,d.ChoferID,d.EventID,d.Date,d.Description,d.TotalAmount,d.PaidAmount,d.IsSettled)
+		if err!=nil{
+			return fmt.Errorf("error guardando debt %s: %v", d.ID, err)
 		}
 	}
 
@@ -586,10 +586,10 @@ func RecorridoShiftPopulationRoutine() error {
 			eventID:=uuid.New().String()
 
 			startDT:=time.Date(targetDate.Year(), targetDate.Month(), targetDate.Day(),
-				template.StartTime.Hour(),template.StartTime.Minute(),template.StartTime.Second(),0,targetDate.Location())
+				template.StartTime.Hour(),template.StartTime.Minute(),template.StartTime.Second(),0,time.UTC)
 
 			endDT:=time.Date(targetDate.Year(),targetDate.Month(),targetDate.Day(),
-				template.EndTime.Hour(),template.EndTime.Minute(),template.EndTime.Second(), 0, targetDate.Location())
+				template.EndTime.Hour(),template.EndTime.Minute(),template.EndTime.Second(), 0,time.UTC)
 
 insertEventQuery:=`
 				INSERT INTO events (id, name, data, bus_amount, start_date_time, end_date_time, state, type, is_trip, shift_id, recorrido_id)
