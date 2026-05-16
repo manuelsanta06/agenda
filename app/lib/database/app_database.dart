@@ -109,8 +109,8 @@ class AppDatabase extends _$AppDatabase {
               isSynced:const drift.Value(false),
             ));
           }
-          await m.alterTable(TableMigration(events));
-        }if(from<8){
+          await m.alterTable(TableMigration(events,newColumns:[events.busAmount]));
+        }if(from==7){
           await m.addColumn(events,events.busAmount);
         }
       },

@@ -1,15 +1,18 @@
 import 'package:agenda/database/app_database.dart';
-import 'package:agenda/widgets/cards.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:provider/provider.dart';
-import '../utilities/parsers.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import '../pages/eventInfo.dart';
-import '../widgets/timeinputs.dart';
-import '../widgets/eventDetails.dart';
-import '../utilities/syncService.dart';
+
+import 'package:agenda/widgets/timeinputs.dart';
+import 'package:agenda/widgets/eventDetails.dart';
+import 'package:agenda/widgets/cards.dart';
+
+import 'package:agenda/utilities/parsers.dart';
+import 'package:agenda/utilities/syncService.dart';
+import 'package:agenda/utilities/debts.dart';
 
 Future<EventStates> getEventCompletitionState(AppDatabase db,Event eve)async{
   final colectivosCount = await (db.select(db.eventColectivos)
@@ -231,13 +234,26 @@ Future<bool> showCreateTripSheet(BuildContext context,{
     (event==null&&stops==null)||(event!=null&&stops!=null),
     "Both parameters [event] and [stops] should be used or none"
   );
-  final result=await showModalBottomSheet<(EventsCompanion,List<StopsCompanion>,List<String>)>(
+  final db=Provider.of<AppDatabase>(context,listen:false);
+  // 1. Fetch existing debt (if any) to get the initial price
+  Debt? currentDebt;
+  int initialPrice=0;
+  if(event!=null&&!isDuplicate){
+    final debts=await(db.select(db.debts)..where((t)=>t.eventId.equals(event.id))).get();
+    if(debts.isNotEmpty){
+      currentDebt=debts.first;
+      initialPrice=currentDebt.totalAmount;
+    }
+  }
+
+  final result=await showModalBottomSheet<(EventsCompanion,List<StopsCompanion>,List<String>,int)>(
     context:context,
     isScrollControlled:true,
     builder:(context)=>_CreateTripSheet(
       mainColor: mainColor,
       eve: event,
       sto: stops,
+      initialPrice:initialPrice,
       recoId:recoId,
       isTrip: isTrip,
       isShift: isShift,
@@ -247,9 +263,7 @@ Future<bool> showCreateTripSheet(BuildContext context,{
   );
 
   if(result==null)return false;
-
-  final (eventCompanion,stopsCompanions,toDeleteIds)=result;
-  final db=Provider.of<AppDatabase>(context,listen:false);
+  final (eventCompanion,stopsCompanions,toDeleteIds,newPrice)=result;
 
   try{
     await db.transaction(()async{
@@ -263,6 +277,28 @@ Future<bool> showCreateTripSheet(BuildContext context,{
         ).write(eventCompanion);
       }else{
         await db.into(db.events).insert(eventCompanion);
+      }
+      // --- DEBT (PRICE) ---
+      if(currentDebt!=null){
+        // Update existing debt
+        await(db.update(db.debts)..where((t)=>t.id.equals(currentDebt!.id))).write(
+          DebtsCompanion(
+            totalAmount:drift.Value(newPrice),
+            isSynced:const drift.Value(false),
+          )
+        );
+      }else{
+        // Insert new debt
+        await db.into(db.debts).insert(DebtsCompanion(
+          id:drift.Value(const Uuid().v4()),
+          eventId:drift.Value(eventCompanion.id.value),
+          date:drift.Value(eventCompanion.startDateTime.value),
+          description:drift.Value(eventCompanion.name.value.isNotEmpty?'Precio del evento: ${eventCompanion.name.value}':'Costo del viaje'),
+          totalAmount:drift.Value(newPrice),
+          paidAmount:const drift.Value(0),
+          isSettled:const drift.Value(false),
+          isSynced:const drift.Value(false),
+        ));
       }
 
       if((await(db.select(db.debts)..where((t)=>t.eventId.equals(eventCompanion.id.value))).get()).isEmpty){
@@ -319,14 +355,16 @@ class _CreateTripSheet extends StatefulWidget {
   final String? recoId;
   final Event? eve;
   final List<Stop>? sto;
+  final int initialPrice;
   final Color mainColor;
   DateTime startDate;
 
   _CreateTripSheet({
     super.key,
-    required this.mainColor ,
+    required this.mainColor,
     this.eve,
     this.sto,
+    this.initialPrice=0,
     this.recoId,
     this.isTrip=false,
     this.isShift=false,
@@ -342,8 +380,10 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
   final _nameC = TextEditingController();
   final _contactNameC = TextEditingController();
   final _contactC = TextEditingController();
+  final _priceC=TextEditingController();
   final _formKey = GlobalKey<FormState>();
   late Set<WeekDays> weekDays;
+  int busAmount=1;
   bool repeat=false;
 
   final List<TempStop> _tempStops=[];
@@ -352,6 +392,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
   void initState(){
     super.initState();
 
+    _priceC.text=widget.initialPrice==0?"":widget.initialPrice.toString();
 
     if(widget.eve==null){
       //_stopDateTime=[DateTime(widget.startDate.year,widget.startDate.month,widget.startDate.day,0,0)];
@@ -362,6 +403,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
       return;
     }
     repeat=widget.eve?.repeat??false;
+    busAmount=widget.eve?.busAmount??0;
     weekDays=(widget.eve?.days?.toSet())??
       (<WeekDays>{WeekDays.MONDAY,WeekDays.TUESDAY,WeekDays.WEDNESDAY,WeekDays.THURSDAY,WeekDays.FRIDAY}).toSet();
     if(repeat)weekDays=widget.eve!.days!.toSet();
@@ -424,6 +466,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
     final newTrip=EventsCompanion(
       id:drift.Value(widget.isDuplicate?Uuid().v4():widget.eve?.id??Uuid().v4()),
       name:drift.Value(_nameC.text),
+      busAmount:drift.Value(busAmount),
       contactName:drift.Value(_contactNameC.text),
       contact:drift.Value(phoneParser(_contactC.text)),
       repeat:drift.Value(repeat),
@@ -455,7 +498,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
       ));
     }
     
-    Navigator.of(context).pop((newTrip, newStops, _toDeleteIds));
+    Navigator.of(context).pop((newTrip,newStops,_toDeleteIds,(int.tryParse(_priceC.text)??0)));
   }
   
   @override
@@ -463,6 +506,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
     _nameC.dispose();
     _contactNameC.dispose();
     _contactC.dispose();
+    _priceC.dispose();
     for(var temp in _tempStops)temp.nameC.dispose();
     super.dispose();
   }
@@ -482,93 +526,20 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
             crossAxisAlignment:CrossAxisAlignment.start,
             children:[
               // UPPER BAR
-              Row(
-                mainAxisAlignment:MainAxisAlignment.spaceBetween,
-                children:[
-                  Expanded(child:TextFormField(
-                    controller:_nameC,
-                    decoration:const InputDecoration(
-                      labelText:"Nombre",
-                      fillColor:Colors.transparent,
-                      //border:UnderlineInputBorder(),
-                      //prefixIcon:Icon(Icons.label_outline),
-                    ),
-                    validator:(value) {
-                      if (value == null || value.isEmpty)return 'Ingresa un nombre';
-                      return null;
-                    },
-                  )),
-                  ElevatedButton(
-                    onPressed:()=>_onSave(context),
-                    style:ElevatedButton.styleFrom(
-                      backgroundColor:widget.mainColor,
-                      foregroundColor:Colors.white,
-                    ),
-                    child:const Text("Guardar"),
-                  ),
-                ],
-              ),
-              const Divider(height:5),
-
-              if(!widget.isShift)
-              Row(
-                children: [
-                  Expanded(child: Text(
-                    "Repetir?",
-                    style:TextStyle(fontSize:16, fontWeight:repeat?FontWeight.bold:FontWeight.normal),
-                  )),
-                  Switch(
-                    value: repeat,
-                    activeThumbColor: Colors.white,
-                    activeTrackColor:widget.mainColor,
-                    onChanged:(bool value){
-                      setState(() {
-                        repeat=value;
-                      });
-                    }
-                  )
-                ],
-              ),
-              if(repeat||widget.isShift)
-              SegmentedButton<WeekDays>(
-                segments: const <ButtonSegment<WeekDays>>[
-                  ButtonSegment<WeekDays>(value: WeekDays.MONDAY,label: Text("LU")),
-                  ButtonSegment<WeekDays>(value: WeekDays.TUESDAY,label: Text("MA")),
-                  ButtonSegment<WeekDays>(value: WeekDays.WEDNESDAY,label: Text("MI")),
-                  ButtonSegment<WeekDays>(value: WeekDays.THURSDAY,label: Text("JU")),
-                  ButtonSegment<WeekDays>(value: WeekDays.FRIDAY,label: Text("VI")),
-                  ButtonSegment<WeekDays>(value: WeekDays.SATURDAY,label: Text("SA")),
-                  ButtonSegment<WeekDays>(value: WeekDays.SUNDAY,label: Text("DO")),
-                ],
-                selected: weekDays,
-                onSelectionChanged: (Set<WeekDays> newSelection) {
-                  setState(() {
-                    weekDays = newSelection;
-                  });
-                },
-                multiSelectionEnabled: true,
-                showSelectedIcon: false,
-                style:ButtonStyle(
-                  backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                    (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.selected))return widget.mainColor.withAlpha(100);
-                      return null;
-                    },
-                  ),
-                  foregroundColor: MaterialStateProperty.resolveWith<Color?>(
-                    (Set<MaterialState> states) {
-                      if (states.contains(MaterialState.selected))return Colors.white;
-                      return widget.mainColor;
-                    },
-                  ),
-                  side: MaterialStateProperty.resolveWith<BorderSide?>(
-                    (Set<MaterialState> states) {
-                      return BorderSide(color:widget.mainColor);
-                    }
-                  )
+              TextFormField(
+                controller:_nameC,
+                decoration:const InputDecoration(
+                  labelText:"Nombre",
+                  fillColor:Colors.transparent,
+                  border:UnderlineInputBorder(),
+                  prefixIcon:Icon(Icons.label_outline),
                 ),
+                validator:(value){
+                  if(value==null||value.isEmpty)return 'Ingresa un nombre';
+                  return null;
+                },
               ),
-              const SizedBox(height: 5),
+              SizedBox(height:15),
 
               Row(children:[
                 Expanded(child:TextFormField(
@@ -599,7 +570,51 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
                   ),
                 )),
               ]),
-              const SizedBox(height: 5),
+              const SizedBox(height:15),
+              Row(children:[
+                Expanded(child:TextFormField(
+                  controller:_priceC,
+                  keyboardType:TextInputType.number,
+                  decoration:InputDecoration(
+                    labelText:"Precio (\$)",
+                    border:OutlineInputBorder(borderRadius:BorderRadius.circular(12)),
+                    focusedBorder:OutlineInputBorder(
+                      borderRadius:BorderRadius.circular(12),
+                      borderSide:BorderSide(color:widget.mainColor,width:2),
+                    ),
+                    prefixIcon:const Icon(Icons.attach_money),
+                  ),
+                )),
+                const SizedBox(width:8), // Mismo espacio que entre Persona y Contacto
+                Expanded(child:InputDecorator(
+                  decoration:InputDecoration(
+                    labelText:"Colectivos",
+                    border:OutlineInputBorder(borderRadius:BorderRadius.circular(12)),
+                    prefixIcon:const Icon(Icons.directions_bus_outlined),
+                    contentPadding:const EdgeInsets.symmetric(vertical:4),
+                  ),
+                  child:Row(mainAxisAlignment:MainAxisAlignment.spaceEvenly,children:[
+                    GestureDetector(
+                      onTap:(){if(busAmount>0)setState(()=>busAmount--);},
+                      child:Container(
+                        color:Colors.transparent, // Amplía la zona táctil
+                        padding:const EdgeInsets.symmetric(horizontal:12,vertical:8),
+                        child:Text("-",style:TextStyle(color:widget.mainColor,fontSize:24,fontWeight:FontWeight.bold,height:1)),
+                      )
+                    ),
+                    Text(busAmount.toString(),style:TextStyle(fontSize:18,fontWeight:FontWeight.bold,color:widget.mainColor)),
+                    GestureDetector(
+                      onTap:()=>setState(()=>busAmount++),
+                      child:Container(
+                        color:Colors.transparent,
+                        padding:const EdgeInsets.symmetric(horizontal:12,vertical:8),
+                        child:Text("+",style:TextStyle(color:widget.mainColor,fontSize:22,fontWeight:FontWeight.bold,height:1)),
+                      )
+                    ),
+                  ]),
+                )),
+              ]),
+              const SizedBox(height:15),
 
               // STOPS
               Text("Paradas/lugares",
@@ -691,11 +706,22 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
                 },
               )),
               //if(widget.isTrip||_stopControllers.length<3)
-              TextButton.icon(
-                onPressed:_addStopField,
-                icon: Icon(Icons.add, color:widget.mainColor),
-                label: Text("Añadir parada", style:TextStyle(color:widget.mainColor)),
-              ),
+              Row(mainAxisAlignment:MainAxisAlignment.spaceBetween,children:[
+                TextButton.icon(
+                  onPressed:_addStopField,
+                  icon: Icon(Icons.add, color:widget.mainColor),
+                  label: Text("Añadir parada", style:TextStyle(color:widget.mainColor)),
+                ),
+                Expanded(child:SizedBox()),
+                ElevatedButton(
+                  onPressed:()=>_onSave(context),
+                  style:ElevatedButton.styleFrom(
+                    backgroundColor:widget.mainColor,
+                    foregroundColor:Colors.white,
+                  ),
+                  child:const Text("Guardar"),
+                ),
+              ])
             ],
           ),
         ),

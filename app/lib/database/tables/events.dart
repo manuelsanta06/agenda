@@ -86,7 +86,7 @@ class Events extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
   TextColumn get data => text().withDefault(const Constant(''))();
-  IntColumn get busAmount=>integer().withDefault(const Constant(0))();
+  IntColumn get busAmount=>integer().withDefault(const Constant(1))();
 
   TextColumn get contactName => text().nullable()();
   TextColumn get contact => text().nullable()();

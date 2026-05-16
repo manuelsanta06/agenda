@@ -55,6 +55,8 @@ class eventInfo extends StatelessWidget{
           final debts=snapshot.data!.debts;
           final maincolor=getMainColor(eve.state);
 
+          updateFullEventState(deafDb,eve);
+
           return ListView(padding:const EdgeInsets.symmetric(horizontal:5),children:[
             //TOP card
             BasicCard(
@@ -110,7 +112,7 @@ class eventInfo extends StatelessWidget{
             //CONTACT INFO card
             const SizedBox(height:20),
             subtitleLine("Contacto",maincolor),
-            BasicCard(child:Column(children: [
+            BasicCard(child:Column(children:[
               Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children:[
@@ -186,7 +188,6 @@ class eventInfo extends StatelessWidget{
                     child:Text("-",style:TextStyle(color:maincolor,fontSize:20,fontWeight:FontWeight.bold)),
                     onTap:()async{
                       if(eve.busAmount>0){
-                        final db=Provider.of<AppDatabase>(context,listen:false);
                         await (db.update(db.events)..where((t)=>t.id.equals(eve.id))).write(
                           EventsCompanion(
                             busAmount:drift.Value(eve.busAmount-1),
@@ -200,7 +201,6 @@ class eventInfo extends StatelessWidget{
                   GestureDetector(
                     child:Text("+",style:TextStyle(color:maincolor,fontSize:20,fontWeight:FontWeight.bold)),
                     onTap:()async{
-                      final db=Provider.of<AppDatabase>(context,listen:false);
                       await (db.update(db.events)..where((t)=>t.id.equals(eve.id))).write(
                         EventsCompanion(
                           busAmount:drift.Value(eve.busAmount+1),
