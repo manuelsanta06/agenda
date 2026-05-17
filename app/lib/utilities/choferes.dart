@@ -140,6 +140,9 @@ Widget choferToCard(
                 await launchUrl(Uri.parse("https://wa.me/${chofe.mobileNumber}"),mode:LaunchMode.externalApplication);
                 break;
 
+              case 'smartPay':
+                showSmartPay(context,mainColor,choferId:chofe.id);
+                break;
               case 'debt':
                 if((await showCreateDebtSheet(context,mainColor,choferId:chofe.id))&&context.mounted){
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -173,9 +176,17 @@ Widget choferToCard(
               ]),
             ),
             PopupMenuItem<String>(
-              value:'debt',
+              value:'smartPay',
               child:Row(children:[
                 Icon(Icons.euro,color:Colors.green),
+                SizedBox(width:8),
+                Text('Añadir pago')
+              ]),
+            ),
+            PopupMenuItem<String>(
+              value:'debt',
+              child:Row(children:[
+                Icon(Icons.euro,color:Colors.red),
                 SizedBox(width:8),
                 Text('Añadir deuda')
               ]),

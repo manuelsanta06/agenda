@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'dart:developer';
 import 'package:uuid/uuid.dart';
@@ -207,6 +209,264 @@ class _DebtDetailsSheetState extends State<_DebtDetailsSheet>{
             child:const Text("Guardar"),
           ),
         ],
+      ),
+    ));
+  }
+}
+
+
+Future<bool> showSmartPay(BuildContext context,Color mainColor,{
+  String? passengerId,
+  String? choferId,
+  String? eventId,
+})async{
+  final db=Provider.of<AppDatabase>(context,listen:false);
+
+  final query=db.select(db.debts)..where((t)=>t.isSettled.equals(false));
+  if(passengerId!=null)query.where((t)=>t.passengerId.equals(passengerId));
+  if(choferId!=null)query.where((t)=>t.choferId.equals(choferId));
+  if(eventId!=null)query.where((t)=>t.eventId.equals(eventId));
+  query.orderBy([(t)=>drift.OrderingTerm.asc(t.date)]);
+
+  final pendingDebts=await query.get();
+
+  // Split into positive debts and available credits
+  final positiveDebts=pendingDebts.where((d)=>d.totalAmount>0).toList();
+  final creditDebts=pendingDebts.where((d)=>d.totalAmount<0).toList();
+
+  final int? totalPaid=await showModalBottomSheet<int>(
+    context:context,
+    isScrollControlled:true,
+    builder:(context)=>_SmartPaySheet(mainColor:mainColor,pendingDebts:pendingDebts),
+  );
+
+  if(totalPaid==null||totalPaid<0)return false;
+  
+  //ANTI-SPAM
+  if(totalPaid==0&&positiveDebts.isEmpty)return false;
+
+  try{
+    await db.transaction(()async{
+      int remainingAmount=totalPaid;
+
+      for(final positiveDebt in positiveDebts){
+        final int debtDue=positiveDebt.totalAmount-positiveDebt.paidAmount;
+
+        //PULL CREDIT ONLY WHEN NEEDED: If cash is not enough, consume the oldest available credit
+        while(remainingAmount<debtDue&&creditDebts.isNotEmpty){
+          final credit=creditDebts.removeAt(0);
+          final int creditValue=(credit.totalAmount-credit.paidAmount).abs();
+          remainingAmount+=creditValue;
+
+          // Consume the credit row completely
+          await(db.update(db.debts)..where((t)=>t.id.equals(credit.id))).write(
+            DebtsCompanion(
+              paidAmount:drift.Value(credit.totalAmount),
+              isSettled:const drift.Value(true),
+              isSynced:const drift.Value(false),
+            )
+          );
+        }
+
+        if(remainingAmount>=debtDue){
+          remainingAmount-=debtDue;
+          await(db.update(db.debts)..where((t)=>t.id.equals(positiveDebt.id))).write(
+            DebtsCompanion(
+              paidAmount:drift.Value(positiveDebt.totalAmount),
+              isSettled:const drift.Value(true),
+              isSynced:const drift.Value(false),
+            )
+          );
+        }else{
+          final int newPaid=positiveDebt.paidAmount+remainingAmount;
+          remainingAmount=0;
+          await(db.update(db.debts)..where((t)=>t.id.equals(positiveDebt.id))).write(
+            DebtsCompanion(
+              paidAmount:drift.Value(newPaid),
+              isSynced:const drift.Value(false),
+            )
+          );
+        }
+      }
+
+      if(remainingAmount>0){
+        await db.into(db.debts).insert(DebtsCompanion(
+          id:drift.Value(const Uuid().v4()),
+          passengerId:drift.Value(passengerId),
+          choferId:drift.Value(choferId),
+          eventId:drift.Value(eventId),
+          date:drift.Value(DateTime.now()),
+          description:const drift.Value('Crédito a favor'),
+          totalAmount:drift.Value(-remainingAmount),
+          paidAmount:const drift.Value(0),
+          isSettled:const drift.Value(false),
+          isSynced:const drift.Value(false),
+        ));
+      }
+    });
+
+    SyncService.pushUnsyncedData(db);
+    return true;
+  }catch(e){
+    print("Error executing smart payment: $e");
+    return false;
+  }
+}
+
+class _SmartPaySheet extends StatefulWidget{
+  final Color mainColor;
+  final List<Debt> pendingDebts;
+  const _SmartPaySheet({required this.mainColor,required this.pendingDebts});
+
+  @override
+  State<_SmartPaySheet> createState()=>_SmartPaySheetState();
+}
+
+class _SmartPaySheetState extends State<_SmartPaySheet>{
+  final _amountC=TextEditingController();
+  final _formKey=GlobalKey<FormState>();
+  int _inputAmount=0;
+
+  @override
+  void dispose(){
+    _amountC.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context){
+    int runningAmount=_inputAmount;
+    final positiveDebts=widget.pendingDebts.where((d)=>d.totalAmount>0).toList();
+    final creditDebts=widget.pendingDebts.where((d)=>d.totalAmount<0).toList();
+
+    final Map<String,(String,Color)> previewStatuses={};
+    int creditIndex=0;
+
+    for(final debt in positiveDebts){
+      final int debtDue=debt.totalAmount-debt.paidAmount;
+
+      while(runningAmount<debtDue&&creditIndex<creditDebts.length){
+        final int creditValue=(creditDebts[creditIndex].totalAmount-creditDebts[creditIndex].paidAmount).abs();
+        runningAmount+=creditValue;
+        previewStatuses[creditDebts[creditIndex].id]=("\$$creditValue a favor",Colors.blue);
+        creditIndex++;
+      }
+
+      if(runningAmount<=0){
+        previewStatuses[debt.id]=("Faltan \$$debtDue",Colors.red);
+        runningAmount=0;
+      }else if(runningAmount>=debtDue){
+        runningAmount-=debtDue;
+        previewStatuses[debt.id]=("Saldada",Colors.green);
+      }else{
+        final int remaining=debtDue-runningAmount;
+        runningAmount=0;
+        previewStatuses[debt.id]=("Faltan \$$remaining",Colors.orange);
+      }
+    }
+
+    //any credits left over are marked as untouched and preserved
+    for(int i=creditIndex;i<creditDebts.length;i++){
+      final credit=creditDebts[i];
+      final int creditValue=(credit.totalAmount-credit.paidAmount).abs();
+      previewStatuses[credit.id]=("\$$creditValue a favor",Colors.grey);
+    }
+
+    return SafeArea(child:Padding(
+      padding:EdgeInsets.only(
+        left:20,right:20,top:20,
+        bottom:MediaQuery.of(context).viewInsets.bottom+20,
+      ),
+      child:Form(
+        key:_formKey,
+        child:Column(
+          mainAxisSize:MainAxisSize.min,
+          crossAxisAlignment:CrossAxisAlignment.start,
+          children:[
+            Row(
+              mainAxisAlignment:MainAxisAlignment.spaceBetween,
+              children:[
+                Text("Registrar pago",style:TextStyle(
+                  fontSize:20,fontWeight:FontWeight.bold,color:widget.mainColor
+                )),
+                ElevatedButton(
+                  onPressed:(){
+                    if(_formKey.currentState!.validate())Navigator.pop(context,_inputAmount);
+                  },
+                  style:ElevatedButton.styleFrom(backgroundColor:widget.mainColor,foregroundColor:Colors.black),
+                  child:const Text("Confirmar"),
+                ),
+              ],
+            ),
+            const SizedBox(height:20),
+            TextFormField(
+              controller:_amountC,
+              keyboardType:TextInputType.number,
+              autofocus:true,
+              decoration:const InputDecoration(
+                labelText:"Monto Recibido",
+                prefixIcon:Icon(Icons.attach_money),
+                border:OutlineInputBorder(),
+              ),
+              onChanged:(v)=>setState((){
+                _inputAmount=int.tryParse(v)??0;
+              }),
+              validator:(v)=>v==null||v.isEmpty||int.tryParse(v)==null||int.parse(v)<0?"Ingresa un monto válido":null,
+            ),
+            const SizedBox(height:20),
+            subtitleLine("Distribución del Pago",widget.mainColor),
+            const SizedBox(height:10),
+            ConstrainedBox(
+              constraints:const BoxConstraints(maxHeight:220),
+              child:ListView.builder(
+                shrinkWrap:true,
+                itemCount:widget.pendingDebts.length,
+                itemBuilder:(context,index){
+                  final debt=widget.pendingDebts[index];
+                  final int pendingAmount=(debt.totalAmount-debt.paidAmount).abs();
+                  final status=previewStatuses[debt.id]??("Pendiente",Colors.grey);
+
+                  return Padding(
+                    padding:const EdgeInsets.symmetric(vertical:4),
+                    child:BasicCard(child:Column(
+                      crossAxisAlignment:CrossAxisAlignment.start,
+                      mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                      children:[
+                        Row(
+                          children:[
+                            Text("${debt.date.day}/${debt.date.month}/${debt.date.year}",
+                              style:const TextStyle(fontWeight:FontWeight.bold)
+                            ),
+                            Expanded(child:SizedBox()),
+                            pillText(status.$1,status.$2),
+                          ],
+                        ),
+                        Text(debt.totalAmount<0?"Saldo a favor":"Pendiente original: \$$pendingAmount",
+                          style:const TextStyle(fontSize:12,color:Colors.grey)
+                        ),
+                      ],
+                    )),
+                  );
+                },
+              ),
+            ),
+            if(runningAmount>0)...[
+              const SizedBox(height:15),
+              BasicCard(
+                borderColor:Colors.green,
+                child:Row(
+                  mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                  children:[
+                    const Text("Sobra:",style:TextStyle(fontWeight:FontWeight.bold,color:Colors.green)),
+                    Text("\$$runningAmount",style:const TextStyle(
+                      fontSize:16,fontWeight:FontWeight.bold,color:Colors.green
+                    )),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     ));
   }

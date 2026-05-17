@@ -235,7 +235,7 @@ Future<bool> showCreateTripSheet(BuildContext context,{
     "Both parameters [event] and [stops] should be used or none"
   );
   final db=Provider.of<AppDatabase>(context,listen:false);
-  // 1. Fetch existing debt (if any) to get the initial price
+  // Fetch existing debt (if any) to get the initial price
   Debt? currentDebt;
   int initialPrice=0;
   if(event!=null&&!isDuplicate){
@@ -347,7 +347,6 @@ class TempStop{
   TempStop({this.originalId, required this.stopDate});
 }
 
-//Returns a cuple EventsCompanion/StopsCompanion
 class _CreateTripSheet extends StatefulWidget {
   final bool isTrip;
   final bool isShift;
@@ -585,7 +584,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
                     prefixIcon:const Icon(Icons.attach_money),
                   ),
                 )),
-                const SizedBox(width:8), // Mismo espacio que entre Persona y Contacto
+                const SizedBox(width:8),
                 Expanded(child:InputDecorator(
                   decoration:InputDecoration(
                     labelText:"Colectivos",
@@ -597,7 +596,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
                     GestureDetector(
                       onTap:(){if(busAmount>0)setState(()=>busAmount--);},
                       child:Container(
-                        color:Colors.transparent, // Amplía la zona táctil
+                        color:Colors.transparent, 
                         padding:const EdgeInsets.symmetric(horizontal:12,vertical:8),
                         child:Text("-",style:TextStyle(color:widget.mainColor,fontSize:24,fontWeight:FontWeight.bold,height:1)),
                       )
@@ -695,7 +694,7 @@ class _CreateTripSheetState extends State<_CreateTripSheet>{
                           },
                         )),
                         // DELETE BUTTON
-                        if (_tempStops.length>1&&index!=0)
+                        if(_tempStops.length>1&&index!=0)
                         IconButton(
                           icon:const Icon(Icons.remove_circle_outline, color:Colors.red),
                           onPressed:() => _removeStopField(index),
