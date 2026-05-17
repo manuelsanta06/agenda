@@ -13,6 +13,7 @@ import 'package:agenda/widgets/errorWidgets.dart';
 import 'package:agenda/utilities/passegers.dart';
 import 'package:agenda/utilities/events.dart';
 import 'package:agenda/utilities/parsers.dart';
+import 'package:agenda/utilities/debts.dart';
 
 
 class recorridoInfo extends StatefulWidget{

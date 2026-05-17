@@ -479,7 +479,6 @@ Future<bool> showCreateDebtSheet(
   String? passengerId,
   String? choferId
 })async{
-  assert((passengerId==null)!=(choferId==null));
   final result=await showModalBottomSheet<DebtsCompanion>(
     context:context,
     isScrollControlled:true,

@@ -178,7 +178,7 @@ Widget choferToCard(
             PopupMenuItem<String>(
               value:'smartPay',
               child:Row(children:[
-                Icon(Icons.euro,color:Colors.green),
+                Icon(Icons.attach_money,color:Colors.green),
                 SizedBox(width:8),
                 Text('Añadir pago')
               ]),
@@ -186,7 +186,7 @@ Widget choferToCard(
             PopupMenuItem<String>(
               value:'debt',
               child:Row(children:[
-                Icon(Icons.euro,color:Colors.red),
+                Icon(Icons.attach_money,color:Colors.red),
                 SizedBox(width:8),
                 Text('Añadir deuda')
               ]),
