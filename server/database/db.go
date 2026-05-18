@@ -385,23 +385,29 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 	}
 
 	//DEBTS
-	rowsDebts, err := DB.Query(ctx, `
-		SELECT id, passenger_id, chofer_id, event_id, date, description, total_amount, paid_amount, is_settled, created_at, updated_at
-		FROM debts
-		WHERE updated_at > $1
-	`, lastSyncStr)
-	if err != nil {
-		return payload, fmt.Errorf("error consultando debts: %v", err)
+	rowsDebts,err:=DB.Query(ctx,`
+		SELECT d.id, d.passenger_id, d.chofer_id, d.event_id, d.date, d.description, d.total_amount, d.paid_amount, d.is_settled, d.created_at, d.updated_at
+		FROM debts d
+		LEFT JOIN events e ON d.event_id = e.id
+		WHERE d.updated_at > $1
+		AND (
+			d.event_id IS NULL 
+			OR e.start_date_time >= NOW() - INTERVAL '30 days' 
+			OR e.type = 4
+		)
+	`,lastSyncStr)
+	if err!=nil{
+		return payload,fmt.Errorf("error consultando debts: %v",err)
 	}
 	defer rowsDebts.Close()
 
-	for rowsDebts.Next() {
+	for rowsDebts.Next(){
 		var d models.Debt
-		err := rowsDebts.Scan(&d.ID,&d.PassengerID,&d.ChoferID,&d.EventID,&d.Date,&d.Description,&d.TotalAmount,&d.PaidAmount,&d.IsSettled,&d.CreatedAt,&d.UpdatedAt)
+		err:=rowsDebts.Scan(&d.ID,&d.PassengerID,&d.ChoferID,&d.EventID,&d.Date,&d.Description,&d.TotalAmount,&d.PaidAmount,&d.IsSettled,&d.CreatedAt,&d.UpdatedAt)
 		if err!=nil{
-			return payload, fmt.Errorf("error leyendo fila de debt: %v", err)
+			return payload,fmt.Errorf("error leyendo fila de debt: %v",err)
 		}
-		payload.Debts = append(payload.Debts, d)
+		payload.Debts=append(payload.Debts,d)
 	}
 
 

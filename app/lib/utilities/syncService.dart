@@ -16,17 +16,41 @@ class SyncService{
 
   static Future<(bool,String)> performFullSync(AppDatabase db) async {
     log("Syncing...");
-    final data=await pushUnsyncedData(db);
+    Map<String, dynamic> fullJson={};
+    try{
+      final data=await pushUnsyncedData(db);
 
-    if(data.$1){
-      log("Push successfull, Pulling..");
-      await fetchCatalogUpdates(db);
-      await fetchEventsUpdates(db);
-      log("Sincronización completa.");
-    }else{
-      log("Push failled.");
+      if(data.$1){
+        log("Push successfull, Pulling..");
+        final catalogData=await _fetchCatalogData();
+        final eventsData=await _fetchEventsData();
+        if(catalogData!=null&&eventsData!=null){
+          catalogData.forEach((key,value){
+            if(value!=null)fullJson[key]=value;
+          });
+          eventsData.forEach((key,value){
+            if(value!=null)fullJson[key]=value;
+          });
+          await db.processFullSync(fullJson);
+          
+          final now = DateTime.now().toUtc().toIso8601String();
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('last_sync_catalog', now);
+          await prefs.setString('last_sync_events', now);
+          
+          log("Sincronización completa.");
+        } else {
+          log("Error en la descarga de datos, se abortó el guardado local.");
+        }
+      }else{
+        log("Push failled.");
+      }
+      return data;
+    }catch(e){
+      log("Error de coneccion: $e");
+      log(fullJson.toString());
+      return (false,"error");
     }
-    return data;
   }
 
   static Future<(bool,String)> pushUnsyncedData(AppDatabase db)async{
@@ -55,63 +79,51 @@ class SyncService{
     }
   }
 
-  //catalog update
-  static Future<void> fetchCatalogUpdates(AppDatabase db)async{
-    if(!(await pushUnsyncedData(db)).$1)return;
-    final now = DateTime.now().toUtc().toIso8601String();
-    try{
-      final prefs=await SharedPreferences.getInstance();
-      final lastSyncStr=prefs.getString('last_sync_catalog')??'2000-01-01T00:00:00Z';
+  // Internet-only functions
 
-      final uri=Uri.https(baseUrl,'/sync/catalog',{
-        'last_sync':lastSyncStr,
+  static Future<Map<String, dynamic>?> _fetchCatalogData()async{
+    try{
+      final prefs = await SharedPreferences.getInstance();
+      final lastSyncStr = prefs.getString('last_sync_catalog') ?? '2000-01-01T00:00:00Z';
+
+      final uri = Uri.https(baseUrl, '/sync/catalog', {
+        'last_sync': lastSyncStr,
       });
 
-      final response=await http.get(uri,headers:_headers);
+      final response = await http.get(uri, headers: _headers);
 
-      if(response.statusCode==200){
-        final Map<String, dynamic> jsonData=jsonDecode(response.body);
-        
-        log(jsonEncode(jsonData));
-        await db.processCatalogSync(jsonData);
-        await prefs.setString('last_sync_catalog', now);
+      if(response.statusCode == 200){
+        return jsonDecode(response.body);
       } else {
-        log("Error fetchCatalogUpdates: ${response.statusCode}");
+        log("Error fetchCatalogData: ${response.statusCode}");
+        return null;
       }
     }catch(e){
-      log("Error en Catalog Sync: $e");
+      log("Error en Catalog Sync Network: $e");
+      return null;
     }
   }
 
-  //events update
-  static Future<void> fetchEventsUpdates(AppDatabase db) async {
-    if(!(await pushUnsyncedData(db)).$1)return;
-    final now = DateTime.now().toUtc().toIso8601String();
+  static Future<Map<String, dynamic>?> _fetchEventsData() async {
     try{
-      final prefs=await SharedPreferences.getInstance();
-      final lastSyncStr=prefs.getString('last_sync_events')??'2000-01-01T00:00:00Z';
+      final prefs = await SharedPreferences.getInstance();
+      final lastSyncStr = prefs.getString('last_sync_events') ?? '2000-01-01T00:00:00Z';
 
-      final uri=Uri.https(baseUrl,'/sync/events',{
-        'last_sync':lastSyncStr,
+      final uri = Uri.https(baseUrl, '/sync/events', {
+        'last_sync': lastSyncStr,
       });
 
-      final response=await http.get(uri,headers:_headers);
+      final response = await http.get(uri, headers: _headers);
 
-      if(response.statusCode==200){
-        final Map<String,dynamic> jsonData=jsonDecode(response.body);
-        
-        log(jsonEncode(jsonData));
-        await db.processEventsSync(jsonData);
-        
-        //await db.deleteOldEvents();
-
-        await prefs.setString('last_sync_events',now);
-      }else{
-        log("Error fetchEventsUpdates: ${response.statusCode}");
-        log(response.body);
+      if(response.statusCode == 200){
+        return jsonDecode(response.body);
+      } else {
+        log("Error fetchEventsData: ${response.statusCode}");
+        return null;
       }
     }catch(e){
-      log("Error de red en Events Sync: $e");
+      log("Error en Events Sync Network: $e");
+      return null;
     }
   }
 }

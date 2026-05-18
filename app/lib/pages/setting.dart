@@ -99,13 +99,6 @@ class PantallaAjustes extends StatelessWidget{
             },
           ),
           ListTile(
-            title:const Text("Pedir eventos"),
-            onTap:()async{
-              final deafDb=Provider.of<AppDatabase>(context, listen: false);
-              await (SyncService.fetchEventsUpdates(deafDb));
-            },
-          ),
-          ListTile(
             title:const Text("Forzar sincronizacion de TODO"),
             onTap:()async{
               try{

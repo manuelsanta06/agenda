@@ -183,7 +183,7 @@ class AppDatabase extends _$AppDatabase {
     }
   }
 
-  Stream<(int, int)> watchVtvStatus() {
+  Stream<(int, int)> watchVtvStatus(){
     final hoy=DateTime.now();
     final limite=hoy.add(const Duration(days:20));
 
@@ -309,10 +309,17 @@ class AppDatabase extends _$AppDatabase {
     };
   }
 
-  Future<void> processCatalogSync(Map<String, dynamic> json) async {
+  Future<void> processFullSync(Map<String, dynamic> json) async {
+    // 1. Activar el retraso de chequeo de claves foráneas ANTES de abrir la transacción
+    await customStatement('PRAGMA defer_foreign_keys = ON;');
+
+    // 2. Abrir la transacción
     await transaction(() async {
-      //TABLAS PRINCIPALES(Insert or Replace)
-      //CHOFERES
+      // ==========================================
+      // NIVEL 1: TABLAS BASE
+      // ==========================================
+      
+      // CHOFERES
       final choferesList = json['choferes'] as List<dynamic>? ?? [];
       for(var c in choferesList){
         await into(choferes).insertOnConflictUpdate(
@@ -331,7 +338,7 @@ class AppDatabase extends _$AppDatabase {
         );
       }
 
-      //COLECTIVOS
+      // COLECTIVOS
       final colectivosList = json['colectivos'] as List<dynamic>? ?? [];
       for(var c in colectivosList) {
         await into(colectivos).insertOnConflictUpdate(
@@ -351,7 +358,7 @@ class AppDatabase extends _$AppDatabase {
         );
       }
 
-      //RECORRIDOS
+      // RECORRIDOS
       final recorridosList = json['recorridos'] as List<dynamic>? ?? [];
       for(var r in recorridosList) {
         await into(recorridos).insertOnConflictUpdate(
@@ -365,7 +372,11 @@ class AppDatabase extends _$AppDatabase {
         );
       }
 
-      //PASSENGERS
+      // ==========================================
+      // NIVEL 2: DEPENDENCIAS
+      // ==========================================
+      
+      // PASSENGERS
       final passengersList=json['passengers'] as List<dynamic>? ?? [];
       for(var p in passengersList){
         await into(passengers).insertOnConflictUpdate(
@@ -382,35 +393,12 @@ class AppDatabase extends _$AppDatabase {
         );
       }
 
-      //DEBTS
-      final debtsList=json['debts'] as List<dynamic>? ?? [];
-      for(var d in debtsList){
-        await into(debts).insertOnConflictUpdate(
-          DebtsCompanion(
-            id:drift.Value(d['id']),
-            passengerId:drift.Value(d['passenger_id']),
-            choferId:drift.Value(d['chofer_id']),
-            eventId:drift.Value(d['event_id']),
-            date:drift.Value(DateTime.parse(d['date']).toLocal()),
-            description:drift.Value(d['description']??""),
-            totalAmount:drift.Value(d['total_amount']),
-            paidAmount:drift.Value(d['paid_amount']??0),
-            isSettled:drift.Value(d['is_settled']??false),
-            isSynced:const drift.Value(true),
-          ),
-        );
-      }
-    });
-  }
-
-  Future<void> processEventsSync(Map<String, dynamic> json) async {
-    await transaction(()async{
+      // EVENTS
       final eventsList = json['events'] as List<dynamic>? ?? [];
       final List<String> updatedEventIds = [];
 
       for (var e in eventsList) {
         updatedEventIds.add(e['id']);
-
         await into(events).insertOnConflictUpdate(
           EventsCompanion(
             id: drift.Value(e['id']),
@@ -439,15 +427,35 @@ class AppDatabase extends _$AppDatabase {
         );
       }
 
+      // ==========================================
+      // NIVEL 3: HIJOS FINALES
+      // ==========================================
+      
+      // DEBTS
+      final debtsList=json['debts'] as List<dynamic>? ?? [];
+      for(var d in debtsList){
+        await into(debts).insertOnConflictUpdate(
+          DebtsCompanion(
+            id:drift.Value(d['id']),
+            passengerId:drift.Value(d['passenger_id']),
+            choferId:drift.Value(d['chofer_id']),
+            eventId:drift.Value(d['event_id']),
+            date:drift.Value(DateTime.parse(d['date']).toLocal()),
+            description:drift.Value(d['description']??""),
+            totalAmount:drift.Value(d['total_amount']),
+            paidAmount:drift.Value(d['paid_amount']??0),
+            isSettled:drift.Value(d['is_settled']??false),
+            isSynced:const drift.Value(true),
+          ),
+        );
+      }
+
+      // SUBTABLAS DE EVENTOS
       if (updatedEventIds.isNotEmpty) {
-        //nuke
         await (delete(stops)..where((t) => t.eventId.isIn(updatedEventIds))).go();
         await (delete(eventChoferes)..where((t) => t.eventId.isIn(updatedEventIds))).go();
         await (delete(eventColectivos)..where((t) => t.eventId.isIn(updatedEventIds))).go();
 
-        //pave
-        
-        // Paradas (Stops)
         final stopsList = json['stops'] as List<dynamic>? ?? [];
         for (var s in stopsList) {
           await into(stops).insertOnConflictUpdate(
@@ -461,7 +469,6 @@ class AppDatabase extends _$AppDatabase {
           );
         }
 
-        // Event Choferes
         final eventChoferesList = json['event_choferes'] as List<dynamic>? ?? [];
         for (var ec in eventChoferesList) {
           await into(eventChoferes).insertOnConflictUpdate(
@@ -472,7 +479,6 @@ class AppDatabase extends _$AppDatabase {
           );
         }
 
-        // Event Colectivos
         final eventColectivosList = json['event_colectivos'] as List<dynamic>? ?? [];
         for (var ec in eventColectivosList) {
           await into(eventColectivos).insertOnConflictUpdate(
