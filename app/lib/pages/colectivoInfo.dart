@@ -7,11 +7,12 @@ import 'package:provider/provider.dart';
 import 'package:agenda/database/app_database.dart';
 
 import 'package:agenda/utilities/colectivos.dart';
-import 'package:agenda/widgets/text.dart';
 import 'package:agenda/utilities/settings.dart';
 
 import 'package:agenda/widgets/errorWidgets.dart';
-import 'package:agenda/widgets/searchBar.dart';
+import 'package:agenda/widgets/text.dart';
+
+import 'package:agenda/constants.dart';
 
 class colectivoInfo extends StatefulWidget{
   final Colectivo initialCol;
@@ -45,6 +46,9 @@ class _colectivoInfoState extends State<colectivoInfo>{
         final col=snapshot.data!.col;
         final events=snapshot.data!.eves;
 
+        final vtvExpired=col.vtv.isAfter(DateTime.now().add(const Duration(days:vtvAlert)));
+
+
         return ListView(padding:const EdgeInsets.symmetric(horizontal:5),children:[
           Center(child:pillText(col.plate,widget.mainColor,fontSize:25)),
           SizedBox(height:10),
@@ -57,6 +61,62 @@ class _colectivoInfoState extends State<colectivoInfo>{
             style:TextStyle(),
           )),
           SizedBox(height:20),
+
+          subtitleLine("Ficha tecnica",widget.mainColor),
+          Column(spacing:10,children:[
+            Row(spacing:10,children:[
+              Expanded(child:BasicCard(
+                child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                  Text(col.fuelAmount,style:TextStyle(
+                    fontWeight:FontWeight.bold,
+                    fontSize:18,
+                  )),
+                  Text("Gasoil hace ${relativeDate(col.fuelDate)}",style:TextStyle(fontSize:12))
+                ])
+              )),
+            ]),
+            Row(spacing:10,children:[
+              Expanded(child:BasicCard(
+                tonality:vtvExpired?null:Colors.red,
+                child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                  Text("${col.vtv.day}/${col.vtv.month}/${col.vtv.year}",style:TextStyle(
+                    fontWeight:FontWeight.bold,
+                    fontSize:18,
+                    color:vtvExpired?Colors.red:Colors.amber
+                  )),
+                  Text("Vencimiento VTV",style:TextStyle(fontSize:12))
+                ])
+              )),
+              Expanded(child:BasicCard(
+                child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                  Text(col.capacity.toString(),style:TextStyle(
+                    fontWeight:FontWeight.bold,
+                    fontSize:18,
+                  )),
+                  Text("Capacidad maxima",style:TextStyle(fontSize:12))
+                ])
+              )),
+            ]),
+            Row(spacing:10,children:[
+              Expanded(child:BasicCard(
+                child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
+                  Text(relativeDate(col.oilDate,montlhy:true),style:TextStyle(
+                    fontWeight:FontWeight.bold,
+                    fontSize:18,
+                    color:Colors.amber
+                  )),
+                  Text("Desde ultimo cambio de aceite",style:TextStyle(fontSize:12))
+                ])
+              )),
+            ]),
+          ]),
+          SizedBox(height:20),
+
+          //TODO
+          subtitleLine("Notas y observaciones",widget.mainColor),
+          BasicCard(child:Center(child:Text("No hay observaciones",style:TextStyle(color:Colors.grey)))),
+          SizedBox(height:20),
+
           Row(children:[
             Expanded(child:subtitleLine("Viajes",widget.mainColor)),
             Text("Recorridos",

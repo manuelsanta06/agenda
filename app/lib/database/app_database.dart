@@ -15,6 +15,8 @@ import 'tables/debt.dart';
 import 'package:uuid/uuid.dart';
 export 'tables/events.dart';
 
+import 'package:agenda/constants.dart';
+
 part 'app_database.g.dart';
 
 
@@ -191,7 +193,7 @@ class AppDatabase extends _$AppDatabase{
 
   Stream<(int, int)> watchVtvStatus(){
     final hoy=DateTime.now();
-    final limite=hoy.add(const Duration(days:20));
+    final limite=hoy.add(const Duration(days:vtvAlert));
 
     return (select(colectivos)..where((t)=>t.is_active)).watch().map((lista){
       return(

@@ -422,7 +422,7 @@ Widget colectivoToCard(
             Expanded(child:Text((bus.name??"").isEmpty?bus.plate:bus.name!,
               style: TextStyle(
                 fontSize:16,fontWeight:FontWeight.w600,
-                color:bus.vtv.isBefore(DateTime.now().add(Duration(days:5)))?Colors.red:null,
+                color:bus.vtv.isBefore(DateTime.now())?Colors.red:null,
               ))),
             pillText(bus.plate,mainColor),
             if(!hideOptions)
@@ -434,7 +434,7 @@ Widget colectivoToCard(
           if(bus.is_active)
             DataLine(text:"VTV: ${bus.vtv.day}-${bus.vtv.month}-${bus.vtv.year}",
               mainColor:mainColor,
-              textColor:bus.vtv.isBefore(DateTime.now().add(Duration(days:5)))?Colors.red:null
+              textColor:bus.vtv.isBefore(DateTime.now())?Colors.red:null
             ),
           if(fullInfo&&bus.is_active)
             DataLine(text:"Aceite: ${relativeDate(bus.oilDate,montlhy:true)}",mainColor:mainColor),

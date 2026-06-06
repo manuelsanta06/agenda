@@ -137,6 +137,6 @@ String relativeDate(DateTime date,{bool montlhy=false}){
   if(isYesterday(date))return "Ayer";
   final days=date.difference(DateTime.now()).inDays*-1;
   if(montlhy&&(days)>30)
-    return "Hace ${days~/30} mes${days~/30!=1?"es":""}, ${days%30} dias";
+    return "Hace ${days~/30} mes${days~/30!=1?"es":""} y ${days%30} dias";
   return "Hace $days dias";
 }
