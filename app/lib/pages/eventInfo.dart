@@ -212,7 +212,7 @@ class eventInfo extends StatelessWidget{
                 ])
               ),
             ]),
-            BasicCard(child:Column(children: [
+            BasicCard(child:Column(children:[
               StreamBuilder(
                 stream:db.watchColectivosAvailability(
                   eve.startDateTime,eve.endDateTime,eve.id,

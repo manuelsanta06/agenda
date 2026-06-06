@@ -10,6 +10,8 @@ import 'package:agenda/utilities/settings.dart';
 import 'package:agenda/widgets/errorWidgets.dart';
 import 'package:agenda/widgets/searchBar.dart';
 
+import 'package:agenda/pages/colectivoInfo.dart';
+
 
 class colectivosPage extends StatefulWidget{
   final int? ordering;
@@ -129,7 +131,11 @@ class _colectivosPageState extends State<colectivosPage>{
                     itemBuilder:(context, index){
                       return colectivoToCard(
                         context,filtered[index],colectivosPage.mainColor,
-                        onPressed:null,
+                        onPressed:()=>Navigator.of(context).push(
+                           MaterialPageRoute(builder:(context)=>colectivoInfo(
+                             initialCol:filtered[index],mainColor:colectivosPage.mainColor
+                            ))
+                         ),
                         onLongPress:null,
                       );
                     },

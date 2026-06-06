@@ -50,7 +50,7 @@ Widget subtitleLine(String title,Color mainColor){
   );
 }
 
-Widget pillText(String text, Color mainColor, {VoidCallback? onTap}) {
+Widget pillText(String text, Color mainColor,{VoidCallback? onTap,double fontSize=14}){
   return Material(
     color: Colors.transparent,
     child: InkWell(
@@ -67,7 +67,7 @@ Widget pillText(String text, Color mainColor, {VoidCallback? onTap}) {
           text,
           style: TextStyle(
             color: mainColor,
-            fontSize: 14,
+            fontSize:fontSize,
             fontWeight: FontWeight.bold,
           ),
         ),

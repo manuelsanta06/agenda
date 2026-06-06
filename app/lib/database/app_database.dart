@@ -18,11 +18,17 @@ export 'tables/events.dart';
 part 'app_database.g.dart';
 
 
-class EventWithStops {
+class EventWithStops{
   final Event event;
   final List<Stop> stops;
   EventWithStops({required this.event, required this.stops});
 }
+class ColectivoWithEvents{
+  final Colectivo col;
+  final List<EventWithStops> eves;
+  ColectivoWithEvents({required this.col,required this.eves});
+}
+
 class PassengerWithDebts{
   final Passenger passenger;
   final List<Debt> debts;
@@ -39,19 +45,19 @@ class EventWithDebts{
   EventWithDebts({required this.event,required this.debts});
 }
 
-@DriftDatabase(tables: [
-  Choferes, 
-  Colectivos, 
-  Events, 
-  Stops, 
-  EventChoferes, 
+@DriftDatabase(tables:[
+  Choferes,
+  Colectivos,
+  Events,
+  Stops,
+  EventChoferes,
   EventColectivos,
   Recorridos,
   Passengers,
   Debts
 
 ])
-class AppDatabase extends _$AppDatabase {
+class AppDatabase extends _$AppDatabase{
   AppDatabase():super(_openConnection());
 
   @override
@@ -492,6 +498,50 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+
+
+  Stream<ColectivoWithEvents> watchColectivoWithEventsStops({required String colId,DateTime? after,bool school=false}){
+    after??=DateTime.now();
+
+    final query=select(colectivos).join([
+      leftOuterJoin(eventColectivos,eventColectivos.colectivoId.equalsExp(colectivos.id)),
+      
+      leftOuterJoin(
+        events,
+        events.id.equalsExp(eventColectivos.eventId)&
+        events.endDateTime.isBiggerThanValue(after)&
+        (school?events.type.equalsValue(EventTypes.SCHOOL):events.type.equalsValue(EventTypes.SCHOOL).not())
+      ),
+      leftOuterJoin(stops,stops.eventId.equalsExp(events.id)),
+    ]);
+
+    query.where(colectivos.id.equals(colId));
+    query.orderBy([
+      OrderingTerm.asc(events.startDateTime),
+      OrderingTerm.asc(stops.orderIndex),
+    ]);
+
+    return query.watch().map((rows){
+      if(rows.isEmpty)throw Exception('Colectivo no encontrado');
+      
+      final groupedEvents=<String,EventWithStops>{};
+
+      for(final row in rows){
+        final eve=row.readTableOrNull(events);
+        final stop=row.readTableOrNull(stops);
+
+        if(eve!=null){
+          final item=groupedEvents.putIfAbsent(
+            eve.id,
+            ()=>EventWithStops(event:eve,stops:[]),
+          );
+          if(stop!=null)item.stops.add(stop);
+        }
+      }
+
+      return ColectivoWithEvents(col:rows.first.readTable(colectivos),eves:groupedEvents.values.toList());
+    });
+  }
 
 
   Stream<List<ChoferesWithDebts>> watchChoferesWithDebts(){
