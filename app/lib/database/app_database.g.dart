@@ -672,6 +672,18 @@ class $ColectivosTable extends Colectivos
         requiredDuringInsert: false,
         defaultValue: drift.Constant(DateTime(2000, 1, 1)),
       );
+  static const drift.VerificationMeta _dataMeta = const drift.VerificationMeta(
+    'data',
+  );
+  @override
+  late final drift.GeneratedColumn<String> data = drift.GeneratedColumn<String>(
+    'data',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const drift.Constant(''),
+  );
   static const drift.VerificationMeta _nameMeta = const drift.VerificationMeta(
     'name',
   );
@@ -771,6 +783,7 @@ class $ColectivosTable extends Colectivos
     id,
     plate,
     vtv,
+    data,
     name,
     number,
     capacity,
@@ -809,6 +822,12 @@ class $ColectivosTable extends Colectivos
       context.handle(
         _vtvMeta,
         vtv.isAcceptableOrUnknown(data['vtv']!, _vtvMeta),
+      );
+    }
+    if (data.containsKey('data')) {
+      context.handle(
+        _dataMeta,
+        this.data.isAcceptableOrUnknown(data['data']!, _dataMeta),
       );
     }
     if (data.containsKey('name')) {
@@ -886,6 +905,10 @@ class $ColectivosTable extends Colectivos
         DriftSqlType.dateTime,
         data['${effectivePrefix}vtv'],
       )!,
+      data: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}data'],
+      )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -931,6 +954,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
   final String id;
   final String plate;
   final DateTime vtv;
+  final String data;
   final String? name;
   final int? number;
   final int capacity;
@@ -943,6 +967,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
     required this.id,
     required this.plate,
     required this.vtv,
+    required this.data,
     this.name,
     this.number,
     required this.capacity,
@@ -958,6 +983,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
     map['id'] = drift.Variable<String>(id);
     map['plate'] = drift.Variable<String>(plate);
     map['vtv'] = drift.Variable<DateTime>(vtv);
+    map['data'] = drift.Variable<String>(data);
     if (!nullToAbsent || name != null) {
       map['name'] = drift.Variable<String>(name);
     }
@@ -978,6 +1004,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
       id: drift.Value(id),
       plate: drift.Value(plate),
       vtv: drift.Value(vtv),
+      data: drift.Value(data),
       name: name == null && nullToAbsent
           ? const drift.Value.absent()
           : drift.Value(name),
@@ -1002,6 +1029,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
       id: serializer.fromJson<String>(json['id']),
       plate: serializer.fromJson<String>(json['plate']),
       vtv: serializer.fromJson<DateTime>(json['vtv']),
+      data: serializer.fromJson<String>(json['data']),
       name: serializer.fromJson<String?>(json['name']),
       number: serializer.fromJson<int?>(json['number']),
       capacity: serializer.fromJson<int>(json['capacity']),
@@ -1019,6 +1047,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
       'id': serializer.toJson<String>(id),
       'plate': serializer.toJson<String>(plate),
       'vtv': serializer.toJson<DateTime>(vtv),
+      'data': serializer.toJson<String>(data),
       'name': serializer.toJson<String?>(name),
       'number': serializer.toJson<int?>(number),
       'capacity': serializer.toJson<int>(capacity),
@@ -1034,6 +1063,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
     String? id,
     String? plate,
     DateTime? vtv,
+    String? data,
     drift.Value<String?> name = const drift.Value.absent(),
     drift.Value<int?> number = const drift.Value.absent(),
     int? capacity,
@@ -1046,6 +1076,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
     id: id ?? this.id,
     plate: plate ?? this.plate,
     vtv: vtv ?? this.vtv,
+    data: data ?? this.data,
     name: name.present ? name.value : this.name,
     number: number.present ? number.value : this.number,
     capacity: capacity ?? this.capacity,
@@ -1060,6 +1091,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
       id: data.id.present ? data.id.value : this.id,
       plate: data.plate.present ? data.plate.value : this.plate,
       vtv: data.vtv.present ? data.vtv.value : this.vtv,
+      data: data.data.present ? data.data.value : this.data,
       name: data.name.present ? data.name.value : this.name,
       number: data.number.present ? data.number.value : this.number,
       capacity: data.capacity.present ? data.capacity.value : this.capacity,
@@ -1079,6 +1111,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
           ..write('id: $id, ')
           ..write('plate: $plate, ')
           ..write('vtv: $vtv, ')
+          ..write('data: $data, ')
           ..write('name: $name, ')
           ..write('number: $number, ')
           ..write('capacity: $capacity, ')
@@ -1096,6 +1129,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
     id,
     plate,
     vtv,
+    data,
     name,
     number,
     capacity,
@@ -1112,6 +1146,7 @@ class Colectivo extends drift.DataClass implements drift.Insertable<Colectivo> {
           other.id == this.id &&
           other.plate == this.plate &&
           other.vtv == this.vtv &&
+          other.data == this.data &&
           other.name == this.name &&
           other.number == this.number &&
           other.capacity == this.capacity &&
@@ -1126,6 +1161,7 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
   final drift.Value<String> id;
   final drift.Value<String> plate;
   final drift.Value<DateTime> vtv;
+  final drift.Value<String> data;
   final drift.Value<String?> name;
   final drift.Value<int?> number;
   final drift.Value<int> capacity;
@@ -1139,6 +1175,7 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
     this.id = const drift.Value.absent(),
     this.plate = const drift.Value.absent(),
     this.vtv = const drift.Value.absent(),
+    this.data = const drift.Value.absent(),
     this.name = const drift.Value.absent(),
     this.number = const drift.Value.absent(),
     this.capacity = const drift.Value.absent(),
@@ -1153,6 +1190,7 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
     required String id,
     required String plate,
     this.vtv = const drift.Value.absent(),
+    this.data = const drift.Value.absent(),
     this.name = const drift.Value.absent(),
     this.number = const drift.Value.absent(),
     this.capacity = const drift.Value.absent(),
@@ -1171,6 +1209,7 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
     drift.Expression<String>? id,
     drift.Expression<String>? plate,
     drift.Expression<DateTime>? vtv,
+    drift.Expression<String>? data,
     drift.Expression<String>? name,
     drift.Expression<int>? number,
     drift.Expression<int>? capacity,
@@ -1185,6 +1224,7 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
       if (id != null) 'id': id,
       if (plate != null) 'plate': plate,
       if (vtv != null) 'vtv': vtv,
+      if (data != null) 'data': data,
       if (name != null) 'name': name,
       if (number != null) 'number': number,
       if (capacity != null) 'capacity': capacity,
@@ -1201,6 +1241,7 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
     drift.Value<String>? id,
     drift.Value<String>? plate,
     drift.Value<DateTime>? vtv,
+    drift.Value<String>? data,
     drift.Value<String?>? name,
     drift.Value<int?>? number,
     drift.Value<int>? capacity,
@@ -1215,6 +1256,7 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
       id: id ?? this.id,
       plate: plate ?? this.plate,
       vtv: vtv ?? this.vtv,
+      data: data ?? this.data,
       name: name ?? this.name,
       number: number ?? this.number,
       capacity: capacity ?? this.capacity,
@@ -1238,6 +1280,9 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
     }
     if (vtv.present) {
       map['vtv'] = drift.Variable<DateTime>(vtv.value);
+    }
+    if (data.present) {
+      map['data'] = drift.Variable<String>(data.value);
     }
     if (name.present) {
       map['name'] = drift.Variable<String>(name.value);
@@ -1275,6 +1320,7 @@ class ColectivosCompanion extends drift.UpdateCompanion<Colectivo> {
           ..write('id: $id, ')
           ..write('plate: $plate, ')
           ..write('vtv: $vtv, ')
+          ..write('data: $data, ')
           ..write('name: $name, ')
           ..write('number: $number, ')
           ..write('capacity: $capacity, ')
@@ -1746,7 +1792,7 @@ class $EventsTable extends Events with drift.TableInfo<$EventsTable, Event> {
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: false,
-    defaultValue: const drift.Constant(0),
+    defaultValue: const drift.Constant(1),
   );
   static const drift.VerificationMeta _contactNameMeta =
       const drift.VerificationMeta('contactName');
@@ -5300,6 +5346,7 @@ typedef $$ColectivosTableCreateCompanionBuilder =
       required String id,
       required String plate,
       drift.Value<DateTime> vtv,
+      drift.Value<String> data,
       drift.Value<String?> name,
       drift.Value<int?> number,
       drift.Value<int> capacity,
@@ -5315,6 +5362,7 @@ typedef $$ColectivosTableUpdateCompanionBuilder =
       drift.Value<String> id,
       drift.Value<String> plate,
       drift.Value<DateTime> vtv,
+      drift.Value<String> data,
       drift.Value<String?> name,
       drift.Value<int?> number,
       drift.Value<int> capacity,
@@ -5376,6 +5424,11 @@ class $$ColectivosTableFilterComposer
 
   drift.ColumnFilters<DateTime> get vtv => $composableBuilder(
     column: $table.vtv,
+    builder: (column) => drift.ColumnFilters(column),
+  );
+
+  drift.ColumnFilters<String> get data => $composableBuilder(
+    column: $table.data,
     builder: (column) => drift.ColumnFilters(column),
   );
 
@@ -5469,6 +5522,11 @@ class $$ColectivosTableOrderingComposer
     builder: (column) => drift.ColumnOrderings(column),
   );
 
+  drift.ColumnOrderings<String> get data => $composableBuilder(
+    column: $table.data,
+    builder: (column) => drift.ColumnOrderings(column),
+  );
+
   drift.ColumnOrderings<String> get name => $composableBuilder(
     column: $table.name,
     builder: (column) => drift.ColumnOrderings(column),
@@ -5527,6 +5585,9 @@ class $$ColectivosTableAnnotationComposer
 
   drift.GeneratedColumn<DateTime> get vtv =>
       $composableBuilder(column: $table.vtv, builder: (column) => column);
+
+  drift.GeneratedColumn<String> get data =>
+      $composableBuilder(column: $table.data, builder: (column) => column);
 
   drift.GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
@@ -5611,6 +5672,7 @@ class $$ColectivosTableTableManager
                 drift.Value<String> id = const drift.Value.absent(),
                 drift.Value<String> plate = const drift.Value.absent(),
                 drift.Value<DateTime> vtv = const drift.Value.absent(),
+                drift.Value<String> data = const drift.Value.absent(),
                 drift.Value<String?> name = const drift.Value.absent(),
                 drift.Value<int?> number = const drift.Value.absent(),
                 drift.Value<int> capacity = const drift.Value.absent(),
@@ -5624,6 +5686,7 @@ class $$ColectivosTableTableManager
                 id: id,
                 plate: plate,
                 vtv: vtv,
+                data: data,
                 name: name,
                 number: number,
                 capacity: capacity,
@@ -5639,6 +5702,7 @@ class $$ColectivosTableTableManager
                 required String id,
                 required String plate,
                 drift.Value<DateTime> vtv = const drift.Value.absent(),
+                drift.Value<String> data = const drift.Value.absent(),
                 drift.Value<String?> name = const drift.Value.absent(),
                 drift.Value<int?> number = const drift.Value.absent(),
                 drift.Value<int> capacity = const drift.Value.absent(),
@@ -5652,6 +5716,7 @@ class $$ColectivosTableTableManager
                 id: id,
                 plate: plate,
                 vtv: vtv,
+                data: data,
                 name: name,
                 number: number,
                 capacity: capacity,

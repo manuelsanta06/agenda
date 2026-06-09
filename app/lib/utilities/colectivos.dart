@@ -12,6 +12,19 @@ import 'package:agenda/widgets/text.dart';
 import 'package:agenda/utilities/syncService.dart';
 
 
+Future<void> updateColectivo(BuildContext context,Colectivo bus)async{
+  final db=Provider.of<AppDatabase>(context,listen:false);
+  try{
+    await db.update(db.colectivos).replace(
+      bus.copyWith(isSynced:false)
+    );
+    SyncService.pushUnsyncedData(db);
+  }catch(e){
+    return;
+  }
+}
+
+
 Future<bool> showCreateModifiColectivo(BuildContext context,{Colectivo? bus,required Color mainColor})async{
   final result=await showModalBottomSheet<ColectivosCompanion?>(
     context:context,
@@ -211,71 +224,33 @@ class _CreateColectivoSheetState extends State<_CreateColectivoSheet> {
   }
 }
 
-Future<void> inputFuelDialog(BuildContext context, Colectivo bus){
-  final controller = TextEditingController();
-  return showDialog<void>(
-    context: context,
-    builder:(BuildContext context){
-      return AlertDialog(
-        title: const Text("Ingresar gasoil"),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(hintText: "${bus.fuelAmount}",),
-        ),
-        actions: [
-          TextButton(
-            child: const Text("Cancelar",style:TextStyle(color:Colors.red)),
-            onPressed:(){Navigator.pop(context);},
-          ),
-          TextButton(
-            child: const Text("Aceptar",style:TextStyle(color:Colors.green)),
-            onPressed:()async{
-              final db=Provider.of<AppDatabase>(context, listen: false);
-              await (db.update(db.colectivos)
-                ..where((tbl) => tbl.id.equals(bus.id)))
-                .write(ColectivosCompanion(
-                  fuelAmount: drift.Value(controller.text),
-                  fuelDate: drift.Value(DateTime.now()),
-                  isSynced:drift.Value(false)
-                ));
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      );
-    },
-  );
+Future<void> editColectivoFuel(BuildContext context,Colectivo col)async{
+  String? val=await quickChangeDialog(context,"Nivel de Gasoil",def:col.fuelAmount);
+  if(val!=null&&val.isNotEmpty&&context.mounted){
+    await updateColectivo(context,col.copyWith(
+      fuelAmount:val,fuelDate:DateTime.now(),
+    ));
+  }
 }
 
-Future<void> inputOilDialog(BuildContext context, Colectivo bus){
-  return showDialog<void>(
-    context: context,
-    builder:(BuildContext context){
-      return AlertDialog(
-        title: const Text("Actulizar cambio de aceite?"),
-        actions: [
-          TextButton(
-            child: const Text("Cancelar",style:TextStyle(color:Colors.red)),
-            onPressed:()=>Navigator.pop(context),
-          ),
-          TextButton(
-            child: const Text("Aceptar",style:TextStyle(color:Colors.green)),
-            onPressed:()async{
-              final db=Provider.of<AppDatabase>(context, listen: false);
-              await (db.update(db.colectivos)
-                ..where((tbl) => tbl.id.equals(bus.id)))
-                .write(ColectivosCompanion(
-                  oilDate:drift.Value(DateTime.now()),
-                  isSynced:drift.Value(false)
-                ));
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      );
-    },
-  );
+Future<void> editColectivoOil(BuildContext context,Colectivo col)async{
+  DateTime? picked=await getDate(context,col.oilDate);
+  if(picked!=null&&context.mounted){
+    await updateColectivo(context,col.copyWith(
+      oilDate:picked,
+    ));
+  }
 }
+
+Future<void> editColectivoVtv(BuildContext context,Colectivo col)async{
+  DateTime? picked=await getDate(context,col.vtv);
+  if(picked!=null&&context.mounted){
+    await updateColectivo(context,col.copyWith(
+      vtv:picked,
+    ));
+  }
+}
+
 
 Future<void> removeColectivoDialog(BuildContext context,Colectivo bus,bool restaurar)async{
   return showDialog<void>(
@@ -293,16 +268,13 @@ Future<void> removeColectivoDialog(BuildContext context,Colectivo bus,bool resta
             child:Text(restaurar?"Restaurar":"Eliminar", style: TextStyle(color: Colors.red)),
             onPressed:()async{
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content:Text("'${bus.name==""?bus.plate:bus.name}' ${restaurar?"Restaurado":"Eliminado"}"),
-                backgroundColor:restaurar?Colors.green:Colors.red,
-              ));
-              final db=Provider.of<AppDatabase>(context, listen: false);
-              await (db.update(db.colectivos)
-                ..where((tbl)=>tbl.id.equals(bus.id)))
-                .write(ColectivosCompanion(
-                  is_active: drift.Value(restaurar)
+              await updateColectivo(context,bus.copyWith(is_active:restaurar));
+              if(context.mounted){
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content:Text("'${bus.name==""?bus.plate:bus.name}' ${restaurar?"Restaurado":"Eliminado"}"),
+                  backgroundColor:restaurar?Colors.green:Colors.red,
                 ));
+              }
             },
           ),
         ],
@@ -310,6 +282,7 @@ Future<void> removeColectivoDialog(BuildContext context,Colectivo bus,bool resta
     },
   );
 }
+
 
 
 Widget colectivoToCard(
@@ -329,7 +302,7 @@ Widget colectivoToCard(
       actionIcon:hideOptions?null:PopupMenuButton(
         icon:const Icon(Icons.more_vert),
         onSelected:(String result)async{
-          switch (result) {
+          switch(result){
             case 'edit':
               final success=await showCreateModifiColectivo(context,bus:bus,mainColor:mainColor);
               if(success&&context.mounted){
@@ -340,21 +313,15 @@ Widget colectivoToCard(
               break;
 
             case 'fuel':
-              inputFuelDialog(context,bus);
+              await editColectivoFuel(context,bus);
               break;
-
             case 'oil':
-              inputOilDialog(context,bus);
+              await editColectivoOil(context,bus);
               break;
             case 'vtv':
-              DateTime? newDate=await getDate(context,null);
-              if(newDate==null/*||newDate.isBefore(DateTime.now())*/)return;
-              final db=Provider.of<AppDatabase>(context, listen: false);
-              await (db.update(db.colectivos)
-                ..where((tbl) => tbl.id.equals(bus.id)))
-                .write(ColectivosCompanion(
-                  vtv:drift.Value(newDate),isSynced:drift.Value(false)));
+              await editColectivoVtv(context,bus);
               break;
+
             case 'delete':
               removeColectivoDialog(context,bus,!(bus.is_active));
               break;

@@ -30,6 +30,7 @@ class Colectivos extends Table {
   
   TextColumn get plate => text().unique()();
   DateTimeColumn get vtv => dateTime().withDefault(Constant(DateTime(2000,1,1)))();
+  TextColumn get data => text().withDefault(const Constant(''))();
   TextColumn get name => text().nullable()();
   IntColumn get number => integer().nullable()();
   
@@ -54,7 +55,6 @@ class Stops extends Table {
   TextColumn get name => text()();
   DateTimeColumn get start => dateTime().nullable()();
   
-  // Relación: A qué evento pertenece esta parada
   TextColumn get eventId => text().references(Events, #id,onDelete: KeyAction.cascade)();
   
   // Para saber el orden de las paradas

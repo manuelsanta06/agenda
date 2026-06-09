@@ -63,7 +63,7 @@ class AppDatabase extends _$AppDatabase{
   AppDatabase():super(_openConnection());
 
   @override
-  int get schemaVersion=>8;
+  int get schemaVersion=>9;
 
   @override
   MigrationStrategy get migration{
@@ -120,6 +120,8 @@ class AppDatabase extends _$AppDatabase{
           await m.alterTable(TableMigration(events,newColumns:[events.busAmount]));
         }if(from==7){
           await m.addColumn(events,events.busAmount);
+        }if(from<9){
+          await m.addColumn(colectivos,colectivos.data);
         }
       },
       beforeOpen:(details)async{
@@ -241,6 +243,7 @@ class AppDatabase extends _$AppDatabase{
         "plate": c.plate,
         "vtv": c.vtv.toUtc().toIso8601String(),
         "name": c.name,
+        "data": c.data,
         "number": c.number,
         "capacity": c.capacity,
         "fuel_amount": c.fuelAmount,
@@ -318,15 +321,9 @@ class AppDatabase extends _$AppDatabase{
   }
 
   Future<void> processFullSync(Map<String, dynamic> json) async {
-    // 1. Activar el retraso de chequeo de claves foráneas ANTES de abrir la transacción
     await customStatement('PRAGMA defer_foreign_keys = ON;');
 
-    // 2. Abrir la transacción
     await transaction(() async {
-      // ==========================================
-      // NIVEL 1: TABLAS BASE
-      // ==========================================
-      
       // CHOFERES
       final choferesList = json['choferes'] as List<dynamic>? ?? [];
       for(var c in choferesList){
@@ -356,6 +353,7 @@ class AppDatabase extends _$AppDatabase{
             vtv: drift.Value(DateTime.parse(c['vtv']).toLocal()),
             name: drift.Value(c['name']),
             number: drift.Value(c['number']),
+            data: drift.Value(c['data']),
             capacity: drift.Value(c['capacity'] ?? 0),
             fuelAmount: drift.Value(c['fuel_amount'] ?? ''),
             fuelDate: drift.Value(DateTime.parse(c['fuel_date']).toLocal()),
@@ -380,9 +378,7 @@ class AppDatabase extends _$AppDatabase{
         );
       }
 
-      // ==========================================
-      // NIVEL 2: DEPENDENCIAS
-      // ==========================================
+      // DEPENDENCIAS
       
       // PASSENGERS
       final passengersList=json['passengers'] as List<dynamic>? ?? [];
@@ -435,9 +431,7 @@ class AppDatabase extends _$AppDatabase{
         );
       }
 
-      // ==========================================
-      // NIVEL 3: HIJOS FINALES
-      // ==========================================
+      //HIJOS FINALES
       
       // DEBTS
       final debtsList=json['debts'] as List<dynamic>? ?? [];
