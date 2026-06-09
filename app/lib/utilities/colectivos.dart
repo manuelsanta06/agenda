@@ -265,7 +265,7 @@ Future<void> removeColectivoDialog(BuildContext context,Colectivo bus,bool resta
             onPressed:()=> Navigator.pop(context),
           ),
           TextButton(
-            child:Text(restaurar?"Restaurar":"Eliminar", style: TextStyle(color: Colors.red)),
+            child:Text(restaurar?"Restaurar":"Eliminar",style:TextStyle(color: Colors.red)),
             onPressed:()async{
               Navigator.pop(context);
               await updateColectivo(context,bus.copyWith(is_active:restaurar));

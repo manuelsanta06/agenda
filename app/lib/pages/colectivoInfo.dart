@@ -151,7 +151,7 @@ class _colectivoInfoState extends State<colectivoInfo>{
                   autofocus:true,
                   textCapitalization:TextCapitalization.sentences,
                   decoration:const InputDecoration(
-                    hintText:"Escribe tus observaciones aquí...",
+                    hintText:"Escribe tus observaciones",
                     border:InputBorder.none,
                   ),
                 ),

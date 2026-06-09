@@ -37,6 +37,9 @@ Widget passengerToCard(BuildContext context,
             await launchUrl(Uri.parse("https://wa.me/${passa.managerPhone}"),mode:LaunchMode.externalApplication);
             break;
 
+          case 'smartPay':
+              showSmartPay(context,mainColor,passengerId:passa.id);
+              break;
           case 'debt':
             if((await showCreateDebtSheet(context,mainColor,passengerId:passa.id))&&context.mounted){
               ScaffoldMessenger.of(context).showSnackBar(
@@ -71,9 +74,17 @@ Widget passengerToCard(BuildContext context,
           ]),
         ),
         PopupMenuItem<String>(
-          value:'debt',
+          value:'smartPay',
           child:Row(children:[
             Icon(Icons.attach_money,color:Colors.green),
+            SizedBox(width:8),
+            Text('Añadir pago')
+          ]),
+        ),
+        PopupMenuItem<String>(
+          value:'debt',
+          child:Row(children:[
+            Icon(Icons.attach_money,color:Colors.red),
             SizedBox(width:8),
             Text('Añadir deuda')
           ]),
