@@ -23,6 +23,7 @@ type Colectivo struct {
 	Vtv         time.Time   `json:"vtv"`
 	Name        *string     `json:"name"`
 	Number      *int        `json:"number"`
+	Data        string      `json:"data"`
 	Capacity    int         `json:"capacity"`
 	FuelAmount  *string     `json:"fuel_amount"`
 	FuelDate    *time.Time  `json:"fuel_date"`

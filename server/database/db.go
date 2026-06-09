@@ -107,8 +107,8 @@ func FullSync(payload models.SyncPayload)error{
 	//Colectivos
 	for _, col := range payload.Colectivos {
 		_, err := tx.Exec(ctx, `
-			INSERT INTO colectivos (id, plate, vtv, name, number, capacity, fuel_amount, fuel_date, oil_date, is_active)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+			INSERT INTO colectivos (id,plate,vtv,name,number,capacity,fuel_amount,fuel_date,oil_date,is_active,data)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 			ON CONFLICT (id) DO UPDATE SET
 				plate = EXCLUDED.plate,
 				vtv = EXCLUDED.vtv,
@@ -119,8 +119,9 @@ func FullSync(payload models.SyncPayload)error{
 				fuel_date = EXCLUDED.fuel_date,
 				oil_date = EXCLUDED.oil_date,
 				is_active = EXCLUDED.is_active,
+        data = EXCLUDED.data,
 				updated_at = CURRENT_TIMESTAMP;
-		`, col.ID, col.Plate, col.Vtv, col.Name, col.Number, col.Capacity, col.FuelAmount, col.FuelDate, col.OilDate, col.IsActive)
+		`, col.ID, col.Plate, col.Vtv, col.Name, col.Number, col.Capacity, col.FuelAmount, col.FuelDate, col.OilDate, col.IsActive,col.Data)
 		if err != nil {
 			return fmt.Errorf("error guardando colectivo %s: %v", col.ID, err)
 		}
@@ -326,7 +327,7 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 
 	//COLECTIVOS
 	rowsColectivos, err := DB.Query(ctx, `
-		SELECT id, plate, vtv, name, number, capacity, fuel_amount, fuel_date, oil_date, is_active, created_at, updated_at 
+		SELECT id, plate, vtv, name, number, capacity, fuel_amount, fuel_date, oil_date, is_active, data, created_at, updated_at 
 		FROM colectivos 
 		WHERE updated_at > $1
 	`, lastSyncStr)
@@ -337,7 +338,7 @@ func FetchCatalogSince(lastSyncStr string) (models.SyncPayload, error){
 
 	for rowsColectivos.Next() {
 		var col models.Colectivo
-		err := rowsColectivos.Scan(&col.ID, &col.Plate, &col.Vtv, &col.Name, &col.Number, &col.Capacity, &col.FuelAmount, &col.FuelDate, &col.OilDate, &col.IsActive, &col.CreatedAt, &col.UpdatedAt)
+		err := rowsColectivos.Scan(&col.ID, &col.Plate, &col.Vtv, &col.Name, &col.Number, &col.Capacity, &col.FuelAmount, &col.FuelDate, &col.OilDate, &col.IsActive, &col.Data, &col.CreatedAt, &col.UpdatedAt)
 		if err != nil {
 			return payload, fmt.Errorf("error leyendo fila de colectivo: %v", err)
 		}
