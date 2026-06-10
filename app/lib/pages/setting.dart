@@ -2,12 +2,16 @@ import '../utilities/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
+
 import 'package:path_provider/path_provider.dart';
-import 'package:agenda/database/app_database.dart';
 import 'package:path/path.dart' as p;
 import 'package:drift/drift.dart' as drift;
 import 'package:permission_handler/permission_handler.dart';
-import '../utilities/syncService.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:agenda/database/app_database.dart';
+import 'package:agenda/utilities/syncService.dart';
+import 'package:agenda/widgets/cards.dart';
 
 import 'package:drift_db_viewer/drift_db_viewer.dart';
 
@@ -60,21 +64,23 @@ class PantallaAjustes extends StatelessWidget{
 
   @override
   Widget build(BuildContext context){
+    final db=context.read<AppDatabase>();
+    final deafDb=Provider.of<AppDatabase>(context, listen: false);
     final settings=context.watch<SettingsProvider>();
 
     return Scaffold(
       appBar:AppBar(title:const Text("Configuracion")),
-      body:ListView(
-        children:[
+      body:SingleChildScrollView(
+        padding:const EdgeInsets.symmetric(vertical:10),
+        child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,spacing:15,children:[
           SwitchListTile(
             title:const Text("Modo Oscuro"),
             value:settings.getValue("dark_mode"),
             onChanged:(bool newValue){settings.setValue("dark_mode",newValue);},
           ),
-          ListTile(
-            title:const Text("Sincronizar base de datos"),
-            onTap:()async{
-              final deafDb=Provider.of<AppDatabase>(context, listen: false);
+          BasicCard(
+            child:const Text("FullSync"),
+            onPressed:()async{
               var returned=await (SyncService.performFullSync(deafDb));
               if(returned.$1){
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -98,37 +104,53 @@ class PantallaAjustes extends StatelessWidget{
               }
             },
           ),
-          ListTile(
-            title:const Text("Forzar sincronizacion de TODO"),
-            onTap:()async{
+          BasicCard(
+            child:const Text("Resetear fechas de Sincronizacion"),
+            onPressed:()async{
+              final prefs=await SharedPreferences.getInstance();
+              await prefs.remove('last_sync_catalog');
+              await prefs.remove('last_sync_events');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Fechas borradas.'),backgroundColor:Colors.green),
+              );
+            },
+          ),
+          BasicCard(
+            child:const Text("isSynced=false en TODO"),
+            onPressed:()async{
               try{
-                final db=context.read<AppDatabase>();
-                
                 await db.markAllAsUnsynced();
                 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Datos marcados para subir. Iniciando rescate...')),
+                  const SnackBar(content: Text('Datos marcados como no sincronizados.')),
                 );
-                await SyncService.performFullSync(db);
               }catch(e){
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error en el rescate: $e'), backgroundColor: Colors.red),
+                  SnackBar(content:Text('Error marcando como no sincronizado: $e'), backgroundColor: Colors.red),
                 );
               }
             },
           ),
-          ListTile(
-            title:const Text("Respaldar base de datos"),
-            onTap:()=>buckupDatabase(context),
+          BasicCard(
+            child:const Text("Respaldar localmente base de datos"),
+            onPressed:()=>buckupDatabase(context),
           ),
-          ListTile(
-            title:const Text("Inspeccionar base de datos"),
-            onTap:(){
-              final db=Provider.of<AppDatabase>(context,listen:false);
-              Navigator.of(context).push(MaterialPageRoute(builder:(context)=>DriftDbViewer(db)));
+          BasicCard(
+            child:const Text("Inspeccionar base de datos"),
+            onPressed:(){
+              Navigator.of(context).push(MaterialPageRoute(builder:(context)=>DriftDbViewer(deafDb)));
             },
           ),
-        ],
+          BasicCard(
+            child:const Text("NUKE DATABASE",style:TextStyle(color:Colors.red)),
+            onPressed:()async{
+              db.nukeDatabase();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('base de datos nuked.'),backgroundColor:Colors.green),
+              );
+            },
+          ),
+        ]),
       ),
     );
   }

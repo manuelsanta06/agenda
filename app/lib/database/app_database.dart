@@ -130,6 +130,12 @@ class AppDatabase extends _$AppDatabase{
     );
   }
 
+  Future<void> nukeDatabase()async{
+    await transaction(()async{
+      for(final table in allTables)await delete(table).go();
+    });
+  }
+
   Future<void> markAllAsUnsynced()async{
     await transaction(()async{
       await update(choferes).write(const ChoferesCompanion(isSynced:Value(false)));

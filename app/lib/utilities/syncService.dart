@@ -39,11 +39,11 @@ class SyncService{
           await prefs.setString('last_sync_events', now);
           
           log("Sincronización completa.");
-        } else {
-          log("Error en la descarga de datos, se abortó el guardado local.");
+        }else{
+          return (false,"Error en la descarga de datos, se abortó el guardado local.");
         }
       }else{
-        log("Push failled.");
+        return (false,"error en el push");
       }
       return data;
     }catch(e){
